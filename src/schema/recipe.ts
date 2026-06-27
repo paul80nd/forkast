@@ -6,12 +6,18 @@
 export interface Ingredient {
   /** The original human label, e.g. "320g skinless chicken thighs". */
   rawLabel: string
-  /** Normalised name used for merging across recipes, e.g. "chicken thighs". */
+  /** Normalised name used for display, e.g. "chicken thighs". */
   name: string
   /** Numeric quantity if parseable, e.g. 320. Absent for "to taste" items. */
   qty?: number
   /** Unit if parseable, e.g. "g", "ml", "tbsp". Absent for countable items. */
   unit?: string
+  /**
+   * Canonical ingredient this line maps to (see the ingredient dictionary).
+   * Set at import; lines without it still shop, just un-merged. This binding is
+   * what makes the shopping list merge across recipes.
+   */
+  ingredientId?: string
 }
 
 /** One ordered step of the method. */

@@ -37,6 +37,20 @@ export interface SettingRow {
   value: unknown
 }
 
+/** A manually-added shopping item not derived from a recipe. */
+export interface ExtraItem {
+  text: string
+  checked: boolean
+}
+
+/** Tick-off + manual extras for a plan's shopping list. Keyed by plan id. */
+export interface ShoppingState {
+  id: string
+  /** Keys of derived lines that are ticked off. */
+  checked: string[]
+  extras: ExtraItem[]
+}
+
 export interface Settings {
   householdSize: number
 }

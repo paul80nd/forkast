@@ -27,6 +27,14 @@ recipe sites. **Provider-specific adapters are not shipped** — point your own 
 whatever source you like. The repo ships only fictional **demo** recipes so you
 can see the shape of things.
 
+## How this was built
+
+Forkast is an experiment in **agent-first, no-hand-coding development**: every line
+here was written by **Claude Opus 4.8** (via Claude Code), pair-designed through
+conversation rather than typed by hand. It's partly a learning exercise — seeing
+how far a spec-first, build-together dialogue can actually go — and partly just
+pragmatic: I'd rather shape an app than hand-crank a weekly shopping list. 🙂
+
 ## Status
 
 🚧 Early days — see [`SPEC.md`](SPEC.md) for the full design and the MVP scope.
