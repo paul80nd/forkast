@@ -2,11 +2,14 @@ import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
+import { StarRating } from '../components/StarRating'
+import { setStars } from '../lib/curation'
 
 export function RecipePage() {
   const { id = '' } = useParams()
   // undefined = loading, null = not found
   const recipe = useLiveQuery(async () => (await db.recipes.get(id)) ?? null, [id])
+  const stars = useLiveQuery(async () => (await db.userData.get(id))?.stars, [id])
 
   if (recipe === undefined) {
     return <p className="text-stone-500">Loading…</p>
@@ -54,6 +57,19 @@ export function RecipePage() {
               />
             )}
           </dl>
+
+          <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
+            <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+              Your rating
+            </h3>
+            <div className="mt-1.5">
+              <StarRating
+                size="lg"
+                value={stars}
+                onChange={(v) => setStars(recipe.id, v)}
+              />
+            </div>
+          </div>
 
           {recipe.allergens.length > 0 && (
             <div className="mt-4">

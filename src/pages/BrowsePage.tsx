@@ -2,16 +2,26 @@ import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
+import type { Stars } from '../schema/userData'
 
 type SortKey = 'rating' | 'time' | 'name'
+type RatingFilter = 'all' | 'unrated' | '5' | '4plus' | '3plus'
 
 export function BrowsePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
+  const userData = useLiveQuery(() => db.userData.toArray(), [])
   const [query, setQuery] = useState('')
   const [cuisine, setCuisine] = useState('all')
   const [maxTime, setMaxTime] = useState(0) // 0 = any
+  const [rating, setRating] = useState<RatingFilter>('all')
   const [hideFish, setHideFish] = useState(true)
   const [sort, setSort] = useState<SortKey>('rating')
+
+  const starsById = useMemo(() => {
+    const m = new Map<string, Stars>()
+    for (const u of userData ?? []) if (u.stars) m.set(u.recipeId, u.stars)
+    return m
+  }, [userData])
 
   const cuisines = useMemo(
     () => Array.from(new Set((recipes ?? []).map((r) => r.cuisine))).sort(),
@@ -32,13 +42,22 @@ export function BrowsePage() {
     if (cuisine !== 'all') list = list.filter((r) => r.cuisine === cuisine)
     if (maxTime > 0) list = list.filter((r) => r.prepTime.for2 <= maxTime)
     if (hideFish) list = list.filter((r) => !r.allergens.includes('fish'))
+    if (rating !== 'all') {
+      list = list.filter((r) => {
+        const s = starsById.get(r.id)
+        if (rating === 'unrated') return s === undefined
+        if (rating === '5') return s === 5
+        if (rating === '4plus') return s !== undefined && s >= 4
+        return s !== undefined && s >= 3 // 3plus
+      })
+    }
 
     return [...list].sort((a, b) => {
       if (sort === 'name') return a.title.localeCompare(b.title)
       if (sort === 'time') return a.prepTime.for2 - b.prepTime.for2
       return (b.sourceRating?.average ?? 0) - (a.sourceRating?.average ?? 0)
     })
-  }, [recipes, query, cuisine, maxTime, hideFish, sort])
+  }, [recipes, query, cuisine, maxTime, hideFish, rating, starsById, sort])
 
   if (recipes === undefined) {
     return <p className="text-stone-500">Loading recipes…</p>
@@ -87,6 +106,17 @@ export function BrowsePage() {
           <option value={45}>≤ 45 min</option>
         </select>
         <select
+          value={rating}
+          onChange={(e) => setRating(e.target.value as RatingFilter)}
+          className={selectClass}
+        >
+          <option value="all">Any rating</option>
+          <option value="unrated">Unrated</option>
+          <option value="5">★5 only</option>
+          <option value="4plus">★4+</option>
+          <option value="3plus">★3+</option>
+        </select>
+        <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
           className={selectClass}
@@ -113,7 +143,7 @@ export function BrowsePage() {
       ) : (
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r) => (
-            <RecipeCard key={r.id} recipe={r} />
+            <RecipeCard key={r.id} recipe={r} stars={starsById.get(r.id)} />
           ))}
         </div>
       )}

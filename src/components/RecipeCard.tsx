@@ -1,19 +1,27 @@
 import { Link } from 'react-router-dom'
 import type { Recipe } from '../schema/recipe'
+import type { Stars } from '../schema/userData'
 import { resolveAsset } from '../lib/assets'
 
-export function RecipeCard({ recipe }: { recipe: Recipe }) {
+export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars }) {
   return (
     <Link
       to={`/recipe/${recipe.id}`}
       className="block overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
-      <img
-        src={resolveAsset(recipe.image)}
-        alt=""
-        className="aspect-[4/3] w-full object-cover"
-        loading="lazy"
-      />
+      <div className="relative">
+        <img
+          src={resolveAsset(recipe.image)}
+          alt=""
+          className="aspect-[4/3] w-full object-cover"
+          loading="lazy"
+        />
+        {stars && (
+          <span className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-amber-600 shadow-sm">
+            {'★'.repeat(stars)}
+          </span>
+        )}
+      </div>
       <div className="p-3">
         <div className="flex items-center justify-between gap-2">
           <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
