@@ -4,12 +4,17 @@ import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { StarRating } from '../components/StarRating'
 import { setStars } from '../lib/curation'
+import { CURRENT_PLAN_ID, addToPlan, removeFromPlan } from '../lib/plan'
 
 export function RecipePage() {
   const { id = '' } = useParams()
   // undefined = loading, null = not found
   const recipe = useLiveQuery(async () => (await db.recipes.get(id)) ?? null, [id])
   const stars = useLiveQuery(async () => (await db.userData.get(id))?.stars, [id])
+  const inPlan = useLiveQuery(
+    async () => ((await db.plans.get(CURRENT_PLAN_ID))?.recipeIds ?? []).includes(id),
+    [id],
+  )
 
   if (recipe === undefined) {
     return <p className="text-stone-500">Loading…</p>
@@ -114,7 +119,26 @@ export function RecipePage() {
 
         {/* Right: the recipe itself */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{recipe.title}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">{recipe.title}</h1>
+            {inPlan ? (
+              <button
+                type="button"
+                onClick={() => removeFromPlan(recipe.id)}
+                className="shrink-0 rounded-md bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100"
+              >
+                ✓ In week
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => addToPlan(recipe.id)}
+                className="shrink-0 rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600"
+              >
+                + Add to week
+              </button>
+            )}
+          </div>
           <p className="mt-2 text-stone-600">{recipe.description}</p>
 
           <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-500 uppercase">
