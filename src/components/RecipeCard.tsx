@@ -1,9 +1,13 @@
+import { Link } from 'react-router-dom'
 import type { Recipe } from '../schema/recipe'
 import { resolveAsset } from '../lib/assets'
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
-    <article className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md">
+    <Link
+      to={`/recipe/${recipe.id}`}
+      className="block overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
       <img
         src={resolveAsset(recipe.image)}
         alt=""
@@ -37,6 +41,6 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
           )}
         </div>
       </div>
-    </article>
+    </Link>
   )
 }

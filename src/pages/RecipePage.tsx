@@ -1,0 +1,165 @@
+import { Link, useParams } from 'react-router-dom'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '../db/db'
+import { resolveAsset } from '../lib/assets'
+
+export function RecipePage() {
+  const { id = '' } = useParams()
+  // undefined = loading, null = not found
+  const recipe = useLiveQuery(async () => (await db.recipes.get(id)) ?? null, [id])
+
+  if (recipe === undefined) {
+    return <p className="text-stone-500">Loading…</p>
+  }
+
+  if (recipe === null) {
+    return (
+      <section>
+        <p className="text-stone-600">Recipe not found.</p>
+        <Link to="/browse" className="mt-2 inline-block text-orange-600 hover:underline">
+          ← Back to Browse
+        </Link>
+      </section>
+    )
+  }
+
+  return (
+    <section>
+      <Link to="/browse" className="text-sm text-orange-600 hover:underline">
+        ← Back to Browse
+      </Link>
+
+      <div className="mt-3 grid gap-6 md:grid-cols-[2fr_3fr]">
+        {/* Left: image + at-a-glance facts */}
+        <div>
+          <img
+            src={resolveAsset(recipe.image)}
+            alt=""
+            className="aspect-[4/3] w-full rounded-xl object-cover"
+          />
+          <dl className="mt-4 space-y-2 text-sm">
+            <Fact label="Cuisine" value={recipe.cuisine} />
+            <Fact
+              label="Time"
+              value={`${recipe.prepTime.for2} min (for 2) · ${recipe.prepTime.for4} min (for 4)`}
+            />
+            {recipe.mainProtein && (
+              <Fact label="Main" value={recipe.mainProtein} capitalize />
+            )}
+            <Fact label="Serves" value={`${recipe.serves} (base quantities)`} />
+            {recipe.sourceRating && (
+              <Fact
+                label="Rating"
+                value={`★ ${recipe.sourceRating.average.toFixed(1)} (${recipe.sourceRating.count})`}
+              />
+            )}
+          </dl>
+
+          {recipe.allergens.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+                Allergens
+              </h3>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {recipe.allergens.map((a) => (
+                  <span
+                    key={a}
+                    className={`rounded px-1.5 py-0.5 text-xs font-medium ${
+                      a === 'fish'
+                        ? 'bg-sky-100 text-sky-700'
+                        : 'bg-stone-100 text-stone-600'
+                    }`}
+                  >
+                    {a}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {recipe.tags.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+                Tags
+              </h3>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {recipe.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: the recipe itself */}
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{recipe.title}</h1>
+          <p className="mt-2 text-stone-600">{recipe.description}</p>
+
+          <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-500 uppercase">
+            Ingredients
+          </h2>
+          <ul className="mt-2 divide-y divide-stone-100">
+            {recipe.ingredients.map((ing, i) => (
+              <li key={i} className="flex items-baseline justify-between gap-3 py-1.5">
+                <span className="text-stone-800">{ing.rawLabel}</span>
+                {/* Parsed breakdown — for proof-reading imports */}
+                <span className="shrink-0 font-mono text-xs text-stone-400">
+                  {ing.qty != null ? ing.qty : '—'}
+                  {ing.unit ? ` ${ing.unit}` : ''} · {ing.name}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {recipe.basics.length > 0 && (
+            <p className="mt-3 text-sm text-stone-500">
+              <span className="font-medium text-stone-600">Store cupboard:</span>{' '}
+              {recipe.basics.join(', ')}
+            </p>
+          )}
+
+          <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-500 uppercase">
+            Method
+          </h2>
+          <ol className="mt-2 space-y-3">
+            {[...recipe.instructions]
+              .sort((a, b) => a.order - b.order)
+              .map((step) => (
+                <li key={step.order} className="flex gap-3">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-700">
+                    {step.order}
+                  </span>
+                  <span className="text-stone-700">{step.text}</span>
+                </li>
+              ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Fact({
+  label,
+  value,
+  capitalize,
+}: {
+  label: string
+  value: string
+  capitalize?: boolean
+}) {
+  return (
+    <div className="flex justify-between gap-3">
+      <dt className="text-stone-500">{label}</dt>
+      <dd className={`text-right font-medium text-stone-800 ${capitalize ? 'capitalize' : ''}`}>
+        {value}
+      </dd>
+    </div>
+  )
+}
