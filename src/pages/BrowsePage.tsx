@@ -1,11 +1,122 @@
+import { useMemo, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '../db/db'
+import { RecipeCard } from '../components/RecipeCard'
+
+type SortKey = 'rating' | 'time' | 'name'
+
 export function BrowsePage() {
+  const recipes = useLiveQuery(() => db.recipes.toArray(), [])
+  const [query, setQuery] = useState('')
+  const [cuisine, setCuisine] = useState('all')
+  const [maxTime, setMaxTime] = useState(0) // 0 = any
+  const [hideFish, setHideFish] = useState(true)
+  const [sort, setSort] = useState<SortKey>('rating')
+
+  const cuisines = useMemo(
+    () => Array.from(new Set((recipes ?? []).map((r) => r.cuisine))).sort(),
+    [recipes],
+  )
+
+  const filtered = useMemo(() => {
+    let list = recipes ?? []
+    const q = query.trim().toLowerCase()
+    if (q) {
+      list = list.filter(
+        (r) =>
+          r.title.toLowerCase().includes(q) ||
+          r.description.toLowerCase().includes(q) ||
+          r.ingredients.some((i) => i.name.toLowerCase().includes(q)),
+      )
+    }
+    if (cuisine !== 'all') list = list.filter((r) => r.cuisine === cuisine)
+    if (maxTime > 0) list = list.filter((r) => r.prepTime.for2 <= maxTime)
+    if (hideFish) list = list.filter((r) => !r.allergens.includes('fish'))
+
+    return [...list].sort((a, b) => {
+      if (sort === 'name') return a.title.localeCompare(b.title)
+      if (sort === 'time') return a.prepTime.for2 - b.prepTime.for2
+      return (b.sourceRating?.average ?? 0) - (a.sourceRating?.average ?? 0)
+    })
+  }, [recipes, query, cuisine, maxTime, hideFish, sort])
+
+  if (recipes === undefined) {
+    return <p className="text-stone-500">Loading recipes…</p>
+  }
+
+  const selectClass =
+    'rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
+
   return (
     <section>
-      <h1 className="text-2xl font-semibold tracking-tight">Browse</h1>
-      <p className="mt-2 text-stone-600">
-        Search and filter recipes by cuisine, prep time, and rating — and hide
-        your no-go ingredients. Coming next.
-      </p>
+      <div className="flex items-end justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">Browse</h1>
+        <span className="text-sm text-stone-500">
+          {filtered.length} of {recipes.length} recipes
+        </span>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search title or ingredient…"
+          className={`${selectClass} min-w-56 flex-1`}
+        />
+        <select
+          value={cuisine}
+          onChange={(e) => setCuisine(e.target.value)}
+          className={selectClass}
+        >
+          <option value="all">All cuisines</option>
+          {cuisines.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select
+          value={maxTime}
+          onChange={(e) => setMaxTime(Number(e.target.value))}
+          className={selectClass}
+        >
+          <option value={0}>Any time</option>
+          <option value={20}>≤ 20 min</option>
+          <option value={30}>≤ 30 min</option>
+          <option value={45}>≤ 45 min</option>
+        </select>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortKey)}
+          className={selectClass}
+        >
+          <option value="rating">Top rated</option>
+          <option value="time">Quickest</option>
+          <option value="name">A–Z</option>
+        </select>
+        <label className="flex cursor-pointer items-center gap-1.5 text-sm text-stone-600 select-none">
+          <input
+            type="checkbox"
+            checked={hideFish}
+            onChange={(e) => setHideFish(e.target.checked)}
+            className="size-4 accent-orange-500"
+          />
+          Hide fish
+        </label>
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="mt-10 text-center text-stone-500">
+          No recipes match those filters.
+        </p>
+      ) : (
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((r) => (
+            <RecipeCard key={r.id} recipe={r} />
+          ))}
+        </div>
+      )}
     </section>
   )
 }

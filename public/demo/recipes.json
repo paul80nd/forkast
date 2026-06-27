@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "generatedAt": "2026-01-01",
+  "recipes": [
+    {
+      "id": "sunset-tomato-orzo",
+      "slug": "sunset-tomato-orzo",
+      "title": "Sunset Tomato Orzo",
+      "description": "A one-pan orzo simmered in roasted cherry tomatoes and basil, finished with a handful of soft cheese. Weeknight comfort with barely any washing up.",
+      "image": "demo/images/sunset-tomato-orzo.svg",
+      "cuisine": "Italian",
+      "categories": ["Dinner", "One-pan"],
+      "tags": ["quick", "vegetarian", "comfort"],
+      "allergens": ["gluten", "milk"],
+      "prepTime": { "for2": 25, "for4": 30 },
+      "sourceRating": { "average": 4.6, "count": 312 },
+      "ingredients": [
+        { "rawLabel": "300g orzo", "name": "orzo", "qty": 300, "unit": "g" },
+        { "rawLabel": "400g cherry tomatoes", "name": "cherry tomatoes", "qty": 400, "unit": "g" },
+        { "rawLabel": "2 garlic cloves", "name": "garlic", "qty": 2 },
+        { "rawLabel": "1 vegetable stock cube", "name": "vegetable stock cube", "qty": 1 },
+        { "rawLabel": "20g fresh basil", "name": "basil", "qty": 20, "unit": "g" },
+        { "rawLabel": "60g soft cheese", "name": "soft cheese", "qty": 60, "unit": "g" }
+      ],
+      "basics": ["olive oil", "salt", "black pepper"],
+      "instructions": [
+        { "order": 1, "text": "Roast the cherry tomatoes with a drizzle of oil until bursting." },
+        { "order": 2, "text": "Add garlic and orzo, toast for a minute, then pour in stock." },
+        { "order": 3, "text": "Simmer until the orzo is tender and saucy." },
+        { "order": 4, "text": "Stir through soft cheese and torn basil. Season and serve." }
+      ],
+      "mainProtein": "vegetarian",
+      "serves": 2
+    },
+    {
+      "id": "golden-chickpea-curry",
+      "slug": "golden-chickpea-curry",
+      "title": "Golden Chickpea Curry",
+      "description": "Turmeric-stained chickpeas in a creamy coconut sauce with spinach. Hearty, gently spiced, and entirely plant-based.",
+      "image": "demo/images/golden-chickpea-curry.svg",
+      "cuisine": "Indian",
+      "categories": ["Dinner", "Curry"],
+      "tags": ["vegan", "batch-friendly", "freezer"],
+      "allergens": [],
+      "prepTime": { "for2": 30, "for4": 35 },
+      "sourceRating": { "average": 4.8, "count": 521 },
+      "ingredients": [
+        { "rawLabel": "2 x 400g tins chickpeas", "name": "chickpeas", "qty": 800, "unit": "g" },
+        { "rawLabel": "1 tin coconut milk", "name": "coconut milk", "qty": 400, "unit": "ml" },
+        { "rawLabel": "1 onion", "name": "onion", "qty": 1 },
+        { "rawLabel": "3 garlic cloves", "name": "garlic", "qty": 3 },
+        { "rawLabel": "1 thumb ginger", "name": "ginger", "qty": 1 },
+        { "rawLabel": "2 tsp curry powder", "name": "curry powder", "qty": 2, "unit": "tsp" },
+        { "rawLabel": "100g spinach", "name": "spinach", "qty": 100, "unit": "g" }
+      ],
+      "basics": ["vegetable oil", "salt"],
+      "instructions": [
+        { "order": 1, "text": "Soften the onion, then add garlic, ginger and curry powder." },
+        { "order": 2, "text": "Tip in chickpeas and coconut milk; simmer to thicken." },
+        { "order": 3, "text": "Wilt in the spinach, season and serve with rice." }
+      ],
+      "mainProtein": "chickpea",
+      "serves": 2
+    },
+    {
+      "id": "lemongrass-chicken-bowls",
+      "slug": "lemongrass-chicken-bowls",
+      "title": "Lemongrass Chicken Bowls",
+      "description": "Charred lemongrass chicken over fluffy rice with quick pickled carrot and a lime dressing. Bright, fresh and fast.",
+      "image": "demo/images/lemongrass-chicken-bowls.svg",
+      "cuisine": "Thai",
+      "categories": ["Dinner", "Rice bowl"],
+      "tags": ["quick", "fresh", "high-protein"],
+      "allergens": ["soya"],
+      "prepTime": { "for2": 25, "for4": 30 },
+      "sourceRating": { "average": 4.7, "count": 408 },
+      "ingredients": [
+        { "rawLabel": "2 chicken breasts", "name": "chicken breast", "qty": 2 },
+        { "rawLabel": "1 lemongrass stalk", "name": "lemongrass", "qty": 1 },
+        { "rawLabel": "150g jasmine rice", "name": "jasmine rice", "qty": 150, "unit": "g" },
+        { "rawLabel": "1 carrot", "name": "carrot", "qty": 1 },
+        { "rawLabel": "1 lime", "name": "lime", "qty": 1 },
+        { "rawLabel": "2 tbsp soy sauce", "name": "soy sauce", "qty": 2, "unit": "tbsp" }
+      ],
+      "basics": ["vegetable oil", "sugar", "salt"],
+      "instructions": [
+        { "order": 1, "text": "Cook the rice. Pickle the grated carrot in lime juice and a pinch of sugar." },
+        { "order": 2, "text": "Marinate sliced chicken with crushed lemongrass and soy, then sear." },
+        { "order": 3, "text": "Build bowls with rice, chicken and pickled carrot." }
+      ],
+      "mainProtein": "chicken",
+      "serves": 2
+    },
+    {
+      "id": "smoky-black-bean-tacos",
+      "slug": "smoky-black-bean-tacos",
+      "title": "Smoky Black Bean Tacos",
+      "description": "Chipotle-spiced black beans piled into warm tortillas with charred sweetcorn and a squeeze of lime. Big flavour, ten ingredients.",
+      "image": "demo/images/smoky-black-bean-tacos.svg",
+      "cuisine": "Mexican",
+      "categories": ["Dinner", "Tacos"],
+      "tags": ["vegan", "quick", "crowd-pleaser"],
+      "allergens": ["gluten"],
+      "prepTime": { "for2": 20, "for4": 25 },
+      "sourceRating": { "average": 4.5, "count": 276 },
+      "ingredients": [
+        { "rawLabel": "1 x 400g tin black beans", "name": "black beans", "qty": 400, "unit": "g" },
+        { "rawLabel": "1 tsp chipotle paste", "name": "chipotle paste", "qty": 1, "unit": "tsp" },
+        { "rawLabel": "150g sweetcorn", "name": "sweetcorn", "qty": 150, "unit": "g" },
+        { "rawLabel": "6 small tortillas", "name": "tortillas", "qty": 6 },
+        { "rawLabel": "1 lime", "name": "lime", "qty": 1 },
+        { "rawLabel": "1 red onion", "name": "red onion", "qty": 1 }
+      ],
+      "basics": ["olive oil", "salt"],
+      "instructions": [
+        { "order": 1, "text": "Char the sweetcorn in a dry pan; set aside." },
+        { "order": 2, "text": "Warm the beans with chipotle paste until thick." },
+        { "order": 3, "text": "Fill tortillas with beans, corn, red onion and lime." }
+      ],
+      "mainProtein": "beans",
+      "serves": 2
+    },
+    {
+      "id": "garden-herb-fish-pie",
+      "slug": "garden-herb-fish-pie",
+      "title": "Garden Herb Fish Pie",
+      "description": "A classic creamy fish pie under a golden mash lid, flecked with parsley and chives. Pure comfort — and a handy test of the no-fish filter.",
+      "image": "demo/images/garden-herb-fish-pie.svg",
+      "cuisine": "British",
+      "categories": ["Dinner", "Bake"],
+      "tags": ["comfort", "weekend"],
+      "allergens": ["fish", "milk", "gluten"],
+      "prepTime": { "for2": 45, "for4": 55 },
+      "sourceRating": { "average": 4.4, "count": 189 },
+      "ingredients": [
+        { "rawLabel": "300g white fish fillet", "name": "white fish", "qty": 300, "unit": "g" },
+        { "rawLabel": "600g potatoes", "name": "potatoes", "qty": 600, "unit": "g" },
+        { "rawLabel": "300ml milk", "name": "milk", "qty": 300, "unit": "ml" },
+        { "rawLabel": "20g plain flour", "name": "plain flour", "qty": 20, "unit": "g" },
+        { "rawLabel": "10g fresh parsley", "name": "parsley", "qty": 10, "unit": "g" },
+        { "rawLabel": "50g cheddar", "name": "cheddar", "qty": 50, "unit": "g" }
+      ],
+      "basics": ["butter", "salt", "black pepper"],
+      "instructions": [
+        { "order": 1, "text": "Boil and mash the potatoes with butter." },
+        { "order": 2, "text": "Make a parsley white sauce; fold through the fish." },
+        { "order": 3, "text": "Top with mash and cheddar; bake until golden." }
+      ],
+      "mainProtein": "fish",
+      "serves": 2
+    },
+    {
+      "id": "gochujang-beef-noodles",
+      "slug": "gochujang-beef-noodles",
+      "title": "Gochujang Beef Noodles",
+      "description": "Sticky, spicy gochujang beef tossed through slippery noodles with spring onion. Comes together in the time it takes to boil the kettle, twice.",
+      "image": "demo/images/gochujang-beef-noodles.svg",
+      "cuisine": "Korean",
+      "categories": ["Dinner", "Noodles"],
+      "tags": ["quick", "spicy", "high-protein"],
+      "allergens": ["gluten", "soya", "sesame"],
+      "prepTime": { "for2": 20, "for4": 25 },
+      "sourceRating": { "average": 4.9, "count": 634 },
+      "ingredients": [
+        { "rawLabel": "250g beef mince", "name": "beef mince", "qty": 250, "unit": "g" },
+        { "rawLabel": "2 tbsp gochujang", "name": "gochujang", "qty": 2, "unit": "tbsp" },
+        { "rawLabel": "200g udon noodles", "name": "udon noodles", "qty": 200, "unit": "g" },
+        { "rawLabel": "2 spring onions", "name": "spring onion", "qty": 2 },
+        { "rawLabel": "1 tbsp soy sauce", "name": "soy sauce", "qty": 1, "unit": "tbsp" },
+        { "rawLabel": "1 tsp sesame oil", "name": "sesame oil", "qty": 1, "unit": "tsp" }
+      ],
+      "basics": ["vegetable oil", "sugar"],
+      "instructions": [
+        { "order": 1, "text": "Brown the beef mince hard, then stir in gochujang and soy." },
+        { "order": 2, "text": "Cook the udon; drain and toss into the beef." },
+        { "order": 3, "text": "Finish with sesame oil and spring onion." }
+      ],
+      "mainProtein": "beef",
+      "serves": 2
+    }
+  ]
+}
