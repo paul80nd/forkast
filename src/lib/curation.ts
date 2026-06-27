@@ -7,7 +7,7 @@ export const STAR_LABELS: Record<Stars, string> = {
   4: 'Nice',
   3: 'Only for variety',
   2: 'Bin it',
-  1: 'Bin it',
+  1: 'Very bin it',
 }
 
 /**
