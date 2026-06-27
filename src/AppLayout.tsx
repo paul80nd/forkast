@@ -5,6 +5,7 @@ const tabs = [
   { to: '/curate', label: 'Curate' },
   { to: '/plan', label: 'Plan' },
   { to: '/shop', label: 'Shop' },
+  { to: '/config', label: 'Config' },
 ]
 
 export function AppLayout() {

@@ -30,6 +30,10 @@ function labels(list: ReturnType<typeof buildShoppingList>): string[] {
   ]
 }
 
+function findLine(list: ReturnType<typeof buildShoppingList>, label: string) {
+  return list.aisles.flatMap((a) => a.lines).find((l) => l.label === label)
+}
+
 describe('buildShoppingList', () => {
   it('merges the same ingredient across recipes (count)', () => {
     const a = recipe('a', [{ rawLabel: '1 lime', name: 'lime', qty: 1, ingredientId: 'lime' }])
@@ -41,7 +45,15 @@ describe('buildShoppingList', () => {
     const a = recipe('a', [{ rawLabel: '2 tbsp soy sauce', name: 'soy sauce', qty: 2, unit: 'tbsp', ingredientId: 'soy-sauce' }])
     const b = recipe('b', [{ rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp', ingredientId: 'soy-sauce' }])
     // (2 + 1) tbsp = 45 ml
-    expect(labels(buildShoppingList([a, b], 2))).toContain('45 ml soy sauce')
+    const list = buildShoppingList([a, b], 2)
+    expect(labels(list)).toContain('45 ml soy sauce')
+    // ...and the breakdown shows what it's made of, grouped by recipe unit.
+    expect(findLine(list, '45 ml soy sauce')?.detail).toBe('3 tbsp')
+  })
+
+  it('omits the detail when it would just restate the line', () => {
+    const a = recipe('a', [{ rawLabel: '800g chickpeas', name: 'chickpeas', qty: 800, unit: 'g', ingredientId: 'chickpeas' }])
+    expect(findLine(buildShoppingList([a], 2), '800 g chickpeas')?.detail).toBeUndefined()
   })
 
   it('keeps the recipe unit when there is no natural conversion (tsp -> g)', () => {

@@ -84,6 +84,7 @@ export function ShopPage() {
                 <CheckRow
                   key={line.key}
                   label={line.label}
+                  detail={line.detail}
                   checked={checked.has(line.key)}
                   onToggle={() => toggleChecked(line.key)}
                 />
@@ -187,12 +188,14 @@ export function ShopPage() {
 
 function CheckRow({
   label,
+  detail,
   checked,
   onToggle,
   onRemove,
   muted,
 }: {
   label: string
+  detail?: string
   checked: boolean
   onToggle: () => void
   onRemove?: () => void
@@ -207,12 +210,19 @@ function CheckRow({
           onChange={onToggle}
           className="size-4 accent-orange-500"
         />
-        <span
-          className={`${
-            checked ? 'text-stone-400 line-through' : muted ? 'text-stone-500' : 'text-stone-800'
-          }`}
-        >
-          {label}
+        <span className="min-w-0">
+          <span
+            className={`block ${
+              checked ? 'text-stone-400 line-through' : muted ? 'text-stone-500' : 'text-stone-800'
+            }`}
+          >
+            {label}
+          </span>
+          {detail && (
+            <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-400'}`}>
+              {detail}
+            </span>
+          )}
         </span>
       </label>
       {onRemove && (

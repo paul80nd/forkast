@@ -3,10 +3,14 @@
 // item; the shopping list converts recipe units to it where it can.
 // Note: "onion" and "red onion" are deliberately separate — different buys.
 
+import pluralize from 'pluralize'
+
 export interface IngredientDef {
   id: string
   name: string
-  plural: string
+  /** Explicit plural override. When absent, derived with `pluralize` — set this
+   *  only where English misbehaves ("soft cheese", "beef mince"). */
+  plural?: string
   aisle: string
   /** Unit id you buy this in (see units.ts). */
   purchaseUnit: string
@@ -14,6 +18,11 @@ export interface IngredientDef {
   densityGPerMl?: number
   /** Alternate labels, for matching during import (used later by the importer). */
   aliases?: string[]
+}
+
+/** Plural display form: explicit override, else automatic pluralisation. */
+export function pluralOf(def: IngredientDef): string {
+  return def.plural ?? pluralize(def.name)
 }
 
 /** Shopping-list section order. Unknown aisles fall to the end. */

@@ -5,6 +5,7 @@ import { CuratePage } from './pages/CuratePage'
 import { PlanPage } from './pages/PlanPage'
 import { ShopPage } from './pages/ShopPage'
 import { RecipePage } from './pages/RecipePage'
+import { ConfigPage } from './pages/ConfigPage'
 
 // HashRouter: works on static hosting (GitHub Pages) and local serving with no
 // server-side rewrite config — refreshes never 404.
@@ -19,6 +20,7 @@ export const router = createHashRouter([
       { path: 'curate', element: <CuratePage /> },
       { path: 'plan', element: <PlanPage /> },
       { path: 'shop', element: <ShopPage /> },
+      { path: 'config', element: <ConfigPage /> },
     ],
   },
 ])

@@ -2,6 +2,7 @@ import type { Recipe } from '../schema/recipe'
 import {
   AISLE_ORDER,
   INGREDIENTS_BY_ID,
+  pluralOf,
   type IngredientDef,
 } from '../data/ingredients'
 import { getUnit, convert, type Dimension } from './units'
@@ -10,6 +11,8 @@ export interface ShopLine {
   /** Stable key for tick-off persistence. */
   key: string
   label: string
+  /** What the total is made of in recipe units, e.g. "3 tbsp" (when converted). */
+  detail?: string
   aisle: string
 }
 
@@ -27,6 +30,8 @@ interface Acc {
   def: IngredientDef
   targetQty: number
   converted: boolean
+  /** Recipe-unit amounts that went into the converted total, grouped by unit. */
+  contributions: Map<string, number>
   /** Recipe-unit quantities that had no natural conversion to the buy unit. */
   leftovers: Map<string, number>
 }
@@ -72,13 +77,20 @@ export function buildShoppingList(recipes: Recipe[], portions: number): Shopping
 
       let acc = matched.get(def.id)
       if (!acc) {
-        acc = { def, targetQty: 0, converted: false, leftovers: new Map() }
+        acc = {
+          def,
+          targetQty: 0,
+          converted: false,
+          contributions: new Map(),
+          leftovers: new Map(),
+        }
         matched.set(def.id, acc)
       }
       const c = convert(scaled, unitId, def.purchaseUnit, def.densityGPerMl)
       if (c != null) {
         acc.targetQty += c
         acc.converted = true
+        acc.contributions.set(unitId, (acc.contributions.get(unitId) ?? 0) + scaled)
       } else {
         acc.leftovers.set(unitId, (acc.leftovers.get(unitId) ?? 0) + scaled)
       }
@@ -93,7 +105,11 @@ export function buildShoppingList(recipes: Recipe[], portions: number): Shopping
   }
 
   for (const acc of matched.values()) {
-    if (acc.converted) push(acc.def.aisle, formatLine(acc.def, acc.targetQty, acc.def.purchaseUnit))
+    if (acc.converted) {
+      const line = formatLine(acc.def, acc.targetQty, acc.def.purchaseUnit)
+      line.detail = buildDetail(acc.contributions, acc.def.purchaseUnit)
+      push(acc.def.aisle, line)
+    }
     for (const [unitId, qty] of acc.leftovers) {
       push(acc.def.aisle, formatLine(acc.def, qty, unitId))
     }
@@ -122,12 +138,26 @@ export function buildShoppingList(recipes: Recipe[], portions: number): Shopping
 
 function formatLine(def: IngredientDef, qty: number, unitId: string): ShopLine {
   const unit = getUnit(unitId)
-  const q = formatQty(qty, unit.dimension)
   const name =
-    unit.dimension === 'count' ? (qty <= 1 ? def.name : def.plural) : def.plural
-  const label =
-    unit.dimension === 'count' ? `${q} ${name}` : `${q} ${unit.label} ${name}`
-  return { key: `${def.id}|${unitId}`, label, aisle: def.aisle }
+    unit.dimension === 'count' ? (qty <= 1 ? def.name : pluralOf(def)) : pluralOf(def)
+  return { key: `${def.id}|${unitId}`, label: `${formatAmount(qty, unitId)} ${name}`.trim(), aisle: def.aisle }
+}
+
+/** An amount without a name, e.g. "3 tbsp", "800 g", "5". */
+function formatAmount(qty: number, unitId: string): string {
+  const unit = getUnit(unitId)
+  const q = formatQty(qty, unit.dimension)
+  return unit.dimension === 'count' ? q : `${q} ${unit.label}`
+}
+
+/** Recipe-unit breakdown for a converted line; omitted when it'd just restate it. */
+function buildDetail(
+  contributions: Map<string, number>,
+  purchaseUnit: string,
+): string | undefined {
+  const entries = [...contributions.entries()]
+  if (entries.length === 1 && entries[0][0] === purchaseUnit) return undefined
+  return entries.map(([unitId, qty]) => formatAmount(qty, unitId)).join(' + ')
 }
 
 function formatQty(qty: number, dim: Dimension): string {
