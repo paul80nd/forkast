@@ -60,10 +60,10 @@ export interface Recipe {
    */
   sourceCode?: string
 
+  /** The single browse facet, e.g. "Italian". (For Gousto this is the source cuisine.) */
   cuisine: string
-  categories: string[]
-  /** Free-form diet/effort labels (e.g. "vegetarian", "dairy-free", "10-min").
-   *  Often derived at import from source categories when the source has no tags. */
+  /** Free-form labels for filtering: diet/effort derived at import (e.g. "vegetarian",
+   *  "dairy-free", "speedy") unioned with the source's own category labels. */
   tags: string[]
   /** e.g. ["gluten", "egg", "fish"] — powers no-go filters. */
   allergens: string[]
