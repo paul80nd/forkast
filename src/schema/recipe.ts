@@ -54,6 +54,11 @@ export interface Recipe {
   image: string
   /** Provenance. Omitted from demo and any committed public data. */
   sourceUrl?: string
+  /**
+   * Short human-facing reference/catalogue code from the source, e.g. printed on a
+   * physical recipe card for quick lookup. Provider-neutral; private datasets only.
+   */
+  sourceCode?: string
 
   cuisine: string
   categories: string[]
