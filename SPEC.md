@@ -91,14 +91,15 @@ One repo, three parts:
 | `title`, `description` | |
 | `image` | local filename under `/images` |
 | `sourceUrl` | provenance (private datasets only) |
-| `cuisine`, `categories[]`, `tags[]` | |
+| `cuisine`, `categories[]` | from source; `tags[]` carries derived diet/effort labels |
 | `allergens[]` | powers no-go filters (e.g. fish) |
 | `prepTime` | `{ for2, for4 }` minutes |
 | `sourceRating` | `{ average, count }` from source, if any |
-| `ingredients[]` | `{ rawLabel, name, qty?, unit? }` — parsed best-effort |
+| `nutrition?` | per-portion macros (kcal + protein/fat/saturates/carbs/sugars/fibre/salt), if available |
+| `ingredients[]` | `{ rawLabel, name, qty?, unit?, ingredientId?, sourceRef? }` — `sourceRef` is a stable source id so one match reuses across recipes |
 | `basics[]` | store-cupboard items (kept out of the buy list by default) |
 | `instructions[]` | `{ order, text }` |
-| `mainProtein?` | derived, best-effort (for variety) |
+| `mainProtein?` | derived from categories, best-effort (for variety) |
 
 ### User data (IndexedDB, exportable)
 
@@ -143,7 +144,8 @@ One repo, three parts:
 - **Assisted planning** — "suggest a varied week" using stars + the four variety
   axes the household cares about: **cuisine, main protein, cooking time/effort,
   recency (not cooked recently)**. ★3s are the variety pool.
-- Nutrition view, leftovers/batch awareness, multi-week history.
+- Nutrition view (per-portion macros **captured at import**), leftovers/batch
+  awareness, multi-week history.
 
 ## Known hard bits (bounded)
 

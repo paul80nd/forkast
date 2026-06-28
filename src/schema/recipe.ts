@@ -18,12 +18,30 @@ export interface Ingredient {
    * what makes the shopping list merge across recipes.
    */
   ingredientId?: string
+  /**
+   * Opaque stable id for this ingredient from the source, if any. Lets the importer
+   * cache a `sourceRef → ingredientId` match and auto-apply it wherever the same
+   * source ingredient recurs. Provider-neutral; private datasets only.
+   */
+  sourceRef?: string
 }
 
 /** One ordered step of the method. */
 export interface Instruction {
   order: number
   text: string
+}
+
+/** Per-portion nutrition, if the source provides it. Grams except `kcal`. */
+export interface Nutrition {
+  kcal: number
+  protein: number
+  fat: number
+  saturates: number
+  carbs: number
+  sugars: number
+  fibre: number
+  salt: number
 }
 
 export interface Recipe {
@@ -39,6 +57,8 @@ export interface Recipe {
 
   cuisine: string
   categories: string[]
+  /** Free-form diet/effort labels (e.g. "vegetarian", "dairy-free", "10-min").
+   *  Often derived at import from source categories when the source has no tags. */
   tags: string[]
   /** e.g. ["gluten", "egg", "fish"] — powers no-go filters. */
   allergens: string[]
@@ -47,13 +67,16 @@ export interface Recipe {
   prepTime: { for2: number; for4: number }
   /** Rating carried over from the source, if any. */
   sourceRating?: { average: number; count: number }
+  /** Per-portion macros, if the source provides them (for a later nutrition view). */
+  nutrition?: Nutrition
 
   ingredients: Ingredient[]
   /** Store-cupboard items, kept out of the buy list by default. */
   basics: string[]
   instructions: Instruction[]
 
-  /** Best-effort derived centre-of-plate, e.g. "chicken", for variety. */
+  /** Best-effort centre-of-plate, e.g. "chicken", for variety. Derived at import,
+   *  typically from source categories. */
   mainProtein?: string
   /** Base portions the ingredient quantities are written for. Default 2. */
   serves: number

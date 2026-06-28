@@ -85,6 +85,9 @@ Run the CLI with **native Node** (≥22 strips TS types — no `tsx`, no build s
   ingredient in its **purchase unit** where convertible; otherwise keep the **recipe
   unit** as its own line (a separate line is fine). Pure + unit-tested — keep it that way.
 - Pluralisation: dictionary `plural` is an optional override; falls back to `pluralize`.
+- Recipes optionally carry `nutrition` (per-portion macros) and each ingredient an
+  optional `sourceRef` (stable source id → match once, auto-apply across recipes);
+  `tags` holds derived diet/effort labels. All optional and back-compatible.
 
 ## Conventions
 
