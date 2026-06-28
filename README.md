@@ -22,10 +22,12 @@ browser, with nothing leaving your machine.
 ## Bring your own recipes
 
 Forkast is **generic-input by design**. It reads a simple, documented JSON schema
-(see [`SPEC.md`](SPEC.md)) and a generic `schema.org/Recipe` importer for many
-recipe sites. **Provider-specific adapters are not shipped** — point your own at
-whatever source you like. The repo ships only fictional **demo** recipes so you
-can see the shape of things.
+(see [`SPEC.md`](SPEC.md)), and its importer is **config-driven**: a small mapping
+config tells the engine how to turn a source's raw JSON into that schema — point your
+own at whatever source you like (a `schema.org/Recipe` example config ships as the
+template). **No provider-specific code or data is committed** — your source's config
+and recipes stay local. The repo ships only fictional **demo** recipes so you can see
+the shape of things.
 
 ## How this was built
 

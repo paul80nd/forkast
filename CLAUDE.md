@@ -15,13 +15,18 @@ plan a varied week, generate a merged shopping list. Runs entirely in the browse
 
 ## Privacy firewall — non-negotiable
 
-The repo is **generic-input by design**. The public/private split is at the *adapter*
-layer, enforced by `.gitignore`:
+The repo is **generic-input by design**. Provider knowledge is a *config*, not code:
+the import engine, transforms, parser and matcher are all public; only a per-source
+mapping config + the raw/real data are private. Enforced by `.gitignore`:
 
-- **Never commit** anything under `adapters-private/` or `data/private/`, and never
-  add provider-specific names, URLs, or scraped recipe data to committed files.
+- **Never commit** anything under `data/private/` or `adapters-private/`, any
+  `*.private.json` mapping config, and never add provider-specific names, URLs, or
+  scraped recipe data to committed files.
 - Committed data is **fictional demo data only** (`public/demo/`).
 - The ingredient dictionary + unit system are generic knowledge and *are* public.
+- **Config wires, code computes** — keep the committed engine/transforms generic
+  (no provider name); the only secret bits are the source URL + field paths in the
+  private config.
 - `*.local.md` is gitignored for private notes/handover.
 
 ## Stack & commands
@@ -42,8 +47,21 @@ npm run typecheck  # tsc -b
 
 ## Architecture
 
-Three parts, one repo: a **scraper/importer CLI** (not built yet), a **dataset**
-(generic JSON + images), and the **SPA**.
+Three parts, one repo: a **config-driven import pipeline** (not built yet), a
+**dataset** (generic JSON + images), and the **SPA**.
+
+The import pipeline is **three decoupled passes** — *CLI owns source-shape, SPA owns
+ingredient identity*:
+
+1. **Acquire (CLI, networked):** enumerate slugs (sitemap) → fetch → cache raw source
+   JSON verbatim + one image each to `data/private/`. Idempotent (skip cached).
+2. **Transform (CLI):** raw → generic `Recipe` schema via a **mapping config**, runs
+   the ingredient parser + a **best-effort** match. Emits a candidate `recipes.json`
+   + an unmatched/low-confidence list. Pure, re-runnable, no network.
+3. **Review (SPA):** confirm/correct matches + create dictionary entries; only then is
+   a recipe fully imported. The SPA only ever sees our schema, never raw provider JSON.
+
+Run the CLI with **native Node** (≥22 strips TS types — no `tsx`, no build step).
 
 - **Reference data** (recipes) seeds into IndexedDB from `public/demo/recipes.json` on
   first run; demo refreshes when `DEMO_VERSION` in `src/db/seed.ts` is bumped, but a
@@ -56,7 +74,11 @@ Three parts, one repo: a **scraper/importer CLI** (not built yet), a **dataset**
 - Generic, provider-neutral types in `src/schema/`.
 - Each recipe ingredient line binds to a canonical `ingredientId` (the ingredient
   **dictionary**, `src/data/ingredients.ts`). This binding is what makes the shopping
-  list merge across recipes — set it at import.
+  list merge across recipes — set **best-effort** at transform (fuzzy match → ranked
+  candidates), then **confirmed in the SPA review**. The dictionary moves into
+  IndexedDB (seeded from `ingredients.ts`) so review can grow it; it then exports with
+  user data. Discovered ingredients live in browser state, **not** committed to
+  `ingredients.ts` (which stays the demo/default seed).
 - **Units** (`src/lib/units.ts`): count / volume / mass dimensions; conversion within a
   dimension is free, volume↔mass needs a per-ingredient density (optional).
 - **Shopping merge rule** (`src/lib/shopping.ts`): scale to portions, sum each
@@ -78,10 +100,18 @@ Built: foundation, SPA scaffold, schema, demo data, Browse, recipe detail,
 Curate (★ + triage), Plan (week board, variety hints, mark-cooked), Shop (merged
 list + breakdowns), Config (read-only ingredients viewer).
 
-Remaining for MVP:
+Remaining for MVP, in build order (the import work pulls #9/#11 forward — getting
+real data first is the point):
 
-1. **Export / Import** user data (the durable backup — IndexedDB ⇄ `curation.json`).
-2. **Scraper / importer CLI** + generic `schema.org/Recipe` adapter (public);
-   provider-specific adapters live in `adapters-private/`.
-3. **Editable ingredient dictionary** (move dictionary into IndexedDB, seeded from the
-   bundled default) — pairs with the importer's ingredient-mapping review UI.
+1. **Public pure core** — `parseIngredient` (label → qty/unit/name) +
+   `matchIngredient` (fuzzy → **ranked candidates + confidence**), both Vitest-covered.
+   No dependencies; committable on its own.
+2. **CLI Pass 1 — Acquire** — generic engine + private mapping config → raw cache +
+   images in `data/private/`.
+3. **CLI Pass 2 — Transform** — config-driven → candidate `recipes.json` + best-effort
+   matches + unmatched list.
+4. **Editable ingredient dictionary** — move `src/data/ingredients.ts` into IndexedDB
+   (seeded from the bundled default), Config becomes editable.
+5. **SPA review UI (Pass 3)** — confirm/correct matches, create dictionary entries.
+6. **Export / Import** user data (the durable backup — IndexedDB ⇄ `curation.json`),
+   incl. the grown dictionary; "save & open" the processed state.

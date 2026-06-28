@@ -21,25 +21,46 @@ publishing provider-sourced recipe data; any cloud sync or account system.
 The repo is **generic-input by design**. The separation is at the *adapter* layer,
 not just the data:
 
-- **Committed (public):** the generic `Recipe` schema, the SPA, a **generic
-  importer** (`schema.org/Recipe` JSON-LD + plain JSON), and **fictional** demo
-  recipes. `grep -ri <any-provider>` over the repo returns nothing.
-- **Gitignored (local-only):** `adapters-private/` (provider-specific mapping
-  code) and `data/private/` (your real dataset + images). Enforced by
-  `.gitignore`.
+- **Committed (public):** the generic `Recipe` schema, the SPA, the **config-driven
+  import engine** (named transforms + ingredient parser + matcher) with an **example
+  mapping config** (`schema.org/Recipe` JSON-LD), and **fictional** demo recipes.
+  `grep -ri <any-provider>` over the repo returns nothing.
+- **Gitignored (local-only):** your real dataset + images, and a small **per-source
+  mapping config** (`*.private.json`) — i.e. *data + config, not code*. The provider's
+  URL and field paths are the only secret bits; the engine, transforms, parser and
+  matcher are all committed and generic. (`adapters-private/` is retained as an escape
+  hatch for genuinely bespoke private code, but the aim is **config-only**.) Enforced
+  by `.gitignore`.
 
 ## Architecture
 
 One repo, three parts:
 
-1. **Scraper / importer CLI** (TypeScript + Node, run via `tsx`)
-   - Enumerates source recipe URLs (e.g. via a site's `sitemap.xml`).
-   - Politely (rate-limited) fetches each recipe and maps it through a **private
-     adapter** → the generic schema.
-   - Downloads one image per recipe; runs the **ingredient parser**.
-   - Emits `recipes.json` + `/images` into a data folder.
-   - A committed **generic** adapter (schema.org JSON-LD) ships as the example;
-     provider-specific adapters live in `adapters-private/`.
+1. **Import pipeline** (TypeScript + Node) — **three deliberately decoupled passes**.
+   The guiding split: the **CLI owns source-shape**, the **SPA owns ingredient
+   identity**.
+
+   - **Pass 1 — Acquire (CLI; the only networked pass).** Enumerate source recipe
+     URLs (e.g. via a site's `sitemap.xml`), politely (rate-limited) fetch each, and
+     cache the source's **raw JSON verbatim** + one image per recipe to a local
+     folder. Idempotent — skip anything already cached. This is the inspect/tweak
+     layer; nothing else touches the network.
+   - **Pass 2 — Transform (CLI).** Map the raw cache → the generic `Recipe` schema,
+     driven by a **mapping config**, running the **ingredient parser** and a
+     **best-effort** ingredient match. Emits a *candidate* `recipes.json` + a list of
+     unmatched / low-confidence ingredients. Pure and re-runnable — iterate the parser
+     and dictionary without ever re-fetching.
+   - **Pass 3 — Review (SPA).** Confirm/correct the ingredient matches and create new
+     dictionary entries against the editable in-app dictionary. Only then is a recipe
+     "fully imported"; the reviewed result is what you export. The SPA's only input is
+     our own `Recipe` schema — provider-shaped JSON never reaches the browser.
+
+   **Config over code.** Provider knowledge is a *config*, not a code adapter: the
+   engine, the named transforms, the parser, the matcher and the example config are
+   committed and generic; only a small per-source mapping config (URL + field paths)
+   and the raw data stay private. The rule is **config wires, code computes** — if a
+   source needs real logic, that becomes a new *generic* named transform in public
+   code, never a mapping DSL.
 
 2. **Dataset** (generic JSON schema + images) — the shareable artefact and the
    real selling point of the public repo. Demo set committed; real set gitignored.
@@ -89,6 +110,7 @@ One repo, three parts:
 | `plans` | `{ weekId → { recipeIds[], portions } }` |
 | `shoppingList` | derived from a plan + `{ checked, manualExtras }` |
 | `settings` | `{ householdSize: 2 }` |
+| `dictionary` | the ingredient dictionary — seeded from the bundled default, then editable; import-review adds entries; rides along in the export |
 
 ### Rating semantics (the household's sticky-note system, digitised)
 
@@ -101,7 +123,9 @@ One repo, three parts:
 ## MVP scope
 
 1. **Import** a dataset (`recipes.json` + images) into IndexedDB; ship a bundled
-   demo set so first run shows something.
+   demo set so first run shows something. Imported recipes carry **best-effort**
+   ingredient matches; a **review step** (against the editable ingredient dictionary,
+   now living in IndexedDB) confirms/corrects them before they're fully in.
 2. **Browse / search / filter** — by cuisine, prep time, rating, and **exclude
    no-go ingredients/allergens** (fish).
 3. **Curate** — set ★1–5; fast keyboard triage of the unrated backlog.
@@ -126,6 +150,9 @@ One repo, three parts:
 - **Ingredient parsing** — source quantities arrive as one string
   (`"320g chicken thighs"`, `"4 tbsp cornflour"`, `"2 mangetout"`). Need to split
   qty / unit / name and **merge like items with unit awareness** for the list.
+- **Ingredient matching** — the parsed name is fuzzy-matched to the canonical
+  dictionary, returning **ranked candidates with confidence** (not a single guess), so
+  the in-app review can offer "did you mean…?" or create-new fast.
 - **`mainProtein` derivation** — heuristic from categories/tags/ingredients.
 - **Slug enumeration** — typically a `sitemap.xml`; confirmed per-source in the
   (private) adapter.
@@ -133,6 +160,7 @@ One repo, three parts:
 ## Stack
 
 - **App:** React + Vite + TypeScript, IndexedDB (via a thin wrapper).
-- **CLI:** Node + TypeScript via `tsx`.
+- **CLI:** Node + TypeScript, run **natively** (Node ≥22 strips types — no build
+  step, no `tsx`).
 - **Shared:** the generic `Recipe` schema as TS types, imported by both.
 - **Hosting:** static — GitHub Pages and/or local. No server, no DB.
