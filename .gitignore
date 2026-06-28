@@ -3,6 +3,7 @@
 # (non-demo) recipe data MUST NEVER be committed. The committed repo contains
 # only the generic schema, the app, generic importers, and fictional demo data.
 data/private/
+data/private*.zip
 adapters-private/
 *.private.json
 # Private session handover / notes — local context, never committed.
