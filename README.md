@@ -27,7 +27,9 @@ config tells the engine how to turn a source's raw JSON into that schema — poi
 own at whatever source you like (a `schema.org/Recipe` example config ships as the
 template). **No provider-specific code or data is committed** — your source's config
 and recipes stay local. The repo ships only fictional **demo** recipes so you can see
-the shape of things.
+the shape of things. Fittingly for an agent-built app, an **agent playbook**
+([`scripts/ACQUIRE.md`](scripts/ACQUIRE.md)) walks Claude Code through acquiring from
+your chosen source, end to end.
 
 ## How this was built
 
