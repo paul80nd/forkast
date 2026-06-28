@@ -10,7 +10,6 @@ function recipe(id: string, ingredients: Ingredient[], extra?: Partial<Recipe>):
     description: '',
     image: '',
     cuisine: 'Test',
-    categories: [],
     tags: [],
     allergens: [],
     prepTime: { for2: 10, for4: 15 },
