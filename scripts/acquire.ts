@@ -6,7 +6,7 @@
 // Run with native Node (>=22 strips TS types — no build step):
 //   node scripts/acquire.ts --config <config.json> --slugs <slugs.txt> [--limit N] [--force]
 
-import { readFile, writeFile, mkdir, access } from 'node:fs/promises'
+import { readFile, writeFile, mkdir, access, rename } from 'node:fs/promises'
 import { join, extname } from 'node:path'
 
 interface AcquireConfig {
@@ -96,7 +96,10 @@ async function main() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const text = await res.text()
         json = JSON.parse(text) // validate before caching
-        await writeFile(rawPath, text)
+        // Atomic write: a kill mid-write leaves a .tmp, never a half file that a
+        // resume would mistake for complete and skip.
+        await writeFile(`${rawPath}.tmp`, text)
+        await rename(`${rawPath}.tmp`, rawPath)
         rawFetched++
         networked = true
       }
@@ -111,7 +114,8 @@ async function main() {
           if (force || !(await exists(imgPath))) {
             const ir = await fetch(imgUrl, { headers: { 'user-agent': cfg.userAgent } })
             if (ir.ok) {
-              await writeFile(imgPath, Buffer.from(await ir.arrayBuffer()))
+              await writeFile(`${imgPath}.tmp`, Buffer.from(await ir.arrayBuffer()))
+              await rename(`${imgPath}.tmp`, imgPath)
               imgFetched++
               networked = true
             }
