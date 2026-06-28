@@ -1,0 +1,11 @@
+{
+  "name": "example-source",
+  "acquire": {
+    "recipeApiUrl": "https://api.example.com/recipe/{slug}",
+    "rawDir": "data/private/raw",
+    "imageDir": "data/private/images",
+    "image": { "path": "data.entry.media.images", "urlField": "image", "widthField": "width", "preferWidth": 600 },
+    "rateLimitMs": 1500,
+    "userAgent": "Mozilla/5.0 (personal recipe import; non-commercial)"
+  }
+}
