@@ -105,12 +105,16 @@ The home for tidying the collection. Two jobs:
    - **Manual grouping — built 2026-06-29** (`src/pages/RefinePage.tsx`): search recipes by
      title, stage two or more, label each, pick an optional axis, create. Existing groups
      list with disband + per-member remove. A thin shell over `src/app/groups.ts`.
-   - **Similarity suggester (later).** Proposes candidate clusters; the user **confirms a
-     group** and labels members. Never auto-applies (fuzzy matching is noisy —
-     human-in-the-loop is mandatory).
-   - Detection signal: **title-stem overlap + ingredient-name Jaccard**, loosely (intent =
-     "similar recipes"). The differing protein/carb line is exactly the axis, so don't
-     bucket by `mainProtein`.
+   - **Similarity suggester — built 2026-06-29** (`src/lib/similarity.ts`, pure + unit
+     tested; `suggestGroupCandidates()` in `src/app/groups.ts` feeds it the ungrouped
+     recipes). Proposes candidate clusters in Refine; members are pre-ticked with a label
+     defaulted from `mainProtein`, the user unticks outliers and **confirms**. Never
+     auto-applies.
+   - Detection signal: **title-token overlap + ingredient-name Jaccard** (both must clear a
+     pair threshold), single-linkage clustered. Never buckets by `mainProtein` — the
+     differing protein/carb is exactly the axis. Single-linkage can chain real adjacent
+     variants into a loose blob across two axes at once, so a **cluster-score floor + size
+     cap** drop those (they score low); tuned against the real catalogue.
    - Also catches genuine accidental near-dups (same dish, different slug). NB: an exact
      re-import of the *same* dataset is already idempotent (additive upsert by stable id),
      so Refine is for the harder cases ids can't catch — not trivial double-imports.
@@ -167,7 +171,8 @@ New IndexedDB logic goes in `src/app/` (the test seam), pure shaping in `src/lib
 - `src/app/dataset.ts` — additive upsert + a replace-all option (extend existing importer).
 - `src/app/cleanup.ts` (or similar) — the single recipe-delete path: removes the record and
   cascades group membership (dissolving a group left under two members).
-- Detection scoring is pure → `src/lib/` + unit tests.
+- Detection scoring is pure → `src/lib/similarity.ts` + unit tests (`similarity.test.ts`);
+  `suggestGroupCandidates()` in `src/app/groups.ts` reads the store and feeds it.
 
 Each feature ships a Gherkin scenario (living docs / regression net), e.g.
 `features/recipe-groups.feature`, `features/additive-import.feature`,
