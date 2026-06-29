@@ -5,6 +5,7 @@ import {
   ingredientSet,
   suggestGroups,
   inferAxis,
+  memberLabels,
   DUPLICATE_OPTS,
   type SimilarityInput,
 } from './similarity'
@@ -144,5 +145,42 @@ describe('inferAxis', () => {
         { mainProtein: 'chicken', ingredientNames: ['chicken', 'tomato', 'oregano'] },
       ]),
     ).toBe('mixed')
+  })
+})
+
+describe('memberLabels', () => {
+  it('labels a protein swap by each mainProtein', () => {
+    const labels = memberLabels(
+      [
+        { id: 'a', mainProtein: 'chicken', ingredientNames: ['chicken', 'rice'] },
+        { id: 'b', mainProtein: 'beef', ingredientNames: ['beef', 'rice'] },
+      ],
+      'protein',
+    )
+    expect(labels.get('a')).toBe('chicken')
+    expect(labels.get('b')).toBe('beef')
+  })
+
+  it('labels a carb swap by the distinguishing carb, not the shared protein', () => {
+    const labels = memberLabels(
+      [
+        { id: 'a', mainProtein: 'chicken', ingredientNames: ['Chicken thigh', 'Rice', 'Peanut sauce'] },
+        { id: 'b', mainProtein: 'chicken', ingredientNames: ['Chicken thigh', 'Cauliflower rice', 'Peanut sauce'] },
+      ],
+      'carb',
+    )
+    expect(labels.get('a')).toBe('Rice')
+    expect(labels.get('b')).toBe('Cauliflower rice')
+  })
+
+  it('falls back to mainProtein when nothing short distinguishes a member', () => {
+    const labels = memberLabels(
+      [
+        { id: 'a', mainProtein: 'chicken', ingredientNames: ['chicken', 'tomato'] },
+        { id: 'b', mainProtein: 'chicken', ingredientNames: ['chicken', 'tomato'] },
+      ],
+      'mixed',
+    )
+    expect(labels.get('a')).toBe('chicken')
   })
 })

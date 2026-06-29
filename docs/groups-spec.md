@@ -108,11 +108,13 @@ The home for tidying the collection. Three jobs, split into in-page tabs (**Grou
      list with disband + per-member remove. A thin shell over `src/app/groups.ts`.
    - **Similarity suggester — built 2026-06-29** (`src/lib/similarity.ts`, pure + unit
      tested; `suggestGroupCandidates()` in `src/app/groups.ts` feeds it the ungrouped
-     recipes). Proposes candidate clusters in Refine; members are pre-ticked with a label
-     defaulted from `mainProtein`, the user unticks outliers and **confirms**. Never
-     auto-applies. The **axis is pre-filled** by `inferAxis` (`src/lib/similarity.ts`):
-     distinct `mainProtein` → protein swap, else the differing ingredient matched against
-     carb/protein vocab, else mixed — a best-effort guess the user can override.
+     recipes). Proposes candidate clusters in Refine; members are pre-ticked, the user unticks
+     outliers and **confirms**. Never auto-applies. The **axis is pre-filled** by `inferAxis`
+     (`src/lib/similarity.ts`): distinct `mainProtein` → protein swap, else the differing
+     ingredient matched against carb/protein vocab, else mixed. Each member's **label** is
+     pre-filled by `memberLabels` with the ingredient that distinguishes it — the protein on a
+     protein swap ("Chicken"/"Beef"), the carb on a carb swap ("Rice"/"Cauliflower rice") —
+     falling back to `mainProtein`. All best-effort guesses the user can override.
    - Detection signal: **title-token overlap + ingredient-name Jaccard** (both must clear a
      pair threshold), single-linkage clustered. Never buckets by `mainProtein` — the
      differing protein/carb is exactly the axis. Single-linkage can chain real adjacent
