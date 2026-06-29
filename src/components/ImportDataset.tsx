@@ -7,6 +7,7 @@ import { importRecipeDataset, type ImportResult } from '../app/dataset'
 export function ImportDataset() {
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+  const [replaceAll, setReplaceAll] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -14,10 +15,11 @@ export function ImportDataset() {
     const file = e.target.files?.[0]
     e.target.value = '' // reset so re-picking the same file fires change again
     if (!file) return
-    // Importing is destructive — it replaces every current recipe. Confirm first.
+    // Only "Replace all" is destructive — confirm that path; additive is safe.
     if (
+      replaceAll &&
       !window.confirm(
-        'Import will REPLACE all current recipes with the contents of this file.\n\n' +
+        'Replace ALL current recipes with the contents of this file?\n\n' +
           'Your stars, plans and cooked history are kept. Continue?',
       )
     ) {
@@ -28,7 +30,7 @@ export function ImportDataset() {
     setResult(null)
     try {
       const text = await file.text()
-      setResult(await importRecipeDataset(text))
+      setResult(await importRecipeDataset(text, replaceAll ? 'replace' : 'additive'))
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -41,12 +43,27 @@ export function ImportDataset() {
       <h2 className="text-lg font-semibold">Dataset</h2>
       <p className="mt-1 text-sm text-stone-500">
         Import a recipe dataset (<code className="text-stone-600">recipes.json</code>).
+        By default this <span className="font-medium">adds new recipes and refreshes
+        existing ones</span> by id — recipes already in your collection that aren’t in
+        the file are kept. Your stars, plans and cooked history are always kept.
       </p>
-      <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-sm text-amber-800">
-        <span className="font-semibold">Heads up:</span> importing{' '}
-        <span className="font-semibold">replaces every current recipe</span> with the
-        file’s contents. Your stars, plans and cooked history are kept.
-      </p>
+
+      <label className="mt-3 flex items-center gap-2 text-sm text-stone-700">
+        <input
+          type="checkbox"
+          checked={replaceAll}
+          onChange={(e) => setReplaceAll(e.target.checked)}
+          className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+        />
+        Replace all current recipes (clear first)
+      </label>
+      {replaceAll && (
+        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-sm text-amber-800">
+          <span className="font-semibold">Heads up:</span> this{' '}
+          <span className="font-semibold">deletes every current recipe</span> before
+          loading the file. Your stars, plans and cooked history are still kept.
+        </p>
+      )}
 
       <input
         ref={inputRef}
@@ -61,7 +78,7 @@ export function ImportDataset() {
         onClick={() => inputRef.current?.click()}
         className="mt-3 rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
       >
-        {busy ? 'Importing…' : 'Import dataset…'}
+        {busy ? 'Importing…' : replaceAll ? 'Replace all…' : 'Import dataset…'}
       </button>
 
       {result && (

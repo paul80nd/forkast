@@ -22,7 +22,7 @@ Feature: Import a recipe dataset
     Then the app holds 2 recipes
     And the import reports 1 skipped recipe
 
-  Scenario: Importing replaces any previously loaded recipes
+  Scenario: Replacing all swaps out the previously loaded recipes
     Given I have imported a dataset of 3 valid recipes
-    When I import a dataset of 2 valid recipes
+    When I import a dataset of 2 valid recipes, replacing all
     Then the app holds 2 recipes

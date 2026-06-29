@@ -72,12 +72,12 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
   })
 
-  Scenario('Importing replaces any previously loaded recipes', ({ Given, When, Then }) => {
+  Scenario('Replacing all swaps out the previously loaded recipes', ({ Given, When, Then }) => {
     Given('I have imported a dataset of 3 valid recipes', async () => {
       await importRecipeDataset({ version: 1, recipes: makeRecipes(3) })
     })
-    When('I import a dataset of 2 valid recipes', async () => {
-      lastImport = await importRecipeDataset({ version: 1, recipes: makeRecipes(2) })
+    When('I import a dataset of 2 valid recipes, replacing all', async () => {
+      lastImport = await importRecipeDataset({ version: 1, recipes: makeRecipes(2) }, 'replace')
     })
     Then('the app holds 2 recipes', async () => {
       expect(await db.recipes.count()).toBe(2)
