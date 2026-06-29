@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
+import { usePersistentState } from '../hooks/usePersistentState'
 import type { Stars } from '../schema/userData'
 
 type SortKey = 'rating' | 'time' | 'name'
@@ -10,11 +11,12 @@ type RatingFilter = 'all' | 'unrated' | '5' | '4plus' | '3plus'
 export function BrowsePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
   const userData = useLiveQuery(() => db.userData.toArray(), [])
-  const [query, setQuery] = useState('')
-  const [cuisine, setCuisine] = useState('all')
-  const [maxTime, setMaxTime] = useState(0) // 0 = any
-  const [rating, setRating] = useState<RatingFilter>('all')
-  const [sort, setSort] = useState<SortKey>('rating')
+  // Persisted so the browse view remembers its filters across navigation and reloads.
+  const [query, setQuery] = usePersistentState('browse.query', '')
+  const [cuisine, setCuisine] = usePersistentState('browse.cuisine', 'all')
+  const [maxTime, setMaxTime] = usePersistentState('browse.maxTime', 0) // 0 = any
+  const [rating, setRating] = usePersistentState<RatingFilter>('browse.rating', 'all')
+  const [sort, setSort] = usePersistentState<SortKey>('browse.sort', 'rating')
 
   const starsById = useMemo(() => {
     const m = new Map<string, Stars>()
