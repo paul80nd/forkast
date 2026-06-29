@@ -8,8 +8,10 @@ import {
   createGroup,
   deleteGroup,
   removeRecipeFromGroup,
+  suggestGroupCandidates,
   type GroupMemberInput,
 } from '../app/groups'
+import type { CandidateCluster } from '../lib/similarity'
 
 // Refine: tidy the collection by linking related recipes into variant groups. Manual
 // grouping for now (the similarity suggester and ★-cleanup come later). A thin shell over
@@ -21,6 +23,21 @@ export function RefinePage() {
   const [draft, setDraft] = useState<GroupMemberInput[]>([])
   const [axis, setAxis] = useState<'' | NonNullable<VariantGroup['axis']>>('')
   const [busy, setBusy] = useState(false)
+  const [suggestions, setSuggestions] = useState<CandidateCluster[] | null>(null)
+  const [suggesting, setSuggesting] = useState(false)
+
+  async function runSuggest() {
+    setSuggesting(true)
+    try {
+      setSuggestions(await suggestGroupCandidates())
+    } finally {
+      setSuggesting(false)
+    }
+  }
+  // Drop a candidate from the list once it's been confirmed or dismissed.
+  function dismiss(cluster: CandidateCluster) {
+    setSuggestions((cs) => (cs ?? []).filter((c) => c !== cluster))
+  }
 
   const byId = useMemo(
     () => new Map((recipes ?? []).map((r) => [r.id, r])),
@@ -75,7 +92,49 @@ export function RefinePage() {
         member keeps its own page; they just point at each other as “see also”.
       </p>
 
-      {/* Create a group */}
+      {/* Suggested groups */}
+      <div className="mt-5 rounded-xl border border-stone-200 bg-white p-4">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">Suggested groups</h2>
+          <button
+            type="button"
+            disabled={suggesting}
+            onClick={runSuggest}
+            className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
+          >
+            {suggesting ? 'Finding…' : suggestions ? 'Refresh suggestions' : 'Find similar recipes'}
+          </button>
+        </div>
+        <p className="mt-1 text-sm text-stone-500">
+          Recipes that look like the same dish with a swapped protein or carb. Untick any
+          that don’t belong, then create the group.
+        </p>
+
+        {suggestions && suggestions.length === 0 && (
+          <p className="mt-3 text-sm text-stone-500">
+            No suggestions — nothing ungrouped looks similar enough.
+          </p>
+        )}
+        {suggestions && suggestions.length > 0 && (
+          <>
+            <p className="mt-3 text-xs text-stone-400">
+              Showing {Math.min(suggestions.length, 25)} of {suggestions.length}.
+            </p>
+            <ul className="mt-2 space-y-3">
+              {suggestions.slice(0, 25).map((c) => (
+                <SuggestionCard
+                  key={c.recipeIds.join(',')}
+                  cluster={c}
+                  byId={byId}
+                  onDone={() => dismiss(c)}
+                />
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+
+      {/* Create a group manually */}
       <div className="mt-5 rounded-xl border border-stone-200 bg-white p-4">
         <h2 className="text-lg font-semibold">Group related recipes</h2>
 
@@ -214,5 +273,91 @@ export function RefinePage() {
         </ul>
       )}
     </section>
+  )
+}
+
+// One suggested cluster: members pre-ticked with a label defaulted from mainProtein. Untick
+// outliers, tweak labels, then create — or dismiss to hide it. Confirming/dismissing calls
+// onDone so the parent drops it from the list.
+function SuggestionCard({
+  cluster,
+  byId,
+  onDone,
+}: {
+  cluster: CandidateCluster
+  byId: Map<string, Recipe>
+  onDone: () => void
+}) {
+  const [rows, setRows] = useState(
+    cluster.recipeIds.map((recipeId) => ({
+      recipeId,
+      label: byId.get(recipeId)?.mainProtein ?? '',
+      checked: true,
+    })),
+  )
+  const [busy, setBusy] = useState(false)
+  const chosen = rows.filter((r) => r.checked)
+
+  async function create() {
+    setBusy(true)
+    try {
+      await createGroup(chosen.map(({ recipeId, label }) => ({ recipeId, label })))
+      onDone()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <li className="rounded-lg border border-stone-200 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium tracking-wide text-stone-400 uppercase">
+          {Math.round(cluster.score * 100)}% similar
+        </span>
+        <div className="flex gap-1.5">
+          <button
+            type="button"
+            disabled={busy || chosen.length < 2}
+            onClick={create}
+            className="rounded-md bg-orange-500 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
+          >
+            Create group
+          </button>
+          <button
+            type="button"
+            onClick={onDone}
+            className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-500 hover:bg-stone-100"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+      <ul className="mt-2 space-y-1.5">
+        {rows.map((r, i) => (
+          <li key={r.recipeId} className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={r.checked}
+              onChange={(e) =>
+                setRows((rs) => rs.map((x, j) => (j === i ? { ...x, checked: e.target.checked } : x)))
+              }
+              className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+            />
+            <span className={`flex-1 truncate text-sm ${r.checked ? 'text-stone-800' : 'text-stone-400'}`}>
+              {byId.get(r.recipeId)?.title ?? r.recipeId}
+            </span>
+            <input
+              type="text"
+              value={r.label}
+              onChange={(e) =>
+                setRows((rs) => rs.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))
+              }
+              placeholder="label"
+              className="w-28 rounded-md border border-stone-300 px-2 py-0.5 text-sm"
+            />
+          </li>
+        ))}
+      </ul>
+    </li>
   )
 }

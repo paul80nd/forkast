@@ -7,6 +7,7 @@
 
 import { db } from '../db/db'
 import type { VariantGroup } from '../schema/userData'
+import { suggestGroups, type CandidateCluster } from '../lib/similarity'
 
 export interface GroupMemberInput {
   recipeId: string
@@ -117,6 +118,25 @@ export async function seeAlsoFor(recipeId: string): Promise<SeeAlsoItem[]> {
     title: recipes[i]?.title ?? m.recipeId,
     label: m.label,
   }))
+}
+
+/**
+ * Suggest candidate variant groups from the currently **ungrouped** recipes (already-grouped
+ * ones are excluded, so the user only ever sees fresh suggestions). Pure scoring lives in
+ * `src/lib/similarity.ts`; this just feeds it the right input. Never auto-applies — the
+ * Refine UI confirms and labels.
+ */
+export async function suggestGroupCandidates(): Promise<CandidateCluster[]> {
+  const [recipes, groups] = await Promise.all([
+    db.recipes.toArray(),
+    db.variantGroups.toArray(),
+  ])
+  const grouped = new Set<string>()
+  for (const g of groups) for (const m of g.members) grouped.add(m.recipeId)
+  const input = recipes
+    .filter((r) => !grouped.has(r.id))
+    .map((r) => ({ id: r.id, title: r.title, ingredientNames: r.ingredients.map((i) => i.name) }))
+  return suggestGroups(input)
 }
 
 /** Reverse index recipeId → group, built from the table (for "see also" rendering). */
