@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
@@ -11,6 +12,7 @@ import { deleteRecipe } from '../app/cleanup'
 export function RecipePage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
+  const [menuOpen, setMenuOpen] = useState(false)
   // undefined = loading, null = not found
   const recipe = useLiveQuery(async () => (await db.recipes.get(id)) ?? null, [id])
   const stars = useLiveQuery(async () => (await db.userData.get(id))?.stars, [id])
@@ -37,27 +39,9 @@ export function RecipePage() {
 
   return (
     <section>
-      <div className="flex items-center justify-between gap-3">
-        <Link to="/browse" className="text-sm text-orange-600 hover:underline">
-          ← Back to Browse
-        </Link>
-        <button
-          type="button"
-          onClick={async () => {
-            if (
-              window.confirm(
-                `Delete “${recipe.title}”?\n\nThis removes it and its ratings for good (re-import to restore).`,
-              )
-            ) {
-              await deleteRecipe(recipe.id)
-              navigate('/browse')
-            }
-          }}
-          className="rounded-md px-2.5 py-1 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
-        >
-          Delete recipe
-        </button>
-      </div>
+      <Link to="/browse" className="text-sm text-orange-600 hover:underline">
+        ← Back to Browse
+      </Link>
 
       <div className="mt-3 grid gap-6 md:grid-cols-[2fr_3fr]">
         {/* Left: image + at-a-glance facts */}
@@ -156,23 +140,76 @@ export function RecipePage() {
         <div>
           <div className="flex items-start justify-between gap-3">
             <h1 className="text-2xl font-semibold tracking-tight">{recipe.title}</h1>
-            {inPlan ? (
+
+            {/* Split button: primary add/remove from week, with secondary actions in a menu. */}
+            <div className="relative flex shrink-0 items-stretch">
+              {inPlan ? (
+                <button
+                  type="button"
+                  onClick={() => removeFromPlan(recipe.id)}
+                  className="rounded-l-md bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100"
+                >
+                  ✓ In week
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => addToPlan(recipe.id)}
+                  className="rounded-l-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600"
+                >
+                  + Add to week
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => removeFromPlan(recipe.id)}
-                className="shrink-0 rounded-md bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100"
+                aria-label="More actions"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
+                className={`rounded-r-md border-l px-2 py-1.5 text-sm font-medium ${
+                  inPlan
+                    ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                    : 'border-orange-400 bg-orange-500 text-white hover:bg-orange-600'
+                }`}
               >
-                ✓ In week
+                ▾
               </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => addToPlan(recipe.id)}
-                className="shrink-0 rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600"
-              >
-                + Add to week
-              </button>
-            )}
+              {menuOpen && (
+                <>
+                  {/* Backdrop to close on outside click. */}
+                  <button
+                    type="button"
+                    aria-hidden
+                    tabIndex={-1}
+                    onClick={() => setMenuOpen(false)}
+                    className="fixed inset-0 z-10 cursor-default"
+                  />
+                  <div
+                    role="menu"
+                    className="absolute top-full right-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={async () => {
+                        setMenuOpen(false)
+                        if (
+                          window.confirm(
+                            `Delete “${recipe.title}”?\n\nThis removes it and its ratings for good (re-import to restore).`,
+                          )
+                        ) {
+                          await deleteRecipe(recipe.id)
+                          navigate('/browse')
+                        }
+                      }}
+                      className="block w-full px-3 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50"
+                    >
+                      Delete recipe
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           <p className="mt-2 text-stone-600">{recipe.description}</p>
 
