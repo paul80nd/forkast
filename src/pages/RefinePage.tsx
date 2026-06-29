@@ -296,7 +296,11 @@ function SuggestionCard({
     })),
   )
   const [busy, setBusy] = useState(false)
+  const [comparing, setComparing] = useState(false)
   const chosen = rows.filter((r) => r.checked)
+  const members = cluster.recipeIds
+    .map((id) => byId.get(id))
+    .filter((r): r is Recipe => r !== undefined)
 
   async function create() {
     setBusy(true)
@@ -317,6 +321,13 @@ function SuggestionCard({
         <div className="flex gap-1.5">
           <button
             type="button"
+            onClick={() => setComparing((c) => !c)}
+            className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-500 hover:bg-stone-100"
+          >
+            {comparing ? 'Hide compare' : 'Compare'}
+          </button>
+          <button
+            type="button"
             disabled={busy || chosen.length < 2}
             onClick={create}
             className="rounded-md bg-orange-500 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
@@ -332,6 +343,8 @@ function SuggestionCard({
           </button>
         </div>
       </div>
+
+      {comparing && <CompareView recipes={members} />}
       <ul className="mt-2 space-y-1.5">
         {rows.map((r, i) => (
           <li key={r.recipeId} className="flex items-center gap-2">
@@ -359,5 +372,85 @@ function SuggestionCard({
         ))}
       </ul>
     </li>
+  )
+}
+
+// Side-by-side comparison of candidate recipes — metadata rows + an ingredient column each.
+// Ingredients not shared by every recipe are highlighted, so the swapped line stands out.
+function CompareView({ recipes }: { recipes: Recipe[] }) {
+  const counts = new Map<string, number>()
+  for (const r of recipes) {
+    const seen = new Set<string>()
+    for (const ing of r.ingredients) {
+      const key = ing.name.trim().toLowerCase()
+      if (seen.has(key)) continue
+      seen.add(key)
+      counts.set(key, (counts.get(key) ?? 0) + 1)
+    }
+  }
+  const isShared = (name: string) => counts.get(name.trim().toLowerCase()) === recipes.length
+
+  const metaRows: { label: string; value: (r: Recipe) => string }[] = [
+    { label: 'Cuisine', value: (r) => r.cuisine || '—' },
+    { label: 'Time', value: (r) => `${r.prepTime} min` },
+    { label: 'Serves', value: (r) => String(r.serves) },
+    { label: 'Main', value: (r) => r.mainProtein ?? '—' },
+    { label: 'Energy', value: (r) => (r.nutrition ? `${Math.round(r.nutrition.kcal)} kcal` : '—') },
+    { label: 'Allergens', value: (r) => (r.allergens.length ? r.allergens.join(', ') : '—') },
+  ]
+
+  return (
+    <div className="mt-3 overflow-x-auto rounded-lg border border-stone-200 bg-stone-50/50">
+      <table className="w-full min-w-[28rem] text-sm">
+        <thead>
+          <tr className="border-b border-stone-200">
+            <td className="p-2" />
+            {recipes.map((r) => (
+              <th key={r.id} className="p-2 text-left align-bottom font-semibold text-stone-700">
+                <Link to={`/recipe/${r.id}`} className="hover:text-orange-700 hover:underline">
+                  {r.title}
+                </Link>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-stone-100">
+          {metaRows.map((row) => (
+            <tr key={row.label}>
+              <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-stone-400 uppercase">
+                {row.label}
+              </th>
+              {recipes.map((r) => (
+                <td key={r.id} className="p-2 align-top text-stone-700">
+                  {row.value(r)}
+                </td>
+              ))}
+            </tr>
+          ))}
+          <tr>
+            <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-stone-400 uppercase">
+              Ingredients
+            </th>
+            {recipes.map((r) => (
+              <td key={r.id} className="p-2 align-top">
+                <ul className="space-y-0.5">
+                  {r.ingredients.map((ing, i) => (
+                    <li
+                      key={i}
+                      className={isShared(ing.name) ? 'text-stone-500' : 'font-medium text-orange-700'}
+                    >
+                      {ing.name}
+                    </li>
+                  ))}
+                </ul>
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+      <p className="px-2 pb-2 text-xs text-stone-400">
+        Highlighted ingredients aren’t shared by every recipe.
+      </p>
+    </div>
   )
 }
