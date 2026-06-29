@@ -106,15 +106,34 @@ describe('parseRecipeDataset', () => {
   })
 
   it('preserves optional fields only when present', () => {
+    const nutrition = {
+      kcal: 520,
+      protein: 31,
+      fat: 18,
+      saturates: 6,
+      carbs: 54,
+      sugars: 9,
+      fibre: 7,
+      salt: 1.2,
+    }
     const withOpt = parseRecipeDataset([
-      raw({ mainProtein: 'beef', sourceRating: { average: 4, count: 10 } }),
+      raw({
+        mainProtein: 'beef',
+        sourceRating: { average: 4, count: 10 },
+        sourceUrl: 'https://example.test/r/beef-noodles',
+        nutrition,
+      }),
     ]).recipes[0]
     expect(withOpt.mainProtein).toBe('beef')
     expect(withOpt.sourceRating).toEqual({ average: 4, count: 10 })
+    expect(withOpt.sourceUrl).toBe('https://example.test/r/beef-noodles')
+    expect(withOpt.nutrition).toEqual(nutrition)
 
     const withoutOpt = parseRecipeDataset([raw({ mainProtein: undefined })]).recipes[0]
     expect('mainProtein' in withoutOpt).toBe(false)
     expect('sourceRating' in withoutOpt).toBe(false)
+    expect('sourceUrl' in withoutOpt).toBe(false)
+    expect('nutrition' in withoutOpt).toBe(false)
   })
 })
 
