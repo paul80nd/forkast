@@ -14,6 +14,15 @@ export function ImportDataset() {
     const file = e.target.files?.[0]
     e.target.value = '' // reset so re-picking the same file fires change again
     if (!file) return
+    // Importing is destructive — it replaces every current recipe. Confirm first.
+    if (
+      !window.confirm(
+        'Import will REPLACE all current recipes with the contents of this file.\n\n' +
+          'Your stars, plans and cooked history are kept. Continue?',
+      )
+    ) {
+      return
+    }
     setBusy(true)
     setError(null)
     setResult(null)
@@ -32,7 +41,11 @@ export function ImportDataset() {
       <h2 className="text-lg font-semibold">Dataset</h2>
       <p className="mt-1 text-sm text-stone-500">
         Import a recipe dataset (<code className="text-stone-600">recipes.json</code>).
-        This replaces the current recipes; your stars, plans and history are kept.
+      </p>
+      <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-sm text-amber-800">
+        <span className="font-semibold">Heads up:</span> importing{' '}
+        <span className="font-semibold">replaces every current recipe</span> with the
+        file’s contents. Your stars, plans and cooked history are kept.
       </p>
 
       <input
