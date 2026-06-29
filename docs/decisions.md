@@ -8,6 +8,18 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-06-29 — Duplicate detection reuses the variant scorer, separated by title overlap
+
+The Refine "Duplicates" finder doesn't get its own algorithm: it's the same pure
+similarity scorer as the group suggester, run with a tighter preset. The key realisation is
+that *title overlap* is what cleanly separates the two. A protein/carb **variant** swaps a
+title word ("chicken"→"beef"), so its title Jaccard is low even though its ingredients
+nearly match — that's a *group*. A true **duplicate** is near-identical on title *and*
+ingredients. So a high title threshold (plus high ingredient threshold and cluster-score
+floor) isolates genuine repeats without a second codebase to maintain. The action differs,
+not the detection: duplicates **delete** the spares (keeper chosen by ★ then completeness)
+rather than linking them.
+
 ## 2026-06-29 — Specs are living documentation, not retired in favour of Gherkin
 
 The earlier intent was for the Gherkin features to *be* the spec and to retire the prose

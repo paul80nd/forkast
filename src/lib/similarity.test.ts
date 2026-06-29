@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { tokenize, jaccard, ingredientSet, suggestGroups, type SimilarityInput } from './similarity'
+import {
+  tokenize,
+  jaccard,
+  ingredientSet,
+  suggestGroups,
+  DUPLICATE_OPTS,
+  type SimilarityInput,
+} from './similarity'
 
 describe('tokenize', () => {
   it('lowercases, drops stopwords and short tokens, and singularises', () => {
@@ -66,5 +73,28 @@ describe('suggestGroups', () => {
       minClusterScore: 0.99,
     })
     expect(clusters).toEqual([])
+  })
+
+  describe('DUPLICATE_OPTS (tight duplicate preset)', () => {
+    it('flags near-identical recipes (same title words + ingredients) as duplicates', () => {
+      const ingredients = ['chicken', 'burger bun', 'sweet potato', 'peanuts', 'soy sauce']
+      const clusters = suggestGroups(
+        [
+          { id: 'a', title: 'Kung Pao Chicken Burger with Sweet Potato Chips', ingredientNames: ingredients },
+          { id: 'b', title: 'Sweet Potato Chip Kung Pao Chicken Burger', ingredientNames: ingredients },
+        ],
+        DUPLICATE_OPTS,
+      )
+      expect(clusters).toHaveLength(1)
+      expect(clusters[0].recipeIds.sort()).toEqual(['a', 'b'])
+    })
+
+    it('does NOT flag a protein swap as a duplicate — its title differs on the swapped word', () => {
+      const clusters = suggestGroups(
+        [burger('chicken', 'Chicken'), burger('beef', 'Beef')],
+        DUPLICATE_OPTS,
+      )
+      expect(clusters).toEqual([])
+    })
   })
 })

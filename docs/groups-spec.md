@@ -99,8 +99,8 @@ page (every variant is already its own page). Data shaping is `seeAlsoFor()` in
   without navigating.
 
 ### Refine — new section (between Browse and Curate)
-The home for tidying the collection. Two jobs, split into two in-page tabs (**Group** and
-**Clean up**):
+The home for tidying the collection. Three jobs, split into in-page tabs (**Group**,
+**Duplicates** and **Clean up**):
 
 1. **Group related recipes / dedup.**
    - **Manual grouping — built 2026-06-29** (`src/pages/RefinePage.tsx`): search recipes by
@@ -119,7 +119,17 @@ The home for tidying the collection. Two jobs, split into two in-page tabs (**Gr
    - Also catches genuine accidental near-dups (same dish, different slug). NB: an exact
      re-import of the *same* dataset is already idempotent (additive upsert by stable id),
      so Refine is for the harder cases ids can't catch — not trivial double-imports.
-2. **★-driven cleanup — built 2026-06-29.** Bulk-delete recipes scored 1–2★ ("bin it" /
+2. **Find duplicates — built 2026-06-29.** A second use of the *same* similarity scorer with
+   a **tighter preset** (`DUPLICATE_OPTS` in `src/lib/similarity.ts`): high title **and**
+   ingredient overlap plus a high cluster-score floor. The discriminator is the title — a
+   protein/carb variant swaps a title word so its title overlap is low (→ a *group*, not a
+   duplicate), whereas a true duplicate is near-identical on both. `suggestDuplicateCandidates()`
+   (`src/app/duplicates.ts`) feeds it the ungrouped recipes (grouped ones are curated-as-keep).
+   The card UI mirrors the group suggester but the action **deletes** the ticked rows via
+   `deleteRecipes`: the suggested **keeper** (`chooseKeeper` — highest ★, then most complete;
+   pure + tested) is left unticked and every other member is pre-armed, so the common case is
+   one click. Thresholds are tunable by review. Covered by `features/duplicates.feature`.
+3. **★-driven cleanup — built 2026-06-29.** Bulk-delete recipes scored 1–2★ ("bin it" /
    "very bin it" — see `★ semantics`). The Refine "Clean up binned recipes" section lists
    them worst-first; **tick** the ones to remove (or "select all"), then **confirm**.
    Nothing is pre-selected — deletion is destructive and real (no tombstones; see *Import
