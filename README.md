@@ -22,14 +22,14 @@ browser, with nothing leaving your machine.
 ## Bring your own recipes
 
 Forkast is **generic-input by design**. It reads a simple, documented JSON schema
-(see [`SPEC.md`](SPEC.md)), and its importer is **config-driven**: a small mapping
-config tells the engine how to turn a source's raw JSON into that schema — point your
-own at whatever source you like (a `schema.org/Recipe` example config ships as the
-template). **No provider-specific code or data is committed** — your source's config
-and recipes stay local. The repo ships only fictional **demo** recipes so you can see
-the shape of things. Fittingly for an agent-built app, an **agent playbook**
-([`scripts/ACQUIRE.md`](scripts/ACQUIRE.md)) walks Claude Code through acquiring from
-your chosen source, end to end.
+(see [`docs/spec.md`](docs/spec.md)). To populate it from a source of your own, a committed,
+**config-driven acquire CLI** (`scripts/acquire.ts` + a generic example config) caches a
+source's raw data locally, and a small **private adapter** maps that raw shape onto the
+schema. So **no provider-specific code or data is ever committed** — your source's config,
+adapter, and recipes all stay local. The repo ships only fictional **demo** recipes so you
+can see the shape of things. Fittingly for an agent-built app, an **agent playbook**
+([`scripts/ACQUIRE.md`](scripts/ACQUIRE.md)) walks Claude Code through acquiring from your
+chosen source, end to end.
 
 ## How this was built
 
@@ -41,7 +41,8 @@ pragmatic: I'd rather shape an app than hand-crank a weekly shopping list. 🙂
 
 ## Status
 
-🚧 Early days — see [`SPEC.md`](SPEC.md) for the full design and the MVP scope.
+🚧 Early days — see [`docs/spec.md`](docs/spec.md) for the full design and the MVP scope,
+[`docs/decisions.md`](docs/decisions.md) for how it got here.
 
 ## Licence
 
