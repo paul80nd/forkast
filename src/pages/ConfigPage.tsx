@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { INGREDIENTS, INGREDIENTS_BY_ID, pluralOf } from '../data/ingredients'
 import { getUnit } from '../lib/units'
+import { ImportDataset } from '../components/ImportDataset'
 
 export function ConfigPage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
@@ -37,6 +38,10 @@ export function ConfigPage() {
   return (
     <section>
       <h1 className="text-2xl font-semibold tracking-tight">Config</h1>
+
+      <div className="mt-5">
+        <ImportDataset />
+      </div>
 
       <h2 className="mt-5 text-lg font-semibold">Ingredients</h2>
       <p className="mt-1 text-sm text-stone-500">
