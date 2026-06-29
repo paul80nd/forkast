@@ -32,10 +32,13 @@ Rationale: Browse is text-search, so a user may deliberately search for a specif
 variant ("sirloin rice"). Hiding variants fights that. Awareness beats tidiness here;
 variety is enforced later at *suggestion* time, not by hiding in Browse.
 
-### Data model
+### Data model — built 2026-06-29
 
 A new **user-data** store (precious; exported with the backup; survives re-import).
-Grouping is curation — it must never mutate the re-importable recipe records.
+Grouping is curation — it must never mutate the re-importable recipe records. Implemented
+in `src/app/groups.ts` (create/edit/delete + reverse index) and `src/app/cleanup.ts` (the
+single recipe-delete path with cascade); the `CurationExport` envelope now carries
+`variantGroups`. Covered by `features/recipe-groups.feature`.
 
 ```ts
 interface VariantGroup {
@@ -65,7 +68,7 @@ interface VariantGroup {
 - **Delete cascades.** Deleting a recipe removes it from its group; if that drops the group
   below two members, the group is dissolved. A single delete path enforces this.
 
-Dexie: add `variantGroups: 'id'` in a new schema version. (A `*recipeId` multiEntry index
+Dexie: `variantGroups: 'id'` added in schema v3. (A `*recipeId` multiEntry index
 is possible if DB-level membership lookup is ever wanted; in-memory is fine at current
 scale.)
 

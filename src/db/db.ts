@@ -6,6 +6,7 @@ import type {
   WeekPlan,
   SettingRow,
   ShoppingState,
+  VariantGroup,
 } from '../schema/userData'
 
 // IndexedDB working store. Reference data (recipes) is re-importable, so never
@@ -17,6 +18,7 @@ export class ForkastDB extends Dexie {
   plans!: Table<WeekPlan, string>
   settings!: Table<SettingRow, string>
   shopping!: Table<ShoppingState, string>
+  variantGroups!: Table<VariantGroup, string>
 
   constructor() {
     super('forkast')
@@ -29,6 +31,8 @@ export class ForkastDB extends Dexie {
     })
     // v2: shopping-list tick-off + manual extras.
     this.version(2).stores({ shopping: 'id' })
+    // v3: recipe variant groups (membership lookup is in-memory; see src/app/groups.ts).
+    this.version(3).stores({ variantGroups: 'id' })
   }
 }
 
