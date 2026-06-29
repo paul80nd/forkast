@@ -59,6 +59,25 @@ describe('parseRecipeDataset', () => {
     expect(r.errors[0]).toMatch(/missing title/)
   })
 
+  it('trims surrounding whitespace on strings; whitespace-only is treated as absent', () => {
+    const r = parseRecipeDataset([
+      raw({
+        title: '  Kung Pao Chicken ',
+        description: ' \tTasty. ',
+        ingredients: [{ rawLabel: ' 1 onion ', name: ' onion ' }],
+      }),
+    ])
+    const recipe = r.recipes[0]
+    expect(recipe.title).toBe('Kung Pao Chicken')
+    expect(recipe.description).toBe('Tasty.')
+    expect(recipe.ingredients[0]).toMatchObject({ rawLabel: '1 onion', name: 'onion' })
+
+    // A whitespace-only title is unusable → the recipe is skipped.
+    const blank = parseRecipeDataset([raw({ id: 'blank', slug: 'blank', title: '   ' })])
+    expect(blank.skipped).toBe(1)
+    expect(blank.errors[0]).toMatch(/missing title/)
+  })
+
   it('skips a recipe with no usable id', () => {
     const r = parseRecipeDataset([raw({ id: undefined, slug: undefined })])
     expect(r.skipped).toBe(1)
