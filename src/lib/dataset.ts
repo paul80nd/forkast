@@ -19,8 +19,13 @@ function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
 }
 
+// Trim every imported string and treat whitespace-only as absent. Source data often
+// carries stray leading/trailing spaces (e.g. on titles), which otherwise sort and
+// display wrong — a leading space sorts before every letter.
 function asString(v: unknown): string | undefined {
-  return typeof v === 'string' ? v : undefined
+  if (typeof v !== 'string') return undefined
+  const trimmed = v.trim()
+  return trimmed === '' ? undefined : trimmed
 }
 
 function asNumber(v: unknown): number | undefined {
