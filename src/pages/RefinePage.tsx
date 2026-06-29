@@ -12,6 +12,8 @@ import {
   suggestGroupCandidates,
   type GroupMemberInput,
 } from '../app/groups'
+import { deleteRecipes } from '../app/cleanup'
+import type { Stars } from '../schema/userData'
 import type { CandidateCluster } from '../lib/similarity'
 
 // Refine: tidy the collection by linking related recipes into variant groups. Manual
@@ -20,6 +22,7 @@ import type { CandidateCluster } from '../lib/similarity'
 export function RefinePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
   const groups = useLiveQuery(() => db.variantGroups.toArray(), [])
+  const userData = useLiveQuery(() => db.userData.toArray(), [])
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState<GroupMemberInput[]>([])
   const [axis, setAxis] = useState<'' | NonNullable<VariantGroup['axis']>>('')
@@ -50,7 +53,17 @@ export function RefinePage() {
     return s
   }, [groups])
 
-  if (recipes === undefined || groups === undefined) {
+  // Recipes rated 1–2★ ("bin it" / "very bin it"), worst first — the cleanup candidates.
+  const binned = useMemo(() => {
+    const stars = new Map<string, Stars>()
+    for (const u of userData ?? []) if (u.stars) stars.set(u.recipeId, u.stars)
+    return (recipes ?? [])
+      .map((r) => ({ recipe: r, stars: stars.get(r.id) }))
+      .filter((x): x is { recipe: Recipe; stars: Stars } => x.stars === 1 || x.stars === 2)
+      .sort((a, b) => a.stars - b.stars || a.recipe.title.localeCompare(b.recipe.title))
+  }, [recipes, userData])
+
+  if (recipes === undefined || groups === undefined || userData === undefined) {
     return <p className="text-stone-500">Loading…</p>
   }
 
@@ -235,6 +248,17 @@ export function RefinePage() {
           ))}
         </ul>
       )}
+
+      {/* Star-driven cleanup */}
+      <h2 className="mt-6 text-lg font-semibold">
+        Clean up binned recipes{' '}
+        <span className="text-sm font-normal text-stone-400">({binned.length})</span>
+      </h2>
+      <p className="mt-1 text-sm text-stone-500">
+        Recipes you’ve rated ★1–2. Tick the ones to delete for good — deletion sticks
+        across re-imports (the export is your backup).
+      </p>
+      <CleanupSection binned={binned} />
     </section>
   )
 }
@@ -397,6 +421,91 @@ function GroupCard({ group, byId }: { group: VariantGroup; byId: Map<string, Rec
 
       {comparing && <CompareView recipes={members} />}
     </li>
+  )
+}
+
+// Bulk-delete the 1–2★ recipes. Nothing is pre-selected (delete is destructive and real);
+// tick, or select all, then confirm. Deletes cascade to groups via deleteRecipes.
+function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[] }) {
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [busy, setBusy] = useState(false)
+
+  if (binned.length === 0) {
+    return <p className="mt-2 text-sm text-stone-500">Nothing binned — nothing to clean up.</p>
+  }
+
+  const allSelected = binned.every((b) => selected.has(b.recipe.id))
+  const count = binned.filter((b) => selected.has(b.recipe.id)).length
+
+  function toggle(id: string) {
+    setSelected((s) => {
+      const next = new Set(s)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(binned.map((b) => b.recipe.id)))
+  }
+  async function remove() {
+    const ids = binned.map((b) => b.recipe.id).filter((id) => selected.has(id))
+    if (ids.length === 0) return
+    if (
+      !window.confirm(
+        `Delete ${ids.length} recipe${ids.length === 1 ? '' : 's'} for good?\n\n` +
+          'This can’t be undone (re-import to restore).',
+      )
+    ) {
+      return
+    }
+    setBusy(true)
+    try {
+      await deleteRecipes(ids)
+      setSelected(new Set())
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="mt-2 rounded-xl border border-stone-200 bg-white p-3">
+      <div className="flex items-center justify-between gap-2">
+        <label className="flex items-center gap-2 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={toggleAll}
+            className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+          />
+          Select all
+        </label>
+        <button
+          type="button"
+          disabled={busy || count === 0}
+          onClick={remove}
+          className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-rose-700 disabled:opacity-50"
+        >
+          Delete {count || ''} selected
+        </button>
+      </div>
+      <ul className="mt-2 divide-y divide-stone-100">
+        {binned.map(({ recipe, stars }) => (
+          <li key={recipe.id} className="flex items-center gap-2 py-1.5">
+            <input
+              type="checkbox"
+              checked={selected.has(recipe.id)}
+              onChange={() => toggle(recipe.id)}
+              className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+            />
+            <span className="w-10 shrink-0 text-sm text-amber-600">{'★'.repeat(stars)}</span>
+            <Link to={`/recipe/${recipe.id}`} className="flex-1 truncate text-sm text-stone-800 hover:text-orange-700">
+              {recipe.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 

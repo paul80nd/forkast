@@ -118,11 +118,12 @@ The home for tidying the collection. Two jobs:
    - Also catches genuine accidental near-dups (same dish, different slug). NB: an exact
      re-import of the *same* dataset is already idempotent (additive upsert by stable id),
      so Refine is for the harder cases ids can't catch — not trivial double-imports.
-2. **★-driven cleanup.** Bulk-delete recipes scored 1–2★ ("bin it" / "very bin it" — see
-   `★ semantics`). Filter to the binned recipes, **tick** the ones to remove (with a
-   "select all"), then **confirm**. Nothing is pre-selected — deletion is destructive and
-   real (no tombstones; see *Import changes*). Deleting a recipe also removes it from any
-   group, dissolving the group if fewer than two members remain.
+2. **★-driven cleanup — built 2026-06-29.** Bulk-delete recipes scored 1–2★ ("bin it" /
+   "very bin it" — see `★ semantics`). The Refine "Clean up binned recipes" section lists
+   them worst-first; **tick** the ones to remove (or "select all"), then **confirm**.
+   Nothing is pre-selected — deletion is destructive and real (no tombstones; see *Import
+   changes*). Calls `deleteRecipes` in `src/app/cleanup.ts`, which cascades to groups
+   (dissolving any left under two members). Covered by `features/cleanup.feature`.
    - **Images:** the deleted recipe's image file on disk is left orphaned — the browser
      can't touch the filesystem (Safari, no File System Access API), and an orphan is
      harmless (nothing references it). Reclaiming the disk space is an optional **offline
