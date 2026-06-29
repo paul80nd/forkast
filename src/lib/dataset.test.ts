@@ -100,14 +100,13 @@ describe('parseRecipeDataset', () => {
 
   it('preserves optional fields only when present', () => {
     const withOpt = parseRecipeDataset([
-      raw({ sourceCode: '2785', mainProtein: 'beef', sourceRating: { average: 4, count: 10 } }),
+      raw({ mainProtein: 'beef', sourceRating: { average: 4, count: 10 } }),
     ]).recipes[0]
-    expect(withOpt.sourceCode).toBe('2785')
     expect(withOpt.mainProtein).toBe('beef')
     expect(withOpt.sourceRating).toEqual({ average: 4, count: 10 })
 
-    const withoutOpt = parseRecipeDataset([raw()]).recipes[0]
-    expect('sourceCode' in withoutOpt).toBe(false)
+    const withoutOpt = parseRecipeDataset([raw({ mainProtein: undefined })]).recipes[0]
+    expect('mainProtein' in withoutOpt).toBe(false)
     expect('sourceRating' in withoutOpt).toBe(false)
   })
 })

@@ -91,7 +91,6 @@ One repo, three parts:
 | `title`, `description` | |
 | `image` | local filename under `/images` |
 | `sourceUrl` | provenance (private datasets only) |
-| `sourceCode?` | short source/catalogue code, e.g. printed on a physical card; private datasets only |
 | `cuisine`, `categories[]` | from source; `tags[]` carries derived diet/effort labels |
 | `allergens[]` | powers no-go filters (e.g. fish) |
 | `prepTime` | `{ for2, for4 }` minutes |
