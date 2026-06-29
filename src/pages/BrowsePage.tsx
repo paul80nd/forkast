@@ -90,8 +90,11 @@ export function BrowsePage() {
   const [visible, setVisible] = useState(PAGE)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  // Back to the top of the list whenever the filters change.
-  useEffect(() => setVisible(PAGE), [query, cuisine, maxTime, rating, sort])
+  // Back to the top of the list, and clear any selection, whenever the filters change.
+  useEffect(() => {
+    setVisible(PAGE)
+    setSelected(new Set())
+  }, [query, cuisine, maxTime, rating, sort])
 
   // Grow the visible count when the bottom sentinel scrolls into view.
   useEffect(() => {
