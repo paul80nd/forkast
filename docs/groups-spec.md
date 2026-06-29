@@ -89,11 +89,12 @@ All recipes shown and searchable as today. **Open decision:** an optional subtle
 "N related" badge on cards that belong to a group, giving awareness in Browse without
 hiding anything.
 
-### Recipe detail — "see also"
+### Recipe detail — "see also" — built 2026-06-29
 A small section listing sibling recipes with their labels, each a link to that recipe's
-page (every variant is already its own page).
+page (every variant is already its own page). Data shaping is `seeAlsoFor()` in
+`src/app/groups.ts` (keeps the page a thin shell); covered by `features/recipe-groups.feature`.
 
-- v1: **links** to the sibling pages (trivial).
+- v1: **links** to the sibling pages — done.
 - Optional later: an in-place **dropdown** that swaps the whole card to the chosen variant
   without navigating.
 

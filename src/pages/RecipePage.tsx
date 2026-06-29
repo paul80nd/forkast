@@ -5,6 +5,7 @@ import { resolveAsset } from '../lib/assets'
 import { StarRating } from '../components/StarRating'
 import { setStars } from '../lib/curation'
 import { CURRENT_PLAN_ID, addToPlan, removeFromPlan } from '../lib/plan'
+import { seeAlsoFor } from '../app/groups'
 
 export function RecipePage() {
   const { id = '' } = useParams()
@@ -15,6 +16,7 @@ export function RecipePage() {
     async () => ((await db.plans.get(CURRENT_PLAN_ID))?.recipeIds ?? []).includes(id),
     [id],
   )
+  const seeAlso = useLiveQuery(() => seeAlsoFor(id), [id])
 
   if (recipe === undefined) {
     return <p className="text-stone-500">Loading…</p>
@@ -163,6 +165,34 @@ export function RecipePage() {
             >
               View original ↗
             </a>
+          )}
+
+          {seeAlso && seeAlso.length > 0 && (
+            <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
+              <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+                See also{' '}
+                <span className="font-normal normal-case text-stone-400">
+                  — variants of this dish
+                </span>
+              </h2>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {seeAlso.map((s) => (
+                  <li key={s.recipeId}>
+                    <Link
+                      to={`/recipe/${s.recipeId}`}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-sm text-stone-700 transition hover:border-orange-300 hover:text-orange-700"
+                    >
+                      {s.label && (
+                        <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500">
+                          {s.label}
+                        </span>
+                      )}
+                      {s.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-500 uppercase">

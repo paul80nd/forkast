@@ -17,6 +17,15 @@ Feature: Group related recipes
     Then recipe "r2" is grouped with "r3"
     And recipe "r1" is in no group
 
+  Scenario: A recipe's "see also" lists its sibling variants with titles
+    Given I have grouped recipes "r1, r2, r3"
+    Then the see-also for "r1" lists "r2, r3"
+    And the see-also for "r1" shows "r2" titled "Recipe r2"
+
+  Scenario: An ungrouped recipe has no "see also"
+    Given I have grouped recipes "r1, r2"
+    Then the see-also for "r3" is empty
+
   Scenario: A group needs at least two members
     When I try to group recipes "r1"
     Then the grouping is rejected

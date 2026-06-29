@@ -95,6 +95,30 @@ export async function groupForRecipe(recipeId: string): Promise<VariantGroup | u
   return groups.find((g) => g.members.some((m) => m.recipeId === recipeId))
 }
 
+export interface SeeAlsoItem {
+  recipeId: string
+  /** The sibling recipe's title (falls back to its id if the record is missing). */
+  title: string
+  /** The variant label within the group ("Rice", "Beef"). */
+  label: string
+}
+
+/**
+ * The sibling variants of a recipe — its group members minus itself — resolved to titles
+ * for display. Empty when the recipe isn't grouped. Powers the detail page's "see also".
+ */
+export async function seeAlsoFor(recipeId: string): Promise<SeeAlsoItem[]> {
+  const group = await groupForRecipe(recipeId)
+  if (!group) return []
+  const siblings = group.members.filter((m) => m.recipeId !== recipeId)
+  const recipes = await db.recipes.bulkGet(siblings.map((m) => m.recipeId))
+  return siblings.map((m, i) => ({
+    recipeId: m.recipeId,
+    title: recipes[i]?.title ?? m.recipeId,
+    label: m.label,
+  }))
+}
+
 /** Reverse index recipeId → group, built from the table (for "see also" rendering). */
 export async function buildGroupIndex(): Promise<Map<string, VariantGroup>> {
   const index = new Map<string, VariantGroup>()
