@@ -1,7 +1,7 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
-import { createGroup, groupForRecipe } from '../../src/app/groups'
+import { createGroup, groupForRecipe, seeAlsoFor } from '../../src/app/groups'
 import { deleteRecipe } from '../../src/app/cleanup'
 import { makeRecipe } from '../../test/factories'
 
@@ -64,6 +64,29 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     And('recipe {string} is in no group', async (_, id: string) => {
       expect(await groupForRecipe(id)).toBeUndefined()
+    })
+  })
+
+  Scenario('A recipe\'s "see also" lists its sibling variants with titles', ({ Given, Then, And }) => {
+    Given('I have grouped recipes {string}', async (_, list: string) => {
+      await group(list)
+    })
+    Then('the see-also for {string} lists {string}', async (_, id: string, others: string) => {
+      const items = await seeAlsoFor(id)
+      expect(items.map((s) => s.recipeId).sort()).toEqual(ids(others).sort())
+    })
+    And('the see-also for {string} shows {string} titled {string}', async (_, id: string, sibId: string, title: string) => {
+      const items = await seeAlsoFor(id)
+      expect(items.find((s) => s.recipeId === sibId)?.title).toBe(title)
+    })
+  })
+
+  Scenario('An ungrouped recipe has no "see also"', ({ Given, Then }) => {
+    Given('I have grouped recipes {string}', async (_, list: string) => {
+      await group(list)
+    })
+    Then('the see-also for {string} is empty', async (_, id: string) => {
+      expect(await seeAlsoFor(id)).toEqual([])
     })
   })
 
