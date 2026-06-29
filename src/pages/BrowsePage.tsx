@@ -14,7 +14,6 @@ export function BrowsePage() {
   const [cuisine, setCuisine] = useState('all')
   const [maxTime, setMaxTime] = useState(0) // 0 = any
   const [rating, setRating] = useState<RatingFilter>('all')
-  const [hideFish, setHideFish] = useState(true)
   const [sort, setSort] = useState<SortKey>('rating')
 
   const starsById = useMemo(() => {
@@ -41,7 +40,6 @@ export function BrowsePage() {
     }
     if (cuisine !== 'all') list = list.filter((r) => r.cuisine === cuisine)
     if (maxTime > 0) list = list.filter((r) => r.prepTime.for2 <= maxTime)
-    if (hideFish) list = list.filter((r) => !r.allergens.includes('fish'))
     if (rating !== 'all') {
       list = list.filter((r) => {
         const s = starsById.get(r.id)
@@ -57,7 +55,7 @@ export function BrowsePage() {
       if (sort === 'time') return a.prepTime.for2 - b.prepTime.for2
       return (b.sourceRating?.average ?? 0) - (a.sourceRating?.average ?? 0)
     })
-  }, [recipes, query, cuisine, maxTime, hideFish, rating, starsById, sort])
+  }, [recipes, query, cuisine, maxTime, rating, starsById, sort])
 
   if (recipes === undefined) {
     return <p className="text-stone-500">Loading recipes…</p>
@@ -125,15 +123,6 @@ export function BrowsePage() {
           <option value="time">Quickest</option>
           <option value="name">A–Z</option>
         </select>
-        <label className="flex cursor-pointer items-center gap-1.5 text-sm text-stone-600 select-none">
-          <input
-            type="checkbox"
-            checked={hideFish}
-            onChange={(e) => setHideFish(e.target.checked)}
-            className="size-4 accent-orange-500"
-          />
-          Hide fish
-        </label>
       </div>
 
       {filtered.length === 0 ? (
