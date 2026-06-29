@@ -16,7 +16,7 @@ import { deleteRecipes } from '../app/cleanup'
 import { suggestDuplicateCandidates } from '../app/duplicates'
 import { chooseKeeper } from '../lib/duplicates'
 import type { Stars } from '../schema/userData'
-import { inferAxis, type CandidateCluster } from '../lib/similarity'
+import { inferAxis, memberLabels, type CandidateCluster } from '../lib/similarity'
 
 // Refine: tidy the collection by linking related recipes into variant groups. Manual
 // grouping for now (the similarity suggester and ★-cleanup come later). A thin shell over
@@ -519,25 +519,31 @@ function SuggestionCard({
   byId: Map<string, Recipe>
   onDone: () => void
 }) {
-  const [rows, setRows] = useState(
-    cluster.recipeIds.map((recipeId) => ({
-      recipeId,
-      label: byId.get(recipeId)?.mainProtein ?? '',
-      checked: true,
-    })),
-  )
-  const [busy, setBusy] = useState(false)
-  const [comparing, setComparing] = useState(false)
-  const chosen = rows.filter((r) => r.checked)
   const members = cluster.recipeIds
     .map((id) => byId.get(id))
     .filter((r): r is Recipe => r !== undefined)
+  const axisInput = members.map((r) => ({
+    id: r.id,
+    mainProtein: r.mainProtein,
+    ingredientNames: r.ingredients.map((i) => i.name),
+  }))
+  const inferred = inferAxis(axisInput)
 
-  // Pre-fill the axis with a best-effort guess of what differs across the members; the user
-  // can override before creating.
-  const [axis, setAxis] = useState<'' | NonNullable<VariantGroup['axis']>>(() =>
-    inferAxis(members.map((r) => ({ mainProtein: r.mainProtein, ingredientNames: r.ingredients.map((i) => i.name) }))),
-  )
+  // Pre-fill the axis with a best-effort guess of what differs across the members, and the
+  // per-member labels with the ingredient that distinguishes each (the protein on a protein
+  // swap, the carb on a carb swap). The user can override both before creating.
+  const [axis, setAxis] = useState<'' | NonNullable<VariantGroup['axis']>>(inferred)
+  const [rows, setRows] = useState(() => {
+    const labels = memberLabels(axisInput, inferred)
+    return cluster.recipeIds.map((recipeId) => ({
+      recipeId,
+      label: labels.get(recipeId) ?? '',
+      checked: true,
+    }))
+  })
+  const [busy, setBusy] = useState(false)
+  const [comparing, setComparing] = useState(false)
+  const chosen = rows.filter((r) => r.checked)
 
   async function create() {
     setBusy(true)

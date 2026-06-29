@@ -238,3 +238,42 @@ export function inferAxis(members: AxisInput[]): 'protein' | 'carb' | 'mixed' {
   if (protein && !carb) return 'protein'
   return 'mixed'
 }
+
+/**
+ * Best-effort short label per member for a group, given the axis. For a protein swap that's
+ * each member's `mainProtein` ("Chicken" / "Beef"); otherwise it's the ingredient that sets
+ * the member apart from the others ("Rice" / "Cauliflower rice"), preferring a carb word on a
+ * carb axis. Falls back to `mainProtein`, then ''. The user edits these before creating.
+ */
+export function memberLabels(
+  members: { id: string; mainProtein?: string; ingredientNames: string[] }[],
+  axis: 'protein' | 'carb' | 'mixed',
+): Map<string, string> {
+  // First display name seen per normalised ingredient key, plus how many members carry it.
+  const docFreq = new Map<string, number>()
+  const perMember = members.map((m) => {
+    const byKey = new Map<string, string>()
+    for (const name of m.ingredientNames) {
+      const key = [...tokenize(name)].sort().join(' ')
+      if (key && !byKey.has(key)) byKey.set(key, name.trim())
+    }
+    for (const key of byKey.keys()) docFreq.set(key, (docFreq.get(key) ?? 0) + 1)
+    return { id: m.id, mainProtein: m.mainProtein, byKey }
+  })
+
+  const out = new Map<string, string>()
+  for (const m of perMember) {
+    if (axis === 'protein' && m.mainProtein) {
+      out.set(m.id, m.mainProtein)
+      continue
+    }
+    // Ingredients only this member has, shortest first (the most tag-like).
+    const unique = [...m.byKey.entries()]
+      .filter(([key]) => docFreq.get(key) === 1)
+      .sort((a, b) => a[1].length - b[1].length)
+    const carbPick = unique.find(([key]) => key.split(' ').some((t) => CARB_WORDS.has(t)))?.[1]
+    const pick = (axis === 'carb' ? carbPick : undefined) ?? unique[0]?.[1]
+    out.set(m.id, pick && pick.length <= 24 ? pick : m.mainProtein ?? '')
+  }
+  return out
+}
