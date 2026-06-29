@@ -80,6 +80,20 @@ export interface SuggestOptions {
 }
 
 /**
+ * Tight preset for finding near-**duplicates** rather than variants. The discriminator is
+ * the title: a protein/carb variant swaps a title word ("chicken"→"beef"), so its title
+ * overlap is low; a true duplicate has a near-identical title *and* near-identical
+ * ingredients. Requiring high overlap on both, with a high cluster-score floor, keeps this
+ * to genuine repeats. Tunable by review if it feels too eager/shy.
+ */
+export const DUPLICATE_OPTS: SuggestOptions = {
+  titleThreshold: 0.8,
+  ingredientThreshold: 0.8,
+  minClusterScore: 0.85,
+  maxClusterSize: 6,
+}
+
+/**
  * Propose candidate clusters of related recipes for the user to confirm. Uses an inverted
  * index on title tokens to only score pairs that share a reasonably distinctive word —
  * keeps it tractable across thousands of recipes. Linked pairs are merged into clusters;
