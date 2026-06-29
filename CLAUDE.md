@@ -72,9 +72,9 @@ ever sees our schema, never raw provider JSON.
   its **purchase unit** where convertible, else keep the **recipe unit** as its own line.
   Pure + unit-tested — keep it that way.
 - Pluralisation: dictionary `plural` overrides; otherwise `pluralize`.
-- Optional, back-compatible recipe fields: `nutrition` (per-portion macros), `sourceCode`
-  (short source/catalogue code), ingredient `sourceRef` (stable source id → bind once,
-  reuse across recipes), `tags` (derived diet/effort labels + source categories).
+- Optional, back-compatible recipe fields: `nutrition` (per-portion macros), ingredient
+  `sourceRef` (stable source id → bind once, reuse across recipes), `tags` (derived
+  diet/effort labels + source categories).
 
 ## Testing
 
