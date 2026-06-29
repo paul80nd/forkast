@@ -154,7 +154,7 @@ export function PlanPage() {
                       <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
                         <span>{r.cuisine}</span>
                         {r.mainProtein && <span className="capitalize">· {r.mainProtein}</span>}
-                        <span>· ⏱ {r.prepTime.for2} min</span>
+                        <span>· ⏱ {r.prepTime} min</span>
                         <span className={rec.warn ? 'text-amber-600' : 'text-stone-400'}>
                           · {rec.text}
                         </span>

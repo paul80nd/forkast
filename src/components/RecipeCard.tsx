@@ -38,7 +38,7 @@ export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars })
           {recipe.description}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
-          <span>⏱ {recipe.prepTime.for2} min</span>
+          <span>⏱ {recipe.prepTime} min</span>
           {recipe.mainProtein && (
             <span className="capitalize">· {recipe.mainProtein}</span>
           )}

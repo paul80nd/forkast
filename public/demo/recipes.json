@@ -12,7 +12,7 @@
       "categories": ["Dinner", "One-pan"],
       "tags": ["quick", "vegetarian", "comfort"],
       "allergens": ["gluten", "milk"],
-      "prepTime": { "for2": 25, "for4": 30 },
+      "prepTime": 25,
       "sourceRating": { "average": 4.6, "count": 312 },
       "ingredients": [
         { "rawLabel": "300g orzo", "name": "orzo", "qty": 300, "unit": "g", "ingredientId": "orzo" },
@@ -42,7 +42,7 @@
       "categories": ["Dinner", "Curry"],
       "tags": ["vegan", "batch-friendly", "freezer"],
       "allergens": [],
-      "prepTime": { "for2": 30, "for4": 35 },
+      "prepTime": 30,
       "sourceRating": { "average": 4.8, "count": 521 },
       "ingredients": [
         { "rawLabel": "2 x 400g tins chickpeas", "name": "chickpeas", "qty": 800, "unit": "g", "ingredientId": "chickpeas" },
@@ -72,7 +72,7 @@
       "categories": ["Dinner", "Rice bowl"],
       "tags": ["quick", "fresh", "high-protein"],
       "allergens": ["soya"],
-      "prepTime": { "for2": 25, "for4": 30 },
+      "prepTime": 25,
       "sourceRating": { "average": 4.7, "count": 408 },
       "ingredients": [
         { "rawLabel": "2 chicken breasts", "name": "chicken breast", "qty": 2, "ingredientId": "chicken-breast" },
@@ -101,7 +101,7 @@
       "categories": ["Dinner", "Tacos"],
       "tags": ["vegan", "quick", "crowd-pleaser"],
       "allergens": ["gluten"],
-      "prepTime": { "for2": 20, "for4": 25 },
+      "prepTime": 20,
       "sourceRating": { "average": 4.5, "count": 276 },
       "ingredients": [
         { "rawLabel": "1 x 400g tin black beans", "name": "black beans", "qty": 400, "unit": "g", "ingredientId": "black-beans" },
@@ -130,7 +130,7 @@
       "categories": ["Dinner", "Bake"],
       "tags": ["comfort", "weekend"],
       "allergens": ["fish", "milk", "gluten"],
-      "prepTime": { "for2": 45, "for4": 55 },
+      "prepTime": 45,
       "sourceRating": { "average": 4.4, "count": 189 },
       "ingredients": [
         { "rawLabel": "300g white fish fillet", "name": "white fish", "qty": 300, "unit": "g", "ingredientId": "white-fish" },
@@ -159,7 +159,7 @@
       "categories": ["Dinner", "Noodles"],
       "tags": ["quick", "spicy", "high-protein"],
       "allergens": ["gluten", "soya", "sesame"],
-      "prepTime": { "for2": 20, "for4": 25 },
+      "prepTime": 20,
       "sourceRating": { "average": 4.9, "count": 634 },
       "ingredients": [
         { "rawLabel": "250g beef mince", "name": "beef mince", "qty": 250, "unit": "g", "ingredientId": "beef-mince" },

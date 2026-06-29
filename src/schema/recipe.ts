@@ -63,8 +63,8 @@ export interface Recipe {
   /** e.g. ["gluten", "egg", "fish"] — powers no-go filters. */
   allergens: string[]
 
-  /** Prep+cook minutes at each batch size. */
-  prepTime: { for2: number; for4: number }
+  /** Prep+cook minutes for the recipe's base `serves` (typically 2). */
+  prepTime: number
   /** Rating carried over from the source, if any. */
   sourceRating?: { average: number; count: number }
   /** Per-portion macros, if the source provides them (for a later nutrition view). */

@@ -47,10 +47,7 @@ export function RecipePage() {
           />
           <dl className="mt-4 space-y-2 text-sm">
             <Fact label="Cuisine" value={recipe.cuisine} />
-            <Fact
-              label="Time"
-              value={`${recipe.prepTime.for2} min (for 2) · ${recipe.prepTime.for4} min (for 4)`}
-            />
+            <Fact label="Time" value={`${recipe.prepTime} min`} />
             {recipe.mainProtein && (
               <Fact label="Main" value={recipe.mainProtein} capitalize />
             )}

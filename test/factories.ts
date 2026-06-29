@@ -14,7 +14,7 @@ export function makeRecipe(over: Partial<Recipe> & { id: string }): Recipe {
     cuisine: 'Test',
     tags: [],
     allergens: [],
-    prepTime: { for2: 10, for4: 15 },
+    prepTime: 10,
     ingredients: [{ rawLabel: 'Salt (5g)', name: 'salt', qty: 5, unit: 'g' }],
     basics: [],
     instructions: [{ order: 1, text: 'Cook it.' }],
