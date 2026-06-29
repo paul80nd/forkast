@@ -57,7 +57,7 @@ export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars })
 
       {/* Card actions — a sibling of the Link (not nested in the anchor), so clicks here
           never navigate. */}
-      <div className="absolute top-2 right-2">
+      <div className="absolute right-2 bottom-2">
         <button
           type="button"
           aria-label="Recipe actions"
@@ -80,7 +80,7 @@ export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars })
             />
             <div
               role="menu"
-              className="absolute top-full right-0 z-20 mt-1 w-40 overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
+              className="absolute right-0 bottom-full z-20 mb-1 w-40 overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
             >
               <button
                 type="button"
