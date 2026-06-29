@@ -187,3 +187,54 @@ export function suggestGroups(
   clusters.sort((a, b) => b.score - a.score || b.recipeIds.length - a.recipeIds.length)
   return clusters
 }
+
+// Starch/carb tokens that commonly get swapped between variants (singularised, as tokenize
+// leaves them). Used only to guess the axis — never to cluster.
+const CARB_WORDS = new Set([
+  'rice', 'chip', 'fry', 'fries', 'noodle', 'pasta', 'potato', 'mash', 'bread', 'wrap',
+  'tortilla', 'couscous', 'quinoa', 'bulgur', 'gnocchi', 'polenta', 'flatbread', 'naan',
+  'bun', 'roti', 'chapati', 'orzo', 'spaghetti', 'penne', 'macaroni', 'udon', 'pitta',
+])
+
+// Protein tokens, as a fallback when a recipe carries no mainProtein.
+const PROTEIN_WORDS = new Set([
+  'chicken', 'beef', 'pork', 'tofu', 'prawn', 'salmon', 'cod', 'haddock', 'lamb', 'duck',
+  'turkey', 'sausage', 'bacon', 'paneer', 'halloumi', 'quorn', 'steak', 'mince', 'gammon',
+  'chorizo', 'meatball', 'chickpea', 'lentil', 'bean',
+])
+
+export interface AxisInput {
+  mainProtein?: string
+  ingredientNames: string[]
+}
+
+/**
+ * Guess what differs across a cluster's members, to pre-fill the group axis. Distinct
+ * `mainProtein` values mean a protein swap; otherwise the ingredients that AREN'T shared by
+ * every member are matched against carb/protein vocab. Ambiguous (both or neither) → 'mixed'.
+ * Best-effort — the user confirms or overrides.
+ */
+export function inferAxis(members: AxisInput[]): 'protein' | 'carb' | 'mixed' {
+  const proteins = new Set(
+    members.map((m) => m.mainProtein?.trim().toLowerCase()).filter((p): p is string => !!p),
+  )
+  if (proteins.size >= 2) return 'protein'
+
+  const counts = new Map<string, number>()
+  for (const m of members) for (const k of ingredientSet(m.ingredientNames)) {
+    counts.set(k, (counts.get(k) ?? 0) + 1)
+  }
+
+  let carb = false
+  let protein = false
+  for (const [name, count] of counts) {
+    if (count === members.length) continue // shared by every member — not the differing line
+    for (const tok of name.split(' ')) {
+      if (CARB_WORDS.has(tok)) carb = true
+      if (PROTEIN_WORDS.has(tok)) protein = true
+    }
+  }
+  if (carb && !protein) return 'carb'
+  if (protein && !carb) return 'protein'
+  return 'mixed'
+}

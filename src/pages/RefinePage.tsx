@@ -16,7 +16,7 @@ import { deleteRecipes } from '../app/cleanup'
 import { suggestDuplicateCandidates } from '../app/duplicates'
 import { chooseKeeper } from '../lib/duplicates'
 import type { Stars } from '../schema/userData'
-import type { CandidateCluster } from '../lib/similarity'
+import { inferAxis, type CandidateCluster } from '../lib/similarity'
 
 // Refine: tidy the collection by linking related recipes into variant groups. Manual
 // grouping for now (the similarity suggester and ★-cleanup come later). A thin shell over
@@ -533,10 +533,16 @@ function SuggestionCard({
     .map((id) => byId.get(id))
     .filter((r): r is Recipe => r !== undefined)
 
+  // Pre-fill the axis with a best-effort guess of what differs across the members; the user
+  // can override before creating.
+  const [axis, setAxis] = useState<'' | NonNullable<VariantGroup['axis']>>(() =>
+    inferAxis(members.map((r) => ({ mainProtein: r.mainProtein, ingredientNames: r.ingredients.map((i) => i.name) }))),
+  )
+
   async function create() {
     setBusy(true)
     try {
-      await createGroup(chosen.map(({ recipeId, label }) => ({ recipeId, label })))
+      await createGroup(chosen.map(({ recipeId, label }) => ({ recipeId, label })), axis || undefined)
       onDone()
     } finally {
       setBusy(false)
@@ -557,6 +563,17 @@ function SuggestionCard({
           >
             {comparing ? 'Hide compare' : 'Compare'}
           </button>
+          <select
+            value={axis}
+            onChange={(e) => setAxis(e.target.value as typeof axis)}
+            aria-label="Group axis (what differs)"
+            className="rounded-md border border-stone-300 bg-white px-1.5 py-1 text-xs dark:bg-stone-100"
+          >
+            <option value="">No axis</option>
+            <option value="protein">Protein</option>
+            <option value="carb">Carb</option>
+            <option value="mixed">Mixed</option>
+          </select>
           <button
             type="button"
             disabled={busy || chosen.length < 2}
