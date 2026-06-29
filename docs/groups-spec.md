@@ -128,9 +128,10 @@ The home for tidying the collection. Two jobs, split into two in-page tabs (**Gr
    stars/notes, cooked history, and its slot in any plan. (Plan-derived shopping ticks are
    left; stale keys are ignored.) So re-importing a deleted recipe starts it **clean**, with
    no stale rating. Covered by `features/cleanup.feature`.
-   - The same `deleteRecipe` path is also reachable **directly** — a ✕ on each Browse card
-     and a "Delete recipe" item in the recipe page's "Add to week" split-button dropdown
-     (both with confirm) — for one-offs without having to ★-rate first.
+   - The same delete path is also reachable **directly** outside Refine: **tick recipes on
+     Browse** (a checkbox per card) and **"Delete selected"** bulk-deletes them, or use the
+     **"Delete recipe"** item in the recipe page's "Add to week" split-button dropdown (both
+     with confirm) — for clearing things out without ★-rating first.
    - **Images:** the deleted recipe's image file on disk is left orphaned — the browser
      can't touch the filesystem (Safari, no File System Access API), and an orphan is
      harmless (nothing references it). Reclaiming the disk space is an optional **offline

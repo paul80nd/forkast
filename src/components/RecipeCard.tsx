@@ -1,26 +1,26 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
 import { resolveAsset } from '../lib/assets'
-import { deleteRecipe } from '../app/cleanup'
 
-export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars }) {
-  const [menuOpen, setMenuOpen] = useState(false)
-
-  function onDelete() {
-    setMenuOpen(false)
-    if (
-      window.confirm(
-        `Delete “${recipe.title}”?\n\nThis removes it and its ratings for good (re-import to restore).`,
-      )
-    ) {
-      void deleteRecipe(recipe.id)
-    }
-  }
-
+export function RecipeCard({
+  recipe,
+  stars,
+  selected = false,
+  onToggleSelect,
+}: {
+  recipe: Recipe
+  stars?: Stars
+  selected?: boolean
+  /** When provided, a selection tickbox is shown (for bulk actions in Browse). */
+  onToggleSelect?: () => void
+}) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <div
+      className={`relative overflow-hidden rounded-xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+        selected ? 'border-orange-400 ring-2 ring-orange-300' : 'border-stone-200'
+      }`}
+    >
       <Link to={`/recipe/${recipe.id}`} className="block">
         <div className="relative">
           <img
@@ -55,45 +55,19 @@ export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars })
         </div>
       </Link>
 
-      {/* Card actions — a sibling of the Link (not nested in the anchor), so clicks here
-          never navigate. */}
-      <div className="absolute right-2 bottom-2">
-        <button
-          type="button"
-          aria-label="Recipe actions"
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((o) => !o)}
-          className="flex size-7 items-center justify-center rounded-lg bg-white/90 text-stone-600 shadow-sm transition hover:bg-white hover:text-stone-900"
-        >
-          ⋮
-        </button>
-        {menuOpen && (
-          <>
-            {/* Backdrop to close on outside click. */}
-            <button
-              type="button"
-              aria-hidden
-              tabIndex={-1}
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-10 cursor-default"
-            />
-            <div
-              role="menu"
-              className="absolute right-0 bottom-full z-20 mb-1 w-40 overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
-            >
-              <button
-                type="button"
-                role="menuitem"
-                onClick={onDelete}
-                className="block w-full px-3 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50"
-              >
-                Delete recipe
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+      {/* Selection tickbox — a sibling of the Link (not nested in the anchor), so ticking
+          never navigates. */}
+      {onToggleSelect && (
+        <label className="absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-white/90 p-1 shadow-sm">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onToggleSelect}
+            aria-label={`Select ${recipe.title}`}
+            className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+          />
+        </label>
+      )}
     </div>
   )
 }
