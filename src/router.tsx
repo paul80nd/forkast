@@ -1,6 +1,7 @@
 import { createHashRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
 import { BrowsePage } from './pages/BrowsePage'
+import { RefinePage } from './pages/RefinePage'
 import { CuratePage } from './pages/CuratePage'
 import { PlanPage } from './pages/PlanPage'
 import { ShopPage } from './pages/ShopPage'
@@ -17,6 +18,7 @@ export const router = createHashRouter([
       { index: true, element: <Navigate to="/browse" replace /> },
       { path: 'browse', element: <BrowsePage /> },
       { path: 'recipe/:id', element: <RecipePage /> },
+      { path: 'refine', element: <RefinePage /> },
       { path: 'curate', element: <CuratePage /> },
       { path: 'plan', element: <PlanPage /> },
       { path: 'shop', element: <ShopPage /> },
