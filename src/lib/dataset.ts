@@ -61,7 +61,11 @@ function normaliseRecipe(raw: unknown, index: number): Recipe | string {
     })
   }
 
-  const prep = isObject(raw.prepTime) ? raw.prepTime : {}
+  // prepTime is a single number; tolerate the legacy { for2, for4 } shape by taking for2.
+  const prepTime =
+    asNumber(raw.prepTime) ??
+    (isObject(raw.prepTime) ? asNumber(raw.prepTime.for2) ?? 0 : 0)
+
   const instructions: Recipe['instructions'] = Array.isArray(raw.instructions)
     ? raw.instructions
         .filter(isObject)
@@ -78,10 +82,7 @@ function normaliseRecipe(raw: unknown, index: number): Recipe | string {
     cuisine: asString(raw.cuisine) ?? '',
     tags: asStringArray(raw.tags),
     allergens: asStringArray(raw.allergens),
-    prepTime: {
-      for2: asNumber(prep.for2) ?? 0,
-      for4: asNumber(prep.for4) ?? 0,
-    },
+    prepTime,
     ingredients,
     basics: asStringArray(raw.basics),
     instructions,

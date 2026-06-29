@@ -3,7 +3,7 @@ import { resolveAsset } from '../lib/assets'
 import type { RecipeDataset } from '../schema/recipe'
 
 // Bump when the bundled demo dataset changes so demo users auto-refresh.
-const DEMO_VERSION = 2
+const DEMO_VERSION = 3
 
 async function importDemo(): Promise<void> {
   const res = await fetch(resolveAsset('demo/recipes.json'))

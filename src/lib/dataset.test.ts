@@ -12,7 +12,7 @@ function raw(over: Record<string, unknown> = {}): Record<string, unknown> {
     cuisine: 'Asian',
     tags: ['speedy'],
     allergens: ['gluten'],
-    prepTime: { for2: 10, for4: 10 },
+    prepTime: 10,
     ingredients: [{ rawLabel: 'Beef mince (250g)', name: 'beef mince', qty: 250, unit: 'g' }],
     basics: ['oil'],
     instructions: [{ order: 1, text: 'Cook.' }],
@@ -86,8 +86,15 @@ describe('parseRecipeDataset', () => {
     expect(recipe.allergens).toEqual([])
     expect(recipe.basics).toEqual([])
     expect(recipe.instructions).toEqual([])
-    expect(recipe.prepTime).toEqual({ for2: 0, for4: 0 })
+    expect(recipe.prepTime).toBe(0)
     expect(recipe.serves).toBe(2)
+  })
+
+  it('reads prepTime as a number, tolerating the legacy { for2 } shape', () => {
+    expect(parseRecipeDataset([raw({ prepTime: 25 })]).recipes[0].prepTime).toBe(25)
+    expect(
+      parseRecipeDataset([raw({ prepTime: { for2: 30, for4: 45 } })]).recipes[0].prepTime,
+    ).toBe(30)
   })
 
   it('skips ingredient lines with no text but keeps the recipe', () => {

@@ -39,7 +39,7 @@ export function BrowsePage() {
       )
     }
     if (cuisine !== 'all') list = list.filter((r) => r.cuisine === cuisine)
-    if (maxTime > 0) list = list.filter((r) => r.prepTime.for2 <= maxTime)
+    if (maxTime > 0) list = list.filter((r) => r.prepTime <= maxTime)
     if (rating !== 'all') {
       list = list.filter((r) => {
         const s = starsById.get(r.id)
@@ -52,7 +52,7 @@ export function BrowsePage() {
 
     return [...list].sort((a, b) => {
       if (sort === 'name') return a.title.localeCompare(b.title)
-      if (sort === 'time') return a.prepTime.for2 - b.prepTime.for2
+      if (sort === 'time') return a.prepTime - b.prepTime
       return (b.sourceRating?.average ?? 0) - (a.sourceRating?.average ?? 0)
     })
   }, [recipes, query, cuisine, maxTime, rating, starsById, sort])

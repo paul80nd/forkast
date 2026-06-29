@@ -12,7 +12,7 @@ function recipe(id: string, ingredients: Ingredient[], extra?: Partial<Recipe>):
     cuisine: 'Test',
     tags: [],
     allergens: [],
-    prepTime: { for2: 10, for4: 15 },
+    prepTime: 10,
     ingredients,
     basics: [],
     instructions: [],

@@ -84,7 +84,7 @@ export function CuratePage() {
               <span className="rounded-full bg-stone-100 px-2 py-0.5 font-medium">
                 {current.cuisine}
               </span>
-              <span>⏱ {current.prepTime.for2} min</span>
+              <span>⏱ {current.prepTime} min</span>
               {current.mainProtein && (
                 <span className="capitalize">· {current.mainProtein}</span>
               )}

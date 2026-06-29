@@ -93,7 +93,7 @@ One repo, three parts:
 | `sourceUrl` | provenance (private datasets only) |
 | `cuisine`, `categories[]` | from source; `tags[]` carries derived diet/effort labels |
 | `allergens[]` | powers no-go filters (e.g. fish) |
-| `prepTime` | `{ for2, for4 }` minutes |
+| `prepTime` | prep+cook minutes for the recipe's base `serves` |
 | `sourceRating` | `{ average, count }` from source, if any |
 | `nutrition?` | per-portion macros (kcal + protein/fat/saturates/carbs/sugars/fibre/salt), if available |
 | `ingredients[]` | `{ rawLabel, name, qty?, unit?, ingredientId?, sourceRef? }` — `sourceRef` is a stable source id so one match reuses across recipes |
