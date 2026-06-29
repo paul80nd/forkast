@@ -4,6 +4,7 @@ import {
   jaccard,
   ingredientSet,
   suggestGroups,
+  inferAxis,
   DUPLICATE_OPTS,
   type SimilarityInput,
 } from './similarity'
@@ -96,5 +97,52 @@ describe('suggestGroups', () => {
       )
       expect(clusters).toEqual([])
     })
+  })
+})
+
+describe('inferAxis', () => {
+  it('reads distinct mainProtein values as a protein swap', () => {
+    expect(
+      inferAxis([
+        { mainProtein: 'chicken', ingredientNames: ['chicken', 'rice'] },
+        { mainProtein: 'beef', ingredientNames: ['beef', 'rice'] },
+      ]),
+    ).toBe('protein')
+  })
+
+  it('reads a differing carb (same protein) as a carb swap', () => {
+    expect(
+      inferAxis([
+        { mainProtein: 'chicken', ingredientNames: ['chicken thigh', 'rice', 'soy sauce'] },
+        { mainProtein: 'chicken', ingredientNames: ['chicken thigh', 'chips', 'soy sauce'] },
+      ]),
+    ).toBe('carb')
+  })
+
+  it('falls back to ingredient protein words when mainProtein is absent', () => {
+    expect(
+      inferAxis([
+        { ingredientNames: ['chicken breast', 'broccoli', 'garlic'] },
+        { ingredientNames: ['tofu', 'broccoli', 'garlic'] },
+      ]),
+    ).toBe('protein')
+  })
+
+  it('returns mixed when both a protein and a carb differ', () => {
+    expect(
+      inferAxis([
+        { mainProtein: 'chicken', ingredientNames: ['chicken', 'rice', 'garlic'] },
+        { mainProtein: 'chicken', ingredientNames: ['tofu', 'chips', 'garlic'] },
+      ]),
+    ).toBe('mixed')
+  })
+
+  it('returns mixed when nothing recognisable differs', () => {
+    expect(
+      inferAxis([
+        { mainProtein: 'chicken', ingredientNames: ['chicken', 'tomato', 'basil'] },
+        { mainProtein: 'chicken', ingredientNames: ['chicken', 'tomato', 'oregano'] },
+      ]),
+    ).toBe('mixed')
   })
 })

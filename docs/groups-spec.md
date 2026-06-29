@@ -110,7 +110,9 @@ The home for tidying the collection. Three jobs, split into in-page tabs (**Grou
      tested; `suggestGroupCandidates()` in `src/app/groups.ts` feeds it the ungrouped
      recipes). Proposes candidate clusters in Refine; members are pre-ticked with a label
      defaulted from `mainProtein`, the user unticks outliers and **confirms**. Never
-     auto-applies.
+     auto-applies. The **axis is pre-filled** by `inferAxis` (`src/lib/similarity.ts`):
+     distinct `mainProtein` → protein swap, else the differing ingredient matched against
+     carb/protein vocab, else mixed — a best-effort guess the user can override.
    - Detection signal: **title-token overlap + ingredient-name Jaccard** (both must clear a
      pair threshold), single-linkage clustered. Never buckets by `mainProtein` — the
      differing protein/carb is exactly the axis. Single-linkage can chain real adjacent
