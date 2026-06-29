@@ -1,5 +1,7 @@
-// User-generated data — lives in IndexedDB, backed up via export to curation.json.
-// Kept separate from the read-only Recipe reference data.
+// User-generated data — lives in IndexedDB, backed up via the Save/Open snapshot
+// (see src/app/backup.ts). Kept separate from the read-only Recipe reference data.
+
+import type { Recipe } from './recipe'
 
 /** Household sticky-note semantics: 5 favourite · 4 nice · 3 variety-only · 1-2 bin. */
 export type Stars = 1 | 2 | 3 | 4 | 5
@@ -74,13 +76,21 @@ export const DEFAULT_SETTINGS: Settings = {
   householdSize: 2,
 }
 
-/** The exportable backup envelope. */
-export interface CurationExport {
-  version: 1
+/**
+ * The Save/Open backup envelope — a self-contained snapshot of every table, so it is a
+ * true restore point with no dependency on a matching `recipes.json`. Crucially it carries
+ * the curated `recipes` set itself: that is the only way in-app deletions survive a restore
+ * (there are no tombstones). Open restores by replacing all data wholesale.
+ */
+export interface BackupSnapshot {
+  version: 2
   exportedAt: string
+  recipes: Recipe[]
   userData: UserRecipeData[]
   cooked: CookedEntry[]
   plans: WeekPlan[]
+  shopping: ShoppingState[]
   variantGroups: VariantGroup[]
-  settings: Settings
+  /** Raw key/value settings rows (dataSource, demoVersion, householdSize, …). */
+  settings: SettingRow[]
 }
