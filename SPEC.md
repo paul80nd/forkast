@@ -71,9 +71,10 @@ One repo, three parts:
 
 ### Persistence model
 
-- **Reference data** (`recipes.json` + images): produced by the scraper, imported
-  into **IndexedDB** as the fast working copy. Always re-importable, so never
-  precious.
+- **Reference data** (`recipes.json`): imported into **IndexedDB** as the fast working
+  copy. Always re-importable, so never precious. **Images are served from disk**, not
+  held in IndexedDB — they're too large and Safari can evict idle blobs, so a static
+  route serves them from a local folder (the JSON stores only the filename).
 - **User data** (stars, notes, cooked history, plans, shopping lists, settings):
   lives in IndexedDB; the **durable source of truth is an exported
   `curation.json`** on disk. One-click Export/Import.
@@ -91,15 +92,16 @@ One repo, three parts:
 | `title`, `description` | |
 | `image` | local filename under `/images` |
 | `sourceUrl` | provenance (private datasets only) |
-| `cuisine`, `categories[]` | from source; `tags[]` carries derived diet/effort labels |
-| `allergens[]` | powers no-go filters (e.g. fish) |
+| `cuisine` | the single browse facet (from source); `tags[]` carries derived diet/effort labels |
+| `allergens[]` | from source, for reference/display |
 | `prepTime` | prep+cook minutes for the recipe's base `serves` |
+| `serves` | base portions the quantities are written for (default 2) |
 | `sourceRating` | `{ average, count }` from source, if any |
 | `nutrition?` | per-portion macros (kcal + protein/fat/saturates/carbs/sugars/fibre/salt), if available |
 | `ingredients[]` | `{ rawLabel, name, qty?, unit?, ingredientId?, sourceRef? }` — `sourceRef` is a stable source id so one match reuses across recipes |
 | `basics[]` | store-cupboard items (kept out of the buy list by default) |
 | `instructions[]` | `{ order, text }` |
-| `mainProtein?` | derived from categories, best-effort (for variety) |
+| `mainProtein?` | derived best-effort from source data (for variety) |
 
 ### User data (IndexedDB, exportable)
 
@@ -127,8 +129,8 @@ One repo, three parts:
    demo set so first run shows something. Imported recipes carry **best-effort**
    ingredient matches; a **review step** (against the editable ingredient dictionary,
    now living in IndexedDB) confirms/corrects them before they're fully in.
-2. **Browse / search / filter** — by cuisine, prep time, rating, and **exclude
-   no-go ingredients/allergens** (fish).
+2. **Browse / search / filter** — by cuisine, prep time, and rating. (No-go proteins
+   — fish, etc. — are excluded upstream when building the dataset, not filtered here.)
 3. **Curate** — set ★1–5; fast keyboard triage of the unrated backlog.
 4. **Plan a week** — manually add recipes; choose portions (default **2**,
    scalable to **4**/N); show cuisine / protein / time badges + a "not cooked
