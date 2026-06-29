@@ -31,6 +31,21 @@ export interface WeekPlan {
   recipeIds: string[]
 }
 
+/**
+ * A symmetric set of related recipes (variants / near-duplicates) — there is no
+ * lead/child. User data: precious, exported with the backup, survives re-import.
+ * Invariants (enforced in `src/app/groups.ts`): a recipe belongs to at most one group,
+ * and a group always has at least two members (it is dissolved otherwise).
+ */
+export interface VariantGroup {
+  /** Stable group id. */
+  id: string
+  /** What differs across members; metadata only. */
+  axis?: 'protein' | 'carb' | 'mixed'
+  /** The members; `label` is the short variant tag shown in the UI ("Rice", "Beef"). */
+  members: { recipeId: string; label: string }[]
+}
+
 /** Simple key/value settings row. */
 export interface SettingRow {
   key: string
@@ -66,5 +81,6 @@ export interface CurationExport {
   userData: UserRecipeData[]
   cooked: CookedEntry[]
   plans: WeekPlan[]
+  variantGroups: VariantGroup[]
   settings: Settings
 }
