@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
+import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
 import type { VariantGroup } from '../schema/userData'
 import {
@@ -230,45 +231,7 @@ export function RefinePage() {
       ) : (
         <ul className="mt-2 space-y-3">
           {groups.map((g) => (
-            <li key={g.id} className="rounded-xl border border-stone-200 bg-white p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-medium tracking-wide text-stone-500 uppercase">
-                  {g.axis ? `${g.axis} group` : 'group'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => deleteGroup(g.id)}
-                  className="rounded px-2 py-0.5 text-xs font-medium text-rose-600 hover:bg-rose-50"
-                >
-                  Disband
-                </button>
-              </div>
-              <ul className="mt-2 flex flex-wrap gap-2">
-                {g.members.map((m) => (
-                  <li
-                    key={m.recipeId}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 py-1 pr-1 pl-2.5 text-sm"
-                  >
-                    {m.label && (
-                      <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500">
-                        {m.label}
-                      </span>
-                    )}
-                    <Link to={`/recipe/${m.recipeId}`} className="hover:text-orange-700">
-                      {byId.get(m.recipeId)?.title ?? m.recipeId}
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => removeRecipeFromGroup(m.recipeId)}
-                      className="rounded-full px-1.5 text-stone-400 hover:bg-stone-200 hover:text-stone-600"
-                      aria-label="Remove from group"
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </li>
+            <GroupCard key={g.id} group={g} byId={byId} />
           ))}
         </ul>
       )}
@@ -344,7 +307,6 @@ function SuggestionCard({
         </div>
       </div>
 
-      {comparing && <CompareView recipes={members} />}
       <ul className="mt-2 space-y-1.5">
         {rows.map((r, i) => (
           <li key={r.recipeId} className="flex items-center gap-2">
@@ -371,6 +333,69 @@ function SuggestionCard({
           </li>
         ))}
       </ul>
+
+      {comparing && <CompareView recipes={members} />}
+    </li>
+  )
+}
+
+// One saved group: its labelled members with a Compare toggle, plus disband / remove.
+function GroupCard({ group, byId }: { group: VariantGroup; byId: Map<string, Recipe> }) {
+  const [comparing, setComparing] = useState(false)
+  const members = group.members
+    .map((m) => byId.get(m.recipeId))
+    .filter((r): r is Recipe => r !== undefined)
+
+  return (
+    <li className="rounded-xl border border-stone-200 bg-white p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium tracking-wide text-stone-500 uppercase">
+          {group.axis ? `${group.axis} group` : 'group'}
+        </span>
+        <div className="flex gap-1.5">
+          <button
+            type="button"
+            onClick={() => setComparing((c) => !c)}
+            className="rounded px-2 py-0.5 text-xs font-medium text-stone-500 hover:bg-stone-100"
+          >
+            {comparing ? 'Hide compare' : 'Compare'}
+          </button>
+          <button
+            type="button"
+            onClick={() => deleteGroup(group.id)}
+            className="rounded px-2 py-0.5 text-xs font-medium text-rose-600 hover:bg-rose-50"
+          >
+            Disband
+          </button>
+        </div>
+      </div>
+      <ul className="mt-2 flex flex-wrap gap-2">
+        {group.members.map((m) => (
+          <li
+            key={m.recipeId}
+            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 py-1 pr-1 pl-2.5 text-sm"
+          >
+            {m.label && (
+              <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500">
+                {m.label}
+              </span>
+            )}
+            <Link to={`/recipe/${m.recipeId}`} className="hover:text-orange-700">
+              {byId.get(m.recipeId)?.title ?? m.recipeId}
+            </Link>
+            <button
+              type="button"
+              onClick={() => removeRecipeFromGroup(m.recipeId)}
+              className="rounded-full px-1.5 text-stone-400 hover:bg-stone-200 hover:text-stone-600"
+              aria-label="Remove from group"
+            >
+              ✕
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {comparing && <CompareView recipes={members} />}
     </li>
   )
 }
@@ -407,7 +432,19 @@ function CompareView({ recipes }: { recipes: Recipe[] }) {
             <td className="p-2" />
             {recipes.map((r) => (
               <th key={r.id} className="p-2 text-left align-bottom font-semibold text-stone-700">
-                <Link to={`/recipe/${r.id}`} className="hover:text-orange-700 hover:underline">
+                <Link to={`/recipe/${r.id}`} className="block hover:text-orange-700 hover:underline">
+                  {r.image ? (
+                    <img
+                      src={resolveAsset(r.image)}
+                      alt=""
+                      className="mb-1.5 aspect-[4/3] w-full max-w-40 rounded-md object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="mb-1.5 flex aspect-[4/3] w-full max-w-40 items-center justify-center rounded-md bg-stone-100 text-xs text-stone-400">
+                      no image
+                    </div>
+                  )}
                   {r.title}
                 </Link>
               </th>
