@@ -300,9 +300,8 @@ export function RefinePage() {
 
 // Duplicates: find clusters of near-identical recipes (tight similarity) and delete the
 // spares. Mirrors the group suggester's card UI, but the action removes the ticked rows.
-// The keeper (highest ★, then most complete) is left unticked; every other member is
-// pre-armed for deletion, so the common case is one click. A thin shell over
-// src/app/duplicates.ts.
+// Nothing is pre-ticked (deletion is destructive); the keeper (highest ★, then most
+// complete) is badged as a hint. A thin shell over src/app/duplicates.ts.
 function DuplicatesSection({
   byId,
   starsById,
@@ -340,8 +339,8 @@ function DuplicatesSection({
       </div>
       <p className="mt-1 text-sm text-stone-500">
         Recipes that look like the same dish — near-identical title and ingredients (not a
-        protein/carb swap; those belong in a group). The suggested keeper is left unticked;
-        tick or untick the rest, then delete the spares.
+        protein/carb swap; those belong in a group). Tick the ones to delete; the suggested
+        keeper is badged.
       </p>
 
       {candidates && candidates.length === 0 && (
@@ -400,10 +399,9 @@ function DuplicateCard({
       ),
     [members, starsById],
   )
-  // Pre-arm everything except the keeper for deletion.
-  const [checked, setChecked] = useState<Set<string>>(
-    () => new Set(cluster.recipeIds.filter((id) => id !== keeperId)),
-  )
+  // Nothing pre-armed — deletion is destructive, so the user ticks what to remove. The
+  // keeper is only a hint (badged), not a default selection.
+  const [checked, setChecked] = useState<Set<string>>(() => new Set())
   const [comparing, setComparing] = useState(false)
   const [busy, setBusy] = useState(false)
   const count = checked.size
@@ -488,8 +486,8 @@ function DuplicateCard({
               )}
               <Link
                 to={`/recipe/${r.id}`}
-                className={`flex-1 truncate text-sm hover:text-orange-700 ${
-                  checked.has(r.id) ? 'text-stone-800' : 'text-stone-400'
+                className={`min-w-0 truncate text-sm hover:text-orange-700 ${
+                  checked.has(r.id) ? 'text-rose-600 line-through' : 'text-stone-800'
                 }`}
               >
                 {r.title}
@@ -499,6 +497,7 @@ function DuplicateCard({
                   keep
                 </span>
               )}
+              <span aria-hidden className="flex-1" />
             </li>
           )
         })}
