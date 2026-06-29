@@ -82,11 +82,7 @@ export function RecipePage() {
                 {recipe.allergens.map((a) => (
                   <span
                     key={a}
-                    className={`rounded px-1.5 py-0.5 text-xs font-medium ${
-                      a === 'fish'
-                        ? 'bg-sky-100 text-sky-700'
-                        : 'bg-stone-100 text-stone-600'
-                    }`}
+                    className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-600"
                   >
                     {a}
                   </span>
