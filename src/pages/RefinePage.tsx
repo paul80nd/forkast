@@ -484,14 +484,13 @@ function DuplicateCard({
               ) : (
                 <span className="w-12 shrink-0" />
               )}
-              <Link
-                to={`/recipe/${r.id}`}
-                className={`min-w-0 truncate text-sm hover:text-orange-700 ${
+              <span
+                className={`min-w-0 truncate text-sm ${
                   checked.has(r.id) ? 'text-rose-600 line-through' : 'text-stone-800'
                 }`}
               >
                 {r.title}
-              </Link>
+              </span>
               {isKeeper && (
                 <span className="shrink-0 rounded bg-emerald-50 px-1.5 py-0.5 text-xs font-medium text-emerald-700">
                   keep
