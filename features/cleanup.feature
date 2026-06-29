@@ -17,3 +17,13 @@ Feature: Clean up unwanted recipes
     When I delete recipes "r1"
     Then recipe "r2" is in no group
     And there are no groups
+
+  Scenario: Deleting a recipe purges its ratings, history and plan slot
+    Given the store holds recipes "r1, r2"
+    And recipe "r1" is rated 5 stars
+    And recipe "r1" was cooked
+    And recipe "r1" is in the plan
+    When I delete recipes "r1"
+    Then recipe "r1" has no curation row
+    And recipe "r1" has no cooked history
+    And the plan does not contain "r1"

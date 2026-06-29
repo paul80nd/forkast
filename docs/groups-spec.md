@@ -123,8 +123,11 @@ The home for tidying the collection. Two jobs, split into two in-page tabs (**Gr
    "very bin it" — see `★ semantics`). The Refine "Clean up binned recipes" section lists
    them worst-first; **tick** the ones to remove (or "select all"), then **confirm**.
    Nothing is pre-selected — deletion is destructive and real (no tombstones; see *Import
-   changes*). Calls `deleteRecipes` in `src/app/cleanup.ts`, which cascades to groups
-   (dissolving any left under two members). Covered by `features/cleanup.feature`.
+   changes*). Calls `deleteRecipes` in `src/app/cleanup.ts`, which is **total**: it cascades
+   to groups (dissolving any left under two members) **and purges the recipe's user data** —
+   stars/notes, cooked history, and its slot in any plan. (Plan-derived shopping ticks are
+   left; stale keys are ignored.) So re-importing a deleted recipe starts it **clean**, with
+   no stale rating. Covered by `features/cleanup.feature`.
    - **Images:** the deleted recipe's image file on disk is left orphaned — the browser
      can't touch the filesystem (Safari, no File System Access API), and an orphan is
      harmless (nothing references it). Reclaiming the disk space is an optional **offline

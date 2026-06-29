@@ -24,6 +24,14 @@ JSON export is the durable state and already reflects deletions, so only a delib
 re-import can resurrect a recipe (acceptable). Import becomes additive-by-default with a
 replace-all option. Full design and the resolved sub-decisions: [`groups-spec.md`](groups-spec.md).
 
+## 2026-06-29 — Deleting a recipe purges its user data too
+
+Extends "delete means delete": deleting a recipe now also removes its stars/notes, cooked
+history, and plan membership — not just the recipe record. Rationale: deleting means we
+don't want to hear of it again, so a later re-import should start it **clean** rather than
+resurrect an old rating. Consistent with the no-tombstones model (the export is the durable
+state). Plan-derived shopping ticks are left as-is (not per-recipe; stale keys are ignored).
+
 ## 2026-06-29 — Drop the imported source rating
 
 Our own ★ rating is the only one that matters (do *we* like it, not whether everyone does);
