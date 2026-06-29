@@ -55,7 +55,7 @@ export interface Recipe {
   /** Provenance. Omitted from demo and any committed public data. */
   sourceUrl?: string
 
-  /** The single browse facet, e.g. "Italian". (For Gousto this is the source cuisine.) */
+  /** The single browse facet, e.g. "Italian" — typically the source's cuisine label. */
   cuisine: string
   /** Free-form labels for filtering: diet/effort derived at import (e.g. "vegetarian",
    *  "dairy-free", "speedy") unioned with the source's own category labels. */
