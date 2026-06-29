@@ -186,7 +186,7 @@ export function RecipePage() {
                   />
                   <div
                     role="menu"
-                    className="absolute top-full right-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
+                    className="absolute top-full right-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-stone-200 bg-white dark:bg-stone-100 shadow-lg"
                   >
                     <button
                       type="button"
@@ -237,7 +237,7 @@ export function RecipePage() {
                   <li key={s.recipeId}>
                     <Link
                       to={`/recipe/${s.recipeId}`}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-sm text-stone-700 transition hover:border-orange-300 hover:text-orange-700"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white dark:bg-stone-100 px-2.5 py-1 text-sm text-stone-700 transition hover:border-orange-300 hover:text-orange-700"
                     >
                       {s.label && (
                         <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500">

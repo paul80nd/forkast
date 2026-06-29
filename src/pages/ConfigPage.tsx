@@ -52,7 +52,7 @@ export function ConfigPage() {
       </p>
 
       {issues.length > 0 && (
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/50 p-3">
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
           <h3 className="text-sm font-semibold text-amber-700">
             {issues.length} issue{issues.length > 1 ? 's' : ''} to fix
           </h3>
@@ -67,7 +67,7 @@ export function ConfigPage() {
         </div>
       )}
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-stone-200 bg-white">
+      <div className="mt-4 overflow-x-auto rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-stone-200 text-left text-xs tracking-wide text-stone-500 uppercase">

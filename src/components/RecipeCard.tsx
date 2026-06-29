@@ -17,7 +17,7 @@ export function RecipeCard({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+      className={`relative overflow-hidden rounded-xl border bg-white dark:bg-stone-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
         selected ? 'border-orange-400 ring-2 ring-orange-300' : 'border-stone-200'
       }`}
     >
@@ -30,7 +30,7 @@ export function RecipeCard({
             loading="lazy"
           />
           {stars && (
-            <span className="absolute top-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-amber-600 shadow-sm">
+            <span className="absolute top-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-amber-600 shadow-sm">
               {'★'.repeat(stars)}
             </span>
           )}
@@ -58,7 +58,7 @@ export function RecipeCard({
       {/* Selection tickbox — a sibling of the Link (not nested in the anchor), so ticking
           never navigates. */}
       {onToggleSelect && (
-        <label className="absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-white/90 p-1 shadow-sm">
+        <label className="absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-white/90 dark:bg-stone-900/90 p-1 shadow-sm">
           <input
             type="checkbox"
             checked={selected}

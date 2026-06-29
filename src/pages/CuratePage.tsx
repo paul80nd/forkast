@@ -71,7 +71,7 @@ export function CuratePage() {
 
       {/* Triage */}
       {current ? (
-        <div className="mt-5 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm sm:flex">
+        <div className="mt-5 overflow-hidden rounded-2xl border border-stone-200 bg-white dark:bg-stone-100 shadow-sm sm:flex">
           <Link to={`/recipe/${current.id}`} className="block sm:w-2/5">
             <img
               src={resolveAsset(current.image)}
@@ -127,7 +127,7 @@ export function CuratePage() {
           </div>
         </div>
       ) : (
-        <div className="mt-5 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center">
+        <div className="mt-5 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-10 text-center">
           <p className="text-lg font-medium text-stone-700">All triaged 🎉</p>
           <p className="mt-1 text-sm text-stone-500">
             Every recipe has a rating. Re-rate any below.
@@ -150,7 +150,7 @@ export function CuratePage() {
                   <span className="text-stone-400">{STAR_LABELS[tier]}</span>{' '}
                   <span className="text-stone-400">· {items.length}</span>
                 </h3>
-                <ul className="mt-2 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
+                <ul className="mt-2 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
                   {items.map((r) => (
                     <RatedRow key={r.id} recipe={r} stars={tier} />
                   ))}
