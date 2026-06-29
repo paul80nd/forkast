@@ -98,24 +98,52 @@ Run the CLI with **native Node** (≥22 strips TS types — no `tsx`, no build s
 - Keep the shopping/units logic pure and covered by Vitest.
 - Always run `npm run build` and `npm test` before wrapping up.
 
+## Testing
+
+Two tiers, one runner (Vitest 4):
+
+1. **Unit** — `src/**/*.test.ts`, next to the code. For tight, pure logic
+   (`parseQuantity`, `units`, `shopping` merge, dataset validation). Import from
+   `vitest` explicitly (no globals); keep fixtures local.
+2. **Feature (Gherkin)** — spec-driven, **living documentation**. `.feature` files in
+   `features/`, step defs in `features/steps/*.steps.ts` via `@amiceli/vitest-cucumber`.
+   Steps drive the **app layer** (see below) against **`fake-indexeddb`** — real Dexie
+   code paths, no browser, no React render ("just below the UI"). `test/setup.ts`
+   installs `fake-indexeddb/auto`; `test/factories.ts` builds valid records. Each
+   scenario's `Background` resets the store (per-scenario isolation).
+
+`npm test` runs both; `npm run test:features` runs only the feature layer. New features
+should land with a `.feature` describing the behaviour — it's the regression net.
+`vitest.config.ts` wires includes + setup; `tsconfig.app.json` also type-checks
+`test/` + `features/` so `npm run build` catches errors there too.
+
+## Application layer (`src/app/`)
+
+Use-cases that orchestrate Dexie + pure libs (e.g. `importRecipeDataset`). This is the
+seam the UI **and** the feature tests both call — pages stay thin shells over these,
+so behaviour is tested below the React layer. Pure shaping/validation stays in
+`src/lib/` (e.g. `parseRecipeDataset`), the Dexie write in `src/app/`. New page logic
+that touches IndexedDB should grow here rather than inline in components.
+
 ## Current status & roadmap
 
 Built: foundation, SPA scaffold, schema, demo data, Browse, recipe detail,
 Curate (★ + triage), Plan (week board, variety hints, mark-cooked), Shop (merged
 list + breakdowns), Config (read-only ingredients viewer).
 
-Remaining for MVP, in build order (the import work pulls #9/#11 forward — getting
-real data first is the point):
+The CLI import pipeline (acquire → clean → cull → transform) is **done**; it emits a
+`RecipeDataset` already in our schema. Ingredient matching is now **lazy / in-app**
+(bind at shopping time), not a batch step — see the private handover for the full story.
 
-1. **Public pure core** — `parseIngredient` (label → qty/unit/name) +
-   `matchIngredient` (fuzzy → **ranked candidates + confidence**), both Vitest-covered.
-   No dependencies; committable on its own.
-2. **CLI Pass 1 — Acquire** — generic engine + private mapping config → raw cache +
-   images in `data/private/`.
-3. **CLI Pass 2 — Transform** — config-driven → candidate `recipes.json` + best-effort
-   matches + unmatched list.
-4. **Editable ingredient dictionary** — move `src/data/ingredients.ts` into IndexedDB
-   (seeded from the bundled default), Config becomes editable.
-5. **SPA review UI (Pass 3)** — confirm/correct matches, create dictionary entries.
-6. **Export / Import** user data (the durable backup — IndexedDB ⇄ `curation.json`),
+Remaining for MVP:
+
+1. **SPA dataset import** ✅ — file-picker in Config → `parseRecipeDataset` (pure,
+   `src/lib/dataset.ts`) → `importRecipeDataset` (`src/app/dataset.ts`) → IndexedDB as
+   `dataSource='user'`. Unit + Gherkin covered (`features/import-dataset.feature`).
+2. **Image serving** — the open problem: ~727 MB of images can't be committed or held
+   as IndexedDB blobs (Safari idle-eviction). Pick a static-serve strategy.
+3. **Lazy bind/create-ingredient flow** at shopping time (+ `matchIngredient` helper),
+   growing the dictionary in IndexedDB.
+4. **Tag management** — rename(=merge)/delete tags, persisted + exported.
+5. **Export / Import** user data (the durable backup — IndexedDB ⇄ `curation.json`),
    incl. the grown dictionary; "save & open" the processed state.
