@@ -2,8 +2,22 @@ import { Link } from 'react-router-dom'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
 import { resolveAsset } from '../lib/assets'
+import { deleteRecipe } from '../app/cleanup'
 
 export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars }) {
+  // The card is a Link, so stop the click from navigating before confirming the delete.
+  function onDelete(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (
+      window.confirm(
+        `Delete “${recipe.title}”?\n\nThis removes it and its ratings for good (re-import to restore).`,
+      )
+    ) {
+      void deleteRecipe(recipe.id)
+    }
+  }
+
   return (
     <Link
       to={`/recipe/${recipe.id}`}
@@ -16,6 +30,15 @@ export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars })
           className="aspect-[4/3] w-full object-cover"
           loading="lazy"
         />
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label="Delete recipe"
+          title="Delete recipe"
+          className="absolute top-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-rose-600 shadow-sm transition hover:bg-white hover:text-rose-700"
+        >
+          ✕
+        </button>
         {stars && (
           <span className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-amber-600 shadow-sm">
             {'★'.repeat(stars)}
