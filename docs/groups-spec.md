@@ -101,9 +101,13 @@ page (every variant is already its own page). Data shaping is `seeAlsoFor()` in
 ### Refine — new section (between Browse and Curate)
 The home for tidying the collection. Two jobs:
 
-1. **Group related recipes / dedup.** A similarity suggester proposes candidate clusters;
-   the user **confirms a group** and labels members. Never auto-applies (fuzzy matching is
-   noisy — human-in-the-loop is mandatory).
+1. **Group related recipes / dedup.**
+   - **Manual grouping — built 2026-06-29** (`src/pages/RefinePage.tsx`): search recipes by
+     title, stage two or more, label each, pick an optional axis, create. Existing groups
+     list with disband + per-member remove. A thin shell over `src/app/groups.ts`.
+   - **Similarity suggester (later).** Proposes candidate clusters; the user **confirms a
+     group** and labels members. Never auto-applies (fuzzy matching is noisy —
+     human-in-the-loop is mandatory).
    - Detection signal: **title-stem overlap + ingredient-name Jaccard**, loosely (intent =
      "similar recipes"). The differing protein/carb line is exactly the axis, so don't
      bucket by `mainProtein`.

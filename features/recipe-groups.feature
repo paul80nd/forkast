@@ -31,6 +31,19 @@ Feature: Group related recipes
     Then the grouping is rejected
     And there are no groups
 
+  Scenario: Removing a member from a group of three keeps the rest grouped
+    Given I have grouped recipes "r1, r2, r3"
+    When I remove recipe "r2" from its group
+    Then recipe "r1" is grouped with "r3"
+    And recipe "r2" is in no group
+
+  Scenario: Disbanding a group ungroups all its members
+    Given I have grouped recipes "r1, r2, r3"
+    When I disband the group containing "r1"
+    Then recipe "r1" is in no group
+    And recipe "r2" is in no group
+    And there are no groups
+
   Scenario: Deleting a grouped recipe removes it from its group
     Given I have grouped recipes "r1, r2, r3"
     When I delete recipe "r2"

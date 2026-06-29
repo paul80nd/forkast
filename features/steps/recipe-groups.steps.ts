@@ -1,7 +1,13 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
-import { createGroup, groupForRecipe, seeAlsoFor } from '../../src/app/groups'
+import {
+  createGroup,
+  deleteGroup,
+  groupForRecipe,
+  removeRecipeFromGroup,
+  seeAlsoFor,
+} from '../../src/app/groups'
 import { deleteRecipe } from '../../src/app/cleanup'
 import { makeRecipe } from '../../test/factories'
 
@@ -100,6 +106,40 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     Then('the grouping is rejected', () => {
       expect(rejected).toBe(true)
+    })
+    And('there are no groups', async () => {
+      expect(await db.variantGroups.count()).toBe(0)
+    })
+  })
+
+  Scenario('Removing a member from a group of three keeps the rest grouped', ({ Given, When, Then, And }) => {
+    Given('I have grouped recipes {string}', async (_, list: string) => {
+      await group(list)
+    })
+    When('I remove recipe {string} from its group', async (_, id: string) => {
+      await removeRecipeFromGroup(id)
+    })
+    Then('recipe {string} is grouped with {string}', async (_, id: string, others: string) => {
+      expect(await siblings(id)).toEqual(ids(others).sort())
+    })
+    And('recipe {string} is in no group', async (_, id: string) => {
+      expect(await groupForRecipe(id)).toBeUndefined()
+    })
+  })
+
+  Scenario('Disbanding a group ungroups all its members', ({ Given, When, Then, And }) => {
+    Given('I have grouped recipes {string}', async (_, list: string) => {
+      await group(list)
+    })
+    When('I disband the group containing {string}', async (_, id: string) => {
+      const g = await groupForRecipe(id)
+      if (g) await deleteGroup(g.id)
+    })
+    Then('recipe {string} is in no group', async (_, id: string) => {
+      expect(await groupForRecipe(id)).toBeUndefined()
+    })
+    And('recipe {string} is in no group', async (_, id: string) => {
+      expect(await groupForRecipe(id)).toBeUndefined()
     })
     And('there are no groups', async () => {
       expect(await db.variantGroups.count()).toBe(0)
