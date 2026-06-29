@@ -37,7 +37,7 @@ variety is enforced later at *suggestion* time, not by hiding in Browse.
 A new **user-data** store (precious; exported with the backup; survives re-import).
 Grouping is curation — it must never mutate the re-importable recipe records. Implemented
 in `src/app/groups.ts` (create/edit/delete + reverse index) and `src/app/cleanup.ts` (the
-single recipe-delete path with cascade); the `CurationExport` envelope now carries
+single recipe-delete path with cascade); the `BackupSnapshot` envelope carries
 `variantGroups`. Covered by `features/recipe-groups.feature`.
 
 ```ts
@@ -56,8 +56,8 @@ interface VariantGroup {
   a re-import** of the dataset.
 - A recipe's group is found by a cheap reverse index (recipeId → group) built in memory
   from the table on load.
-- Exported with the backup. (The `CurationExport` envelope in `schema/userData.ts` must
-  grow a `variantGroups` field when the Save/Open feature is built — backlog.)
+- Exported with the backup: the `BackupSnapshot` envelope in `schema/userData.ts` carries
+  `variantGroups` (Save/Open, `src/app/backup.ts`).
 
 **Integrity invariants** (enforced by the app layer, exercised by Gherkin):
 

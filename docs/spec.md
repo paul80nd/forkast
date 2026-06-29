@@ -78,9 +78,12 @@ no separate review pass** — the SPA owns ingredient identity, lazily.
   copy. Always re-importable, so never precious. **Images are served from disk**, not
   held in IndexedDB — they're too large and Safari can evict idle blobs, so a static
   route serves them from a local folder (the JSON stores only the filename).
-- **User data** (stars, notes, cooked history, plans, shopping ticks, settings, and —
-  once built — variant groups): lives in IndexedDB; the **durable source of truth is an
-  exported JSON backup** on disk (one-click Export/Import — *planned*, not yet built).
+- **User data** (stars, notes, cooked history, plans, shopping ticks, settings, variant
+  groups): lives in IndexedDB; the **durable source of truth is an exported JSON backup**
+  on disk. Built as **Save / Open** in Config — a self-contained snapshot of *every* table
+  (recipes included), so Open is a true wipe-and-restore that needs no matching
+  `recipes.json` and preserves in-app deletions (there are no tombstones). See
+  `src/app/backup.ts` + `features/backup.feature`.
 - **Why not File System Access API?** Unsupported in Safari (the target browser).
   IndexedDB + JSON export is universal. Note: Safari may evict IndexedDB for
   long-idle sites — hence Export is the real backup.

@@ -4,6 +4,7 @@ import { db } from '../db/db'
 import { INGREDIENTS, INGREDIENTS_BY_ID, pluralOf } from '../data/ingredients'
 import { getUnit } from '../lib/units'
 import { ImportDataset } from '../components/ImportDataset'
+import { BackupRestore } from '../components/BackupRestore'
 
 export function ConfigPage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
@@ -39,8 +40,9 @@ export function ConfigPage() {
     <section>
       <h1 className="text-2xl font-semibold tracking-tight">Config</h1>
 
-      <div className="mt-5">
+      <div className="mt-5 space-y-4">
         <ImportDataset />
+        <BackupRestore />
       </div>
 
       <h2 className="mt-5 text-lg font-semibold">Ingredients</h2>
