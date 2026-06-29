@@ -52,6 +52,17 @@ interface VariantGroup {
   a re-import** of the dataset.
 - A recipe's group is found by a cheap reverse index (recipeId → group) built in memory
   from the table on load.
+- Exported with the backup. (The `CurationExport` envelope in `schema/userData.ts` must
+  grow a `variantGroups` field when the Save/Open feature is built — backlog.)
+
+**Integrity invariants** (enforced by the app layer, exercised by Gherkin):
+
+- **One group per recipe.** A recipe belongs to at most one group; the create/edit UI
+  *moves* it rather than double-listing, keeping the reverse index 1:1.
+- **At least two members.** A group with fewer than two members is meaningless and is
+  dissolved (the row deleted).
+- **Delete cascades.** Deleting a recipe removes it from its group; if that drops the group
+  below two members, the group is dissolved. A single delete path enforces this.
 
 Dexie: add `variantGroups: 'id'` in a new schema version. (A `*recipeId` multiEntry index
 is possible if DB-level membership lookup is ever wanted; in-memory is fine at current
@@ -95,16 +106,33 @@ The home for tidying the collection. Two jobs:
      re-import of the *same* dataset is already idempotent (additive upsert by stable id),
      so Refine is for the harder cases ids can't catch — not trivial double-imports.
 2. **★-driven cleanup.** Bulk-delete recipes scored 1–2★ ("bin it" / "very bin it" — see
-   `★ semantics`). Deletion writes **tombstones** (below) so an additive re-import doesn't
-   resurrect them.
+   `★ semantics`). Filter to the binned recipes, **tick** the ones to remove (with a
+   "select all"), then **confirm**. Nothing is pre-selected — deletion is destructive and
+   real (no tombstones; see *Import changes*). Deleting a recipe also removes it from any
+   group, dissolving the group if fewer than two members remain.
+   - **Images:** the deleted recipe's image file on disk is left orphaned — the browser
+     can't touch the filesystem (Safari, no File System Access API), and an orphan is
+     harmless (nothing references it). Reclaiming the disk space is an optional **offline
+     prune** (a CLI step comparing the images folder against the surviving recipe set),
+     not an in-app action.
 
 ## Import changes (prerequisite)
 
-- **Additive by default.** Import upserts by id: new recipes added, existing refreshed;
-  user data (stars/plans/cooked/groups) untouched. An explicit **"Replace all recipes"**
-  option preserves the current clear-first behaviour.
-- **Tombstones.** A persisted set of deleted recipe ids (user data; exported with backup).
-  Additive import **skips tombstoned ids** so in-app deletions stick across re-imports.
+Two import modes. Both leave user data (stars/plans/cooked/groups) untouched — it lives in
+its own tables, which neither mode clears — and both set `dataSource='user'` so the
+first-run demo seed never clobbers an import.
+
+- **Additive (default).** Upsert recipes by id: new ones added, existing ones refreshed
+  from the import, recipes the import doesn't mention kept. This is how you re-expand the
+  collection — e.g. import the full variant set, then curate it down in Refine.
+- **Replace all recipes.** The current clear-first behaviour, for starting clean.
+
+**No tombstones — delete means delete.** Deleting a recipe in-app removes its record for
+good. The durable backup is the JSON **export**, which already reflects every deletion, so
+a normal backup → restore never resurrects anything. The *only* way a deleted recipe
+returns is a deliberate **additive re-import of the original dataset** that still contains
+it — an opt-in, explainable consequence ("you re-imported the source"), not a surprise.
+Not worth a tombstone ledger to prevent.
 
 ## Automatic meal suggestion (later)
 
@@ -121,21 +149,26 @@ Same `variantGroups` metadata powers both "see also" now and varied suggestions 
 
 New IndexedDB logic goes in `src/app/` (the test seam), pure shaping in `src/lib/`:
 
-- `src/app/groups.ts` — create / edit / delete groups; reverse-index helper.
-- `src/app/dataset.ts` — additive upsert + tombstone-skip (extend existing importer).
-- `src/app/cleanup.ts` (or similar) — bulk-delete + tombstone writes.
+- `src/app/groups.ts` — create / edit / delete groups; reverse-index helper; enforces the
+  integrity invariants (one group per recipe, min two members).
+- `src/app/dataset.ts` — additive upsert + a replace-all option (extend existing importer).
+- `src/app/cleanup.ts` (or similar) — the single recipe-delete path: removes the record and
+  cascades group membership (dissolving a group left under two members).
 - Detection scoring is pure → `src/lib/` + unit tests.
 
 Each feature ships a Gherkin scenario (living docs / regression net), e.g.
 `features/recipe-groups.feature`, `features/additive-import.feature`,
 `features/cleanup.feature` — driving the app layer against `fake-indexeddb`.
 
-## Open decisions (resolve when building)
+## Decisions (resolved 2026-06-29)
 
-- **Browse "N related" badge** — show it, or keep grouping purely on the detail page?
-- **See also** — links only (v1), or in-place dropdown swap?
-- **Lead/preferred member** — drop entirely (suggester picks by ★), or keep an optional
-  "preferred" marker as the suggester's default?
-- **Tombstone storage shape** — dedicated table vs a single settings row holding the id set.
-- **Cleanup selection** — auto-select all 1–2★, or just filter to them and let the user
-  tick?
+- **Browse "N related" badge** — **deferred.** Grouping lives purely on the detail page for
+  v1; revisit once groups exist and we can feel whether Browse misses it.
+- **See also** — **links only** for v1 (every variant already has a page). In-place
+  dropdown swap deferred.
+- **Lead/preferred member** — **dropped.** No `leadId`; the suggester ranks by ★ and the
+  user picks the member. Only `axis`/`label` metadata is kept.
+- **Tombstones** — **dropped.** Delete is real (see *Import changes*); the export is the
+  durable state, and a deliberate raw re-import resurrecting a recipe is acceptable.
+- **Cleanup selection** — **filter + tick + select-all + confirm**, nothing pre-selected
+  (the action is destructive).
