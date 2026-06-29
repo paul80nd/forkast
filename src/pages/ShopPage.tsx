@@ -38,7 +38,7 @@ export function ShopPage() {
     return (
       <section>
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
-        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white p-8 text-center text-stone-500">
+        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-8 text-center text-stone-500">
           No meals planned, so nothing to buy.{' '}
           <Link to="/plan" className="text-orange-600 hover:underline">
             Plan a week →
@@ -79,7 +79,7 @@ export function ShopPage() {
             <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
               {group.aisle}
             </h2>
-            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
+            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
               {group.lines.map((line) => (
                 <CheckRow
                   key={line.key}
@@ -98,7 +98,7 @@ export function ShopPage() {
             <h2 className="text-xs font-semibold tracking-wide text-amber-600 uppercase">
               Check these (not auto-merged)
             </h2>
-            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-amber-200 bg-amber-50/40">
+            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-amber-200 bg-amber-50">
               {list.unmatched.map((line) => (
                 <CheckRow
                   key={line.key}
@@ -135,7 +135,7 @@ export function ShopPage() {
               value={extraText}
               onChange={(e) => setExtraText(e.target.value)}
               placeholder="Add anything else…"
-              className="flex-1 rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none"
+              className="flex-1 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none"
             />
             <button
               type="submit"
@@ -145,7 +145,7 @@ export function ShopPage() {
             </button>
           </form>
           {extras.length > 0 && (
-            <ul className="mt-2 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
+            <ul className="mt-2 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
               {extras.map((e, i) => (
                 <CheckRow
                   key={i}

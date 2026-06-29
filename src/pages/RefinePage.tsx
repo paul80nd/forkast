@@ -103,7 +103,7 @@ export function RefinePage() {
   }
 
   const inputClass =
-    'w-full rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
+    'w-full rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
 
   return (
     <section>
@@ -137,7 +137,7 @@ export function RefinePage() {
       {tab === 'group' && (
         <>
       {/* Suggested groups */}
-      <div className="mt-5 rounded-xl border border-stone-200 bg-white p-4">
+      <div className="mt-5 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Suggested groups</h2>
           <button
@@ -179,7 +179,7 @@ export function RefinePage() {
       </div>
 
       {/* Create a group manually */}
-      <div className="mt-5 rounded-xl border border-stone-200 bg-white p-4">
+      <div className="mt-5 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
         <h2 className="text-lg font-semibold">Group related recipes</h2>
 
         <div className="relative mt-3">
@@ -191,7 +191,7 @@ export function RefinePage() {
             className={inputClass}
           />
           {results.length > 0 && (
-            <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-stone-200 bg-white shadow-md">
+            <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-stone-200 bg-white dark:bg-stone-100 shadow-md">
               {results.map((r) => (
                 <li key={r.id}>
                   <button
@@ -244,7 +244,7 @@ export function RefinePage() {
           <select
             value={axis}
             onChange={(e) => setAxis(e.target.value as typeof axis)}
-            className="rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm"
+            className="rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm"
           >
             <option value="">Axis (optional)</option>
             <option value="protein">Protein swap</option>
@@ -326,7 +326,7 @@ function DuplicatesSection({
   }
 
   return (
-    <div className="mt-5 rounded-xl border border-stone-200 bg-white p-4">
+    <div className="mt-5 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Duplicates</h2>
         <button
@@ -453,7 +453,7 @@ function DuplicateCard({
             type="button"
             disabled={busy || count === 0}
             onClick={remove}
-            className="rounded-md bg-rose-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-rose-700 disabled:opacity-50"
+            className="rounded-md bg-rose-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 disabled:opacity-50"
           >
             Delete selected{count ? ` (${count})` : ''}
           </button>
@@ -617,7 +617,7 @@ function GroupCard({ group, byId }: { group: VariantGroup; byId: Map<string, Rec
     .filter((r): r is Recipe => r !== undefined)
 
   return (
-    <li className="rounded-xl border border-stone-200 bg-white p-3">
+    <li className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium tracking-wide text-stone-500 uppercase">
           {group.axis ? `${group.axis} group` : 'group'}
@@ -715,7 +715,7 @@ function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[]
   }
 
   return (
-    <div className="mt-2 rounded-xl border border-stone-200 bg-white p-3">
+    <div className="mt-2 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
       <div className="flex items-center justify-between gap-2">
         <label className="flex items-center gap-2 text-sm text-stone-700">
           <input
@@ -730,7 +730,7 @@ function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[]
           type="button"
           disabled={busy || count === 0}
           onClick={remove}
-          className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-rose-700 disabled:opacity-50"
+          className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 disabled:opacity-50"
         >
           Delete {count || ''} selected
         </button>
@@ -780,7 +780,7 @@ function CompareView({ recipes }: { recipes: Recipe[] }) {
   ]
 
   return (
-    <div className="mt-3 overflow-x-auto rounded-lg border border-stone-200 bg-stone-50/50">
+    <div className="mt-3 overflow-x-auto rounded-lg border border-stone-200 bg-stone-50">
       <table className="w-full min-w-[28rem] text-sm">
         <thead>
           <tr className="border-b border-stone-200">

@@ -39,7 +39,7 @@ export function ImportDataset() {
   }
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-4">
+    <div className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
       <h2 className="text-lg font-semibold">Dataset</h2>
       <p className="mt-1 text-sm text-stone-500">
         Import a recipe dataset (<code className="text-stone-600">recipes.json</code>).
@@ -58,7 +58,7 @@ export function ImportDataset() {
         Replace all current recipes (clear first)
       </label>
       {replaceAll && (
-        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-sm text-amber-800">
+        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
           <span className="font-semibold">Heads up:</span> this{' '}
           <span className="font-semibold">deletes every current recipe</span> before
           loading the file. Your stars, plans and cooked history are still kept.
@@ -82,7 +82,7 @@ export function ImportDataset() {
       </button>
 
       {result && (
-        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-800">
+        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
           Imported <span className="font-semibold">{result.imported}</span>{' '}
           {result.imported === 1 ? 'recipe' : 'recipes'}
           {result.skipped > 0 && (
@@ -93,7 +93,7 @@ export function ImportDataset() {
             </>
           )}
           {result.errors.length > 0 && (
-            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-emerald-900/80">
+            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-emerald-900">
               {result.errors.slice(0, 10).map((msg, i) => (
                 <li key={i}>{msg}</li>
               ))}
@@ -106,7 +106,7 @@ export function ImportDataset() {
       )}
 
       {error && (
-        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50/60 p-3 text-sm text-rose-800">
+        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
           Import failed: {error}
         </div>
       )}

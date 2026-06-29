@@ -61,7 +61,7 @@ export function BackupRestore() {
   }
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-4">
+    <div className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
       <h2 className="text-lg font-semibold">Backup</h2>
       <p className="mt-1 text-sm text-stone-500">
         <span className="font-medium">Save</span> downloads a complete snapshot of your
@@ -99,11 +99,11 @@ export function BackupRestore() {
       </div>
 
       {restored && (
-        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-800">
+        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
           Restored <span className="font-semibold">{restored.recipes}</span>{' '}
           {restored.recipes === 1 ? 'recipe' : 'recipes'} and your curation.
           {restored.warnings.length > 0 && (
-            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-emerald-900/80">
+            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-emerald-900">
               {restored.warnings.slice(0, 10).map((msg, i) => (
                 <li key={i}>{msg}</li>
               ))}
@@ -116,7 +116,7 @@ export function BackupRestore() {
       )}
 
       {error && (
-        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50/60 p-3 text-sm text-rose-800">
+        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
           {error}
         </div>
       )}

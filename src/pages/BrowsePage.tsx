@@ -115,7 +115,7 @@ export function BrowsePage() {
   }
 
   const selectClass =
-    'rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
+    'rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
 
   return (
     <section>
@@ -185,14 +185,14 @@ export function BrowsePage() {
             <button
               type="button"
               onClick={() => setSelected(new Set())}
-              className="rounded-md px-2.5 py-1 font-medium text-stone-600 hover:bg-white"
+              className="rounded-md px-2.5 py-1 font-medium text-stone-600 hover:bg-white dark:bg-stone-100"
             >
               Clear
             </button>
             <button
               type="button"
               onClick={deleteSelected}
-              className="rounded-md bg-rose-600 px-3 py-1 font-medium text-white hover:bg-rose-700"
+              className="rounded-md bg-rose-600 px-3 py-1 font-medium text-white hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600"
             >
               Delete selected
             </button>

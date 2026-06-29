@@ -112,7 +112,7 @@ export function PlanPage() {
                 className={`px-3 py-1 font-medium transition ${
                   portions === n
                     ? 'bg-orange-500 text-white'
-                    : 'bg-white text-stone-600 hover:bg-stone-100'
+                    : 'bg-white dark:bg-stone-100 text-stone-600 hover:bg-stone-100'
                 }`}
               >
                 {n}
@@ -124,13 +124,13 @@ export function PlanPage() {
 
       {/* The week */}
       {planned.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white p-8 text-center text-stone-500">
+        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-8 text-center text-stone-500">
           Nothing planned yet — add meals from your shortlist below.
         </div>
       ) : (
         <>
           {/* Variety summary */}
-          <div className="mt-4 flex flex-wrap gap-4 rounded-xl border border-stone-200 bg-white p-3 text-sm">
+          <div className="mt-4 flex flex-wrap gap-4 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3 text-sm">
             <VarietyGroup label="Cuisines" counts={cuisineCounts} />
             <VarietyGroup label="Proteins" counts={proteinCounts} capitalize />
           </div>
@@ -141,7 +141,7 @@ export function PlanPage() {
               return (
                 <li
                   key={r.id}
-                  className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-2.5"
+                  className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-2.5"
                 >
                   <Link to={`/recipe/${r.id}`} className="flex min-w-0 flex-1 items-center gap-3">
                     <img
@@ -193,7 +193,7 @@ export function PlanPage() {
             value={pickerQuery}
             onChange={(e) => setPickerQuery(e.target.value)}
             placeholder="Search your shortlist…"
-            className="rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none"
+            className="rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none"
           />
         </div>
 
@@ -287,7 +287,7 @@ function PickerStrip({
               key={r.id}
               type="button"
               onClick={() => addToPlan(r.id)}
-              className="group relative w-40 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="group relative w-40 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-white dark:bg-stone-100 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               title="Add to week"
             >
               <img

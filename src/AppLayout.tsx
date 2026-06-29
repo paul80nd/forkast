@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { ThemeToggle } from './components/ThemeToggle'
 
 const tabs = [
   { to: '/browse', label: 'Browse' },
@@ -12,7 +13,7 @@ const tabs = [
 export function AppLayout() {
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
-      <header className="border-b border-stone-200 bg-white">
+      <header className="border-b border-stone-200 bg-white dark:bg-stone-100">
         <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
           <span className="text-lg font-semibold tracking-tight">
             Forkast <span aria-hidden>🍴</span>
@@ -34,6 +35,9 @@ export function AppLayout() {
               </NavLink>
             ))}
           </nav>
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">
