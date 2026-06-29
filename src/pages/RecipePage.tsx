@@ -52,12 +52,6 @@ export function RecipePage() {
               <Fact label="Main" value={recipe.mainProtein} capitalize />
             )}
             <Fact label="Serves" value={`${recipe.serves}`} />
-            {recipe.sourceRating && (
-              <Fact
-                label="Rating"
-                value={`★ ${recipe.sourceRating.average.toFixed(1)} (${recipe.sourceRating.count})`}
-              />
-            )}
           </dl>
 
           <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">

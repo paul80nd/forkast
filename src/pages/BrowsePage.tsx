@@ -53,7 +53,8 @@ export function BrowsePage() {
     return [...list].sort((a, b) => {
       if (sort === 'name') return a.title.localeCompare(b.title)
       if (sort === 'time') return a.prepTime - b.prepTime
-      return (b.sourceRating?.average ?? 0) - (a.sourceRating?.average ?? 0)
+      // Top rated = our own ★; unrated (0) sort last.
+      return (starsById.get(b.id) ?? 0) - (starsById.get(a.id) ?? 0)
     })
   }, [recipes, query, cuisine, maxTime, rating, starsById, sort])
 
@@ -119,7 +120,7 @@ export function BrowsePage() {
           onChange={(e) => setSort(e.target.value as SortKey)}
           className={selectClass}
         >
-          <option value="rating">Top rated</option>
+          <option value="rating">Top rated (your ★)</option>
           <option value="time">Quickest</option>
           <option value="name">A–Z</option>
         </select>

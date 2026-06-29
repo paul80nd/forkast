@@ -27,11 +27,6 @@ export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars })
           <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
             {recipe.cuisine}
           </span>
-          {recipe.sourceRating && (
-            <span className="text-xs font-medium text-amber-600">
-              ★ {recipe.sourceRating.average.toFixed(1)}
-            </span>
-          )}
         </div>
         <h3 className="mt-1.5 leading-tight font-semibold">{recipe.title}</h3>
         <p className="mt-1 line-clamp-2 text-sm text-stone-500">

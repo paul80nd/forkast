@@ -12,7 +12,6 @@
       "tags": ["quick", "vegetarian", "comfort"],
       "allergens": ["gluten", "milk"],
       "prepTime": 25,
-      "sourceRating": { "average": 4.6, "count": 312 },
       "ingredients": [
         { "rawLabel": "300g orzo", "name": "orzo", "qty": 300, "unit": "g", "ingredientId": "orzo" },
         { "rawLabel": "400g cherry tomatoes", "name": "cherry tomatoes", "qty": 400, "unit": "g", "ingredientId": "cherry-tomatoes" },
@@ -41,7 +40,6 @@
       "tags": ["vegan", "batch-friendly", "freezer"],
       "allergens": [],
       "prepTime": 30,
-      "sourceRating": { "average": 4.8, "count": 521 },
       "ingredients": [
         { "rawLabel": "2 x 400g tins chickpeas", "name": "chickpeas", "qty": 800, "unit": "g", "ingredientId": "chickpeas" },
         { "rawLabel": "1 tin coconut milk", "name": "coconut milk", "qty": 400, "unit": "ml", "ingredientId": "coconut-milk" },
@@ -70,7 +68,6 @@
       "tags": ["quick", "fresh", "high-protein"],
       "allergens": ["soya"],
       "prepTime": 25,
-      "sourceRating": { "average": 4.7, "count": 408 },
       "ingredients": [
         { "rawLabel": "2 chicken breasts", "name": "chicken breast", "qty": 2, "ingredientId": "chicken-breast" },
         { "rawLabel": "1 lemongrass stalk", "name": "lemongrass", "qty": 1, "ingredientId": "lemongrass" },
@@ -98,7 +95,6 @@
       "tags": ["vegan", "quick", "crowd-pleaser"],
       "allergens": ["gluten"],
       "prepTime": 20,
-      "sourceRating": { "average": 4.5, "count": 276 },
       "ingredients": [
         { "rawLabel": "1 x 400g tin black beans", "name": "black beans", "qty": 400, "unit": "g", "ingredientId": "black-beans" },
         { "rawLabel": "1 tsp chipotle paste", "name": "chipotle paste", "qty": 1, "unit": "tsp", "ingredientId": "chipotle-paste" },
@@ -126,7 +122,6 @@
       "tags": ["comfort", "weekend"],
       "allergens": ["fish", "milk", "gluten"],
       "prepTime": 45,
-      "sourceRating": { "average": 4.4, "count": 189 },
       "ingredients": [
         { "rawLabel": "300g white fish fillet", "name": "white fish", "qty": 300, "unit": "g", "ingredientId": "white-fish" },
         { "rawLabel": "600g potatoes", "name": "potatoes", "qty": 600, "unit": "g", "ingredientId": "potatoes" },
@@ -154,7 +149,6 @@
       "tags": ["quick", "spicy", "high-protein"],
       "allergens": ["gluten", "soya", "sesame"],
       "prepTime": 20,
-      "sourceRating": { "average": 4.9, "count": 634 },
       "ingredients": [
         { "rawLabel": "250g beef mince", "name": "beef mince", "qty": 250, "unit": "g", "ingredientId": "beef-mince" },
         { "rawLabel": "2 tbsp gochujang", "name": "gochujang", "qty": 2, "unit": "tbsp", "ingredientId": "gochujang" },
