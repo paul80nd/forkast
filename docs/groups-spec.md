@@ -99,7 +99,8 @@ page (every variant is already its own page). Data shaping is `seeAlsoFor()` in
   without navigating.
 
 ### Refine — new section (between Browse and Curate)
-The home for tidying the collection. Two jobs:
+The home for tidying the collection. Two jobs, split into two in-page tabs (**Group** and
+**Clean up**):
 
 1. **Group related recipes / dedup.**
    - **Manual grouping — built 2026-06-29** (`src/pages/RefinePage.tsx`): search recipes by

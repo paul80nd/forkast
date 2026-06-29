@@ -29,6 +29,7 @@ export function RefinePage() {
   const [busy, setBusy] = useState(false)
   const [suggestions, setSuggestions] = useState<CandidateCluster[] | null>(null)
   const [suggesting, setSuggesting] = useState(false)
+  const [tab, setTab] = useState<'group' | 'cleanup'>('group')
 
   async function runSuggest() {
     setSuggesting(true)
@@ -102,10 +103,28 @@ export function RefinePage() {
     <section>
       <h1 className="text-2xl font-semibold tracking-tight">Refine</h1>
       <p className="mt-1 text-sm text-stone-500">
-        Link related recipes — protein or carb swaps of the same dish — into a group. Each
-        member keeps its own page; they just point at each other as “see also”.
+        Tidy your collection: group related recipes, or clear out the ones you’ve binned.
       </p>
 
+      <div className="mt-4 flex gap-1 border-b border-stone-200">
+        {(['group', 'cleanup'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`-mb-px border-b-2 px-3 py-1.5 text-sm font-medium transition ${
+              tab === t
+                ? 'border-orange-500 text-orange-700'
+                : 'border-transparent text-stone-500 hover:text-stone-700'
+            }`}
+          >
+            {t === 'group' ? 'Group' : `Clean up${binned.length ? ` (${binned.length})` : ''}`}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'group' && (
+        <>
       {/* Suggested groups */}
       <div className="mt-5 rounded-xl border border-stone-200 bg-white p-4">
         <div className="flex items-center justify-between gap-3">
@@ -248,17 +267,18 @@ export function RefinePage() {
           ))}
         </ul>
       )}
+        </>
+      )}
 
-      {/* Star-driven cleanup */}
-      <h2 className="mt-6 text-lg font-semibold">
-        Clean up binned recipes{' '}
-        <span className="text-sm font-normal text-stone-400">({binned.length})</span>
-      </h2>
-      <p className="mt-1 text-sm text-stone-500">
-        Recipes you’ve rated ★1–2. Tick the ones to delete for good — deletion sticks
-        across re-imports (the export is your backup).
-      </p>
-      <CleanupSection binned={binned} />
+      {tab === 'cleanup' && (
+        <>
+          <p className="mt-4 text-sm text-stone-500">
+            Recipes you’ve rated ★1–2. Tick the ones to delete for good — deletion sticks
+            across re-imports (the export is your backup).
+          </p>
+          <CleanupSection binned={binned} />
+        </>
+      )}
     </section>
   )
 }
