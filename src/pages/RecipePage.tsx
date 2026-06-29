@@ -51,7 +51,7 @@ export function RecipePage() {
             {recipe.mainProtein && (
               <Fact label="Main" value={recipe.mainProtein} capitalize />
             )}
-            <Fact label="Serves" value={`${recipe.serves} (base quantities)`} />
+            <Fact label="Serves" value={`${recipe.serves}`} />
             {recipe.sourceRating && (
               <Fact
                 label="Rating"
@@ -112,6 +112,28 @@ export function RecipePage() {
               </div>
             </div>
           )}
+
+          {recipe.nutrition && (
+            <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
+              <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+                Nutrition <span className="font-normal normal-case">(per serving)</span>
+              </h3>
+              <dl className="mt-1.5 space-y-1 text-sm">
+                <Fact label="Energy" value={`${Math.round(recipe.nutrition.kcal)} kcal`} />
+                <Fact label="Protein" value={`${recipe.nutrition.protein} g`} />
+                <Fact
+                  label="Fat"
+                  value={`${recipe.nutrition.fat} g (${recipe.nutrition.saturates} g sat)`}
+                />
+                <Fact
+                  label="Carbs"
+                  value={`${recipe.nutrition.carbs} g (${recipe.nutrition.sugars} g sugar)`}
+                />
+                <Fact label="Fibre" value={`${recipe.nutrition.fibre} g`} />
+                <Fact label="Salt" value={`${recipe.nutrition.salt} g`} />
+              </dl>
+            </div>
+          )}
         </div>
 
         {/* Right: the recipe itself */}
@@ -137,6 +159,17 @@ export function RecipePage() {
             )}
           </div>
           <p className="mt-2 text-stone-600">{recipe.description}</p>
+
+          {recipe.sourceUrl && (
+            <a
+              href={recipe.sourceUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="mt-2 inline-block text-sm text-orange-600 hover:underline"
+            >
+              View original ↗
+            </a>
+          )}
 
           <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-500 uppercase">
             Ingredients
