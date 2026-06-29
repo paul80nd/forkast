@@ -117,7 +117,7 @@ The home for tidying the collection. Two jobs:
      prune** (a CLI step comparing the images folder against the surviving recipe set),
      not an in-app action.
 
-## Import changes (prerequisite)
+## Import changes (prerequisite) — built 2026-06-29
 
 Two import modes. Both leave user data (stars/plans/cooked/groups) untouched — it lives in
 its own tables, which neither mode clears — and both set `dataSource='user'` so the
@@ -126,7 +126,11 @@ first-run demo seed never clobbers an import.
 - **Additive (default).** Upsert recipes by id: new ones added, existing ones refreshed
   from the import, recipes the import doesn't mention kept. This is how you re-expand the
   collection — e.g. import the full variant set, then curate it down in Refine.
-- **Replace all recipes.** The current clear-first behaviour, for starting clean.
+- **Replace all recipes.** Clear-first, for starting clean.
+
+Additive only preserves existing *user* recipes: if the store is currently demo-seeded (or
+empty), even an additive import clears first, so the bundled demo placeholders never mix
+into a real import. Covered by `features/additive-import.feature`.
 
 **No tombstones — delete means delete.** Deleting a recipe in-app removes its record for
 good. The durable backup is the JSON **export**, which already reflects every deletion, so
