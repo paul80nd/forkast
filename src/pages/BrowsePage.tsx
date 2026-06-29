@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
@@ -59,6 +59,28 @@ export function BrowsePage() {
       return (starsById.get(b.id) ?? 0) - (starsById.get(a.id) ?? 0)
     })
   }, [recipes, query, cuisine, maxTime, rating, starsById, sort])
+
+  // Render incrementally — show a page of cards, load more as the user scrolls.
+  const PAGE = 50
+  const [visible, setVisible] = useState(PAGE)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  // Back to the top of the list whenever the filters change.
+  useEffect(() => setVisible(PAGE), [query, cuisine, maxTime, rating, sort])
+
+  // Grow the visible count when the bottom sentinel scrolls into view.
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) setVisible((v) => v + PAGE)
+      },
+      { rootMargin: '400px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [filtered.length, visible])
 
   if (recipes === undefined) {
     return <p className="text-stone-500">Loading recipes…</p>
@@ -133,11 +155,18 @@ export function BrowsePage() {
           No recipes match those filters.
         </p>
       ) : (
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((r) => (
-            <RecipeCard key={r.id} recipe={r} stars={starsById.get(r.id)} />
-          ))}
-        </div>
+        <>
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.slice(0, visible).map((r) => (
+              <RecipeCard key={r.id} recipe={r} stars={starsById.get(r.id)} />
+            ))}
+          </div>
+          {visible < filtered.length && (
+            <div ref={sentinelRef} className="mt-6 text-center text-sm text-stone-400">
+              Loading more…
+            </div>
+          )}
+        </>
       )}
     </section>
   )
