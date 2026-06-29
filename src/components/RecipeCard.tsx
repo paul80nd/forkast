@@ -46,11 +46,6 @@ export function RecipeCard({
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
             <span>⏱ {recipe.prepTime} min</span>
             {recipe.mainProtein && <span className="capitalize">· {recipe.mainProtein}</span>}
-            {recipe.allergens.includes('fish') && (
-              <span className="rounded bg-sky-100 px-1.5 py-0.5 font-medium text-sky-700">
-                fish
-              </span>
-            )}
           </div>
         </div>
       </Link>
