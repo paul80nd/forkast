@@ -96,7 +96,6 @@ One repo, three parts:
 | `allergens[]` | from source, for reference/display |
 | `prepTime` | prep+cook minutes for the recipe's base `serves` |
 | `serves` | base portions the quantities are written for (default 2) |
-| `sourceRating` | `{ average, count }` from source, if any |
 | `nutrition?` | per-portion macros (kcal + protein/fat/saturates/carbs/sugars/fibre/salt), if available |
 | `ingredients[]` | `{ rawLabel, name, qty?, unit?, ingredientId?, sourceRef? }` — `sourceRef` is a stable source id so one match reuses across recipes |
 | `basics[]` | store-cupboard items (kept out of the buy list by default) |

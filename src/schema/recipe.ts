@@ -65,8 +65,6 @@ export interface Recipe {
 
   /** Prep+cook minutes for the recipe's base `serves` (typically 2). */
   prepTime: number
-  /** Rating carried over from the source, if any. */
-  sourceRating?: { average: number; count: number }
   /** Per-portion macros, if the source provides them (for a later nutrition view). */
   nutrition?: Nutrition
 

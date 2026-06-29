@@ -94,11 +94,6 @@ function normaliseRecipe(raw: unknown, index: number): Recipe | string {
   if (sourceUrl) recipe.sourceUrl = sourceUrl
   const mainProtein = asString(raw.mainProtein)
   if (mainProtein) recipe.mainProtein = mainProtein
-  if (isObject(raw.sourceRating)) {
-    const average = asNumber(raw.sourceRating.average)
-    const count = asNumber(raw.sourceRating.count)
-    if (average !== undefined && count !== undefined) recipe.sourceRating = { average, count }
-  }
   if (isObject(raw.nutrition)) {
     recipe.nutrition = raw.nutrition as unknown as Recipe['nutrition']
   }

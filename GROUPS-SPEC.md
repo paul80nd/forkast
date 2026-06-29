@@ -134,8 +134,8 @@ Each feature ships a Gherkin scenario (living docs / regression net), e.g.
 
 - **Browse "N related" badge** — show it, or keep grouping purely on the detail page?
 - **See also** — links only (v1), or in-place dropdown swap?
-- **Lead/preferred member** — drop entirely (suggester picks by ★ then source-rating), or
-  keep an optional "preferred" marker as the suggester's default?
+- **Lead/preferred member** — drop entirely (suggester picks by ★), or keep an optional
+  "preferred" marker as the suggester's default?
 - **Tombstone storage shape** — dedicated table vs a single settings row holding the id set.
 - **Cleanup selection** — auto-select all 1–2★, or just filter to them and let the user
   tick?
