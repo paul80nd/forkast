@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
@@ -6,9 +6,11 @@ import { StarRating } from '../components/StarRating'
 import { setStars } from '../lib/curation'
 import { CURRENT_PLAN_ID, addToPlan, removeFromPlan } from '../lib/plan'
 import { seeAlsoFor } from '../app/groups'
+import { deleteRecipe } from '../app/cleanup'
 
 export function RecipePage() {
   const { id = '' } = useParams()
+  const navigate = useNavigate()
   // undefined = loading, null = not found
   const recipe = useLiveQuery(async () => (await db.recipes.get(id)) ?? null, [id])
   const stars = useLiveQuery(async () => (await db.userData.get(id))?.stars, [id])
@@ -35,9 +37,27 @@ export function RecipePage() {
 
   return (
     <section>
-      <Link to="/browse" className="text-sm text-orange-600 hover:underline">
-        ← Back to Browse
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link to="/browse" className="text-sm text-orange-600 hover:underline">
+          ← Back to Browse
+        </Link>
+        <button
+          type="button"
+          onClick={async () => {
+            if (
+              window.confirm(
+                `Delete “${recipe.title}”?\n\nThis removes it and its ratings for good (re-import to restore).`,
+              )
+            ) {
+              await deleteRecipe(recipe.id)
+              navigate('/browse')
+            }
+          }}
+          className="rounded-md px-2.5 py-1 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+        >
+          Delete recipe
+        </button>
+      </div>
 
       <div className="mt-3 grid gap-6 md:grid-cols-[2fr_3fr]">
         {/* Left: image + at-a-glance facts */}
