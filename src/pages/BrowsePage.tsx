@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
 import { usePersistentState } from '../hooks/usePersistentState'
+import { deleteRecipes } from '../app/cleanup'
 import type { Stars } from '../schema/userData'
 
 type SortKey = 'rating' | 'time' | 'name'
@@ -17,6 +18,30 @@ export function BrowsePage() {
   const [maxTime, setMaxTime] = usePersistentState('browse.maxTime', 0) // 0 = any
   const [rating, setRating] = usePersistentState<RatingFilter>('browse.rating', 'all')
   const [sort, setSort] = usePersistentState<SortKey>('browse.sort', 'rating')
+
+  // Multi-select for bulk delete (ephemeral — cleared on leaving Browse).
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  function toggleSelect(id: string) {
+    setSelected((s) => {
+      const next = new Set(s)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  async function deleteSelected() {
+    const ids = [...selected]
+    if (
+      !window.confirm(
+        `Delete ${ids.length} recipe${ids.length === 1 ? '' : 's'} for good?\n\n` +
+          'This removes them and their ratings (re-import to restore).',
+      )
+    ) {
+      return
+    }
+    await deleteRecipes(ids)
+    setSelected(new Set())
+  }
 
   const starsById = useMemo(() => {
     const m = new Map<string, Stars>()
@@ -150,6 +175,28 @@ export function BrowsePage() {
         </select>
       </div>
 
+      {selected.size > 0 && (
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm">
+          <span className="font-medium text-stone-700">{selected.size} selected</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSelected(new Set())}
+              className="rounded-md px-2.5 py-1 font-medium text-stone-600 hover:bg-white"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={deleteSelected}
+              className="rounded-md bg-rose-600 px-3 py-1 font-medium text-white hover:bg-rose-700"
+            >
+              Delete selected
+            </button>
+          </div>
+        </div>
+      )}
+
       {filtered.length === 0 ? (
         <p className="mt-10 text-center text-stone-500">
           No recipes match those filters.
@@ -158,7 +205,13 @@ export function BrowsePage() {
         <>
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.slice(0, visible).map((r) => (
-              <RecipeCard key={r.id} recipe={r} stars={starsById.get(r.id)} />
+              <RecipeCard
+                key={r.id}
+                recipe={r}
+                stars={starsById.get(r.id)}
+                selected={selected.has(r.id)}
+                onToggleSelect={() => toggleSelect(r.id)}
+              />
             ))}
           </div>
           {visible < filtered.length && (
