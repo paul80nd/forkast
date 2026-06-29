@@ -64,7 +64,7 @@ export function RecipeCard({ recipe, stars }: { recipe: Recipe; stars?: Stars })
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((o) => !o)}
-          className="flex size-7 items-center justify-center rounded-full bg-white/90 text-stone-600 shadow-sm transition hover:bg-white hover:text-stone-900"
+          className="flex size-7 items-center justify-center rounded-lg bg-white/90 text-stone-600 shadow-sm transition hover:bg-white hover:text-stone-900"
         >
           ⋮
         </button>
