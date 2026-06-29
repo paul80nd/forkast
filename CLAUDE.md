@@ -9,8 +9,20 @@ something here surprises you or proves wrong, tell the developer and update this
 ## What this is
 
 An opinionated, local-first **meal planner**: curate recipes (★ ratings), plan a varied
-week, generate a merged shopping list. Browser-only (IndexedDB); no server. See
-[`SPEC.md`](SPEC.md) for the design.
+week, generate a merged shopping list. Browser-only (IndexedDB); no server.
+
+## Documentation (living docs — keep honest)
+
+Prose specs are the source of truth for *design + rationale*; the Gherkin `features/` are
+the executable proof. If code and a doc disagree, fix the doc in the same change.
+
+- [`docs/spec.md`](docs/spec.md) — whole-app design, persistence, data model, MVP scope.
+- [`docs/groups-spec.md`](docs/groups-spec.md) — feature spec for Recipe Groups (per-feature
+  specs live in `docs/`).
+- [`docs/decisions.md`](docs/decisions.md) — the cross-cutting decision trail ("how we got
+  here"). Add an entry when you make an architectural call.
+- `features/*.feature` (+ `features/steps/`) — behaviour, run as tests.
+- `scripts/ACQUIRE.md` — generic agent playbook for acquiring a source.
 
 ## Privacy firewall — non-negotiable
 

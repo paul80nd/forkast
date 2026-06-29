@@ -1,12 +1,13 @@
-# GROUPS-SPEC — Recipe groups (variants & duplicates)
+# Recipe groups (variants & duplicates) — feature spec
 
 Design for grouping closely-related recipes so the app can surface alternatives and,
 later, keep automatic suggestions varied. Provider-neutral by design (honours the privacy
-firewall — see `CLAUDE.md`). Drafted 2026-06-29; **not yet built** — picked up next session.
+firewall — see `CLAUDE.md`). Drafted 2026-06-29; **not yet built**.
 
-> Intended to become living spec once implemented (each piece ships with a Gherkin
-> scenario). The eventual goal is to retire the prose `SPEC.md` in favour of the features
-> themselves being the spec.
+> A **feature spec**: the design and rationale for one area, sitting alongside the
+> whole-app [`spec.md`](spec.md) and the cross-cutting [`decisions.md`](decisions.md).
+> It's living documentation — each piece ships with a Gherkin scenario in `features/`,
+> which becomes the executable proof, while this prose keeps the *why*.
 
 ## Why
 

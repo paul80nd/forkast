@@ -1,0 +1,87 @@
+# Decisions
+
+Cross-cutting design decisions and the reasoning behind them — the "how we got here" the
+specs themselves don't carry. **Newest first.** Feature-local decisions live in their own
+feature spec (e.g. [`groups-spec.md`](groups-spec.md)); private rationale (the household's
+curation rules) stays in `HANDOVER.local.md`. Keep this **firewall-clean — no provider
+names, ever** (see `CLAUDE.md`).
+
+Each entry: the decision, *why*, and what it superseded if anything.
+
+## 2026-06-29 — Specs are living documentation, not retired in favour of Gherkin
+
+The earlier intent was for the Gherkin features to *be* the spec and to retire the prose
+docs. Reversed: prose captures design + rationale + this decision trail, which executable
+features can't. The model is four complementary layers — [`spec.md`](spec.md) (whole-app
+design), per-feature specs (e.g. `groups-spec.md`), this log (the cross-cutting journey),
+and `features/` (executable behaviour) — kept honest together. Docs collected under `docs/`.
+
+## 2026-06-29 — Recipe Groups: present-all / link related, and no tombstones
+
+Variants stay first-class, searchable, and **linked** (not hidden, demoted, or embedded);
+the relationship surfaces as "see also". **Delete means delete — no tombstone ledger**: the
+JSON export is the durable state and already reflects deletions, so only a deliberate raw
+re-import can resurrect a recipe (acceptable). Import becomes additive-by-default with a
+replace-all option. Full design and the resolved sub-decisions: [`groups-spec.md`](groups-spec.md).
+
+## 2026-06-29 — Drop the imported source rating
+
+Our own ★ rating is the only one that matters (do *we* like it, not whether everyone does);
+showing a source's average beside it invited confusion. Removed end-to-end. Browse "top
+rated" now sorts by our ★.
+
+## 2026-06-29 — Collapse `prepTime` to a single number
+
+Was `{ for2, for4 }`; the app only needs the time for the recipe's base serving size. The
+importer still tolerates the legacy object shape.
+
+## 2026-06-29 — Drop `sourceCode` (the source's catalogue/card code)
+
+Added 2026-06-28, then removed: it turned out to be the source's *internal* id, not the
+printed card code anyone references — recoverable for only a minority of recipes and not
+even unique. Not worth a field.
+
+## 2026-06-29 — Serve images from disk, never from IndexedDB
+
+Recipe images are large and Safari can evict idle IndexedDB blobs. A static route serves
+them from a local folder; the JSON stores only the filename. Images are never bundled,
+committed, or held in the DB.
+
+## 2026-06-29 — Testing: two tiers (unit + Gherkin feature tests)
+
+Tight pure logic gets unit tests beside the code; behaviour gets Gherkin scenarios driving
+the **app layer** (`src/app/`) against `fake-indexeddb` — real Dexie code paths, no browser
+or React. Features double as living docs and the regression net, "just below the UI".
+
+## ~2026-06-28 — One-shot import pipeline + lazy ingredient binding
+
+Superseded the config-driven, **re-runnable three-pass** design decided the same day (which
+included a planned SPA *review* pass and **batch** ingredient matching). A curated set is
+plenty, so the pipeline prunes in place and the raw cache is a deletable safety net (a backup
+zip is the insurance). Ingredient identity moved into the SPA: recipes import **unbound**,
+and binding is done **lazily at shopping time** and reused — no batch matcher, no review pass.
+
+## 2026-06-28 — Schema: one `cuisine` + many `tags`; drop `categories`
+
+`cuisine` is the single browse facet; derived diet/effort labels plus the source's own
+category labels live in `tags[]`. Dropped `Recipe.categories`. Also added `nutrition`,
+ingredient `sourceRef`, and `tags`.
+
+## 2026-06-27 — Local-first, browser-only, targets Safari
+
+No server, no account, nothing leaves the machine. Persistence is IndexedDB (the working
+store) plus a JSON **export** as the durable backup. The File System Access API is ruled
+out (unsupported in Safari); Safari may also evict idle IndexedDB, which is why export — not
+the DB — is the real backup.
+
+## 2026-06-27 — Privacy firewall: generic-input by design
+
+Provider knowledge is data + config + a thin private adapter, **never committed code**.
+Enforced by `.gitignore` and extends to commit messages. Committed recipe data is fictional
+demo only; the ingredient dictionary and unit system are generic knowledge and are public.
+
+## 2026-06-27 — ★ rating semantics
+
+★5 favourite · ★4 nice · ★3 variety-only · ★2 "bin it" · ★1 "very bin it" · unrated =
+triage backlog. The household's sticky-note system, digitised; ★3s are the explicit variety
+pool for the (later) assisted-planning feature.
