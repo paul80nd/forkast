@@ -85,6 +85,23 @@ export async function deleteGroup(id: string): Promise<void> {
   await db.variantGroups.delete(id)
 }
 
+/**
+ * Set one member's variant label within a group (the short tag like "Rice" / "Beef"). A
+ * no-op if the group or the member is unknown. Used to tidy the best-effort auto-labels.
+ */
+export async function setMemberLabel(
+  groupId: string,
+  recipeId: string,
+  label: string,
+): Promise<void> {
+  await db.transaction('rw', db.variantGroups, async () => {
+    const g = await db.variantGroups.get(groupId)
+    if (!g || !g.members.some((m) => m.recipeId === recipeId)) return
+    const members = g.members.map((m) => (m.recipeId === recipeId ? { ...m, label } : m))
+    await db.variantGroups.put({ ...g, members })
+  })
+}
+
 /** Remove a recipe from its group as a standalone action (wraps the in-tx detach). */
 export async function removeRecipeFromGroup(recipeId: string): Promise<void> {
   await db.transaction('rw', db.variantGroups, () => detachRecipeFromGroups(recipeId))

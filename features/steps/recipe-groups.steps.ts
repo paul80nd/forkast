@@ -7,6 +7,7 @@ import {
   groupForRecipe,
   removeRecipeFromGroup,
   seeAlsoFor,
+  setMemberLabel,
 } from '../../src/app/groups'
 import { deleteRecipe } from '../../src/app/cleanup'
 import { makeRecipe } from '../../test/factories'
@@ -173,6 +174,24 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     And('there are no groups', async () => {
       expect(await db.variantGroups.count()).toBe(0)
+    })
+  })
+
+  Scenario("Relabelling a member updates only that member's label", ({ Given, When, Then, And }) => {
+    Given('I have grouped recipes {string}', async (_, list: string) => {
+      await group(list)
+    })
+    When('I relabel recipe {string} to {string}', async (_, id: string, label: string) => {
+      const g = await groupForRecipe(id)
+      await setMemberLabel(g!.id, id, label)
+    })
+    Then('recipe {string} has the label {string}', async (_, id: string, label: string) => {
+      const g = await groupForRecipe(id)
+      expect(g?.members.find((m) => m.recipeId === id)?.label).toBe(label)
+    })
+    And('recipe {string} has the label {string}', async (_, id: string, label: string) => {
+      const g = await groupForRecipe(id)
+      expect(g?.members.find((m) => m.recipeId === id)?.label).toBe(label)
     })
   })
 })
