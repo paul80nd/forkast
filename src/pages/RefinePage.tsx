@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
+import { STAR_LABELS } from '../lib/curation'
 import type { Recipe } from '../schema/recipe'
 import type { VariantGroup } from '../schema/userData'
 import {
@@ -288,8 +289,8 @@ export function RefinePage() {
       {tab === 'cleanup' && (
         <>
           <p className="mt-4 text-sm text-stone-500">
-            Recipes you’ve rated ★1–2. Tick the ones to delete for good — deletion sticks
-            across re-imports (the export is your backup).
+            Recipes you’ve binned, split by how you rated them. Deletion sticks across
+            re-imports (the export is your backup).
           </p>
           <CleanupSection binned={binned} />
         </>
@@ -691,18 +692,51 @@ function GroupCard({ group, byId }: { group: VariantGroup; byId: Map<string, Rec
   )
 }
 
-// Bulk-delete the 1–2★ recipes. Nothing is pre-selected (delete is destructive and real);
-// tick, or select all, then confirm. Deletes cascade to groups via deleteRecipes.
+// Bulk-delete the binned recipes, split into two lists by tier: ★1 ("very bin it" — delete
+// in bulk) and ★2 ("bin it" — a chance to reconsider). Each list deletes independently.
 function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[] }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [busy, setBusy] = useState(false)
-
   if (binned.length === 0) {
     return <p className="mt-2 text-sm text-stone-500">Nothing binned — nothing to clean up.</p>
   }
+  const ones = binned.filter((b) => b.stars === 1)
+  const twos = binned.filter((b) => b.stars === 2)
 
-  const allSelected = binned.every((b) => selected.has(b.recipe.id))
-  const count = binned.filter((b) => selected.has(b.recipe.id)).length
+  return (
+    <div className="mt-3 space-y-5">
+      {ones.length > 0 && (
+        <CleanupList
+          items={ones}
+          tier={1}
+          prompt="You hate these — select all and clear them out in bulk."
+        />
+      )}
+      {twos.length > 0 && (
+        <CleanupList
+          items={twos}
+          tier={2}
+          prompt="You don’t like these, but here’s a chance to reconsider before they go."
+        />
+      )}
+    </div>
+  )
+}
+
+// One tier's bin list with its own selection. Nothing is pre-selected (delete is destructive
+// and real); tick, or select all, then confirm. Deletes cascade to groups via deleteRecipes.
+function CleanupList({
+  items,
+  tier,
+  prompt,
+}: {
+  items: { recipe: Recipe; stars: Stars }[]
+  tier: Stars
+  prompt: string
+}) {
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [busy, setBusy] = useState(false)
+
+  const allSelected = items.every((b) => selected.has(b.recipe.id))
+  const count = items.filter((b) => selected.has(b.recipe.id)).length
 
   function toggle(id: string) {
     setSelected((s) => {
@@ -713,10 +747,10 @@ function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[]
     })
   }
   function toggleAll() {
-    setSelected(allSelected ? new Set() : new Set(binned.map((b) => b.recipe.id)))
+    setSelected(allSelected ? new Set() : new Set(items.map((b) => b.recipe.id)))
   }
   async function remove() {
-    const ids = binned.map((b) => b.recipe.id).filter((id) => selected.has(id))
+    const ids = items.map((b) => b.recipe.id).filter((id) => selected.has(id))
     if (ids.length === 0) return
     if (
       !window.confirm(
@@ -736,28 +770,36 @@ function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[]
   }
 
   return (
-    <div className="mt-2 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
+    <div className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
       <div className="flex items-center justify-between gap-2">
-        <label className="flex items-center gap-2 text-sm text-stone-700">
-          <input
-            type="checkbox"
-            checked={allSelected}
-            onChange={toggleAll}
-            className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
-          />
-          Select all
-        </label>
+        <div>
+          <h3 className="text-sm font-semibold text-stone-700">
+            <span className="text-amber-500">{'★'.repeat(tier)}</span>{' '}
+            {STAR_LABELS[tier]}{' '}
+            <span className="font-normal text-stone-400">· {items.length}</span>
+          </h3>
+          <p className="mt-0.5 text-xs text-stone-500">{prompt}</p>
+        </div>
         <button
           type="button"
           disabled={busy || count === 0}
           onClick={remove}
-          className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 disabled:opacity-50"
+          className="shrink-0 rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 disabled:opacity-50"
         >
           Delete {count || ''} selected
         </button>
       </div>
-      <ul className="mt-2 divide-y divide-stone-100">
-        {binned.map(({ recipe, stars }) => (
+      <label className="mt-2 flex items-center gap-2 border-t border-stone-100 pt-2 text-sm text-stone-700">
+        <input
+          type="checkbox"
+          checked={allSelected}
+          onChange={toggleAll}
+          className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+        />
+        Select all
+      </label>
+      <ul className="mt-1 divide-y divide-stone-100">
+        {items.map(({ recipe }) => (
           <li key={recipe.id} className="flex items-center gap-2 py-1.5">
             <input
               type="checkbox"
@@ -765,7 +807,6 @@ function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[]
               onChange={() => toggle(recipe.id)}
               className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
             />
-            <span className="w-10 shrink-0 text-sm text-amber-600">{'★'.repeat(stars)}</span>
             <Link to={`/recipe/${recipe.id}`} className="flex-1 truncate text-sm text-stone-800 hover:text-orange-700">
               {recipe.title}
             </Link>

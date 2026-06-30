@@ -9,10 +9,18 @@ proof in `features/cleanup.feature`.
 
 ## ★-driven cleanup
 
-Lists the recipes scored **1–2★** worst-first (see `★ semantics` in [`spec.md`](spec.md)).
-**Tick** the ones to remove (or "select all"), then **confirm**. Nothing is pre-selected —
-deletion is destructive and real (no tombstones; see *Import & deletion model* in
-[`refine-spec.md`](refine-spec.md)), so the conservative default is to select nothing.
+Lists the recipes you've binned, **split into two lists by tier** (built 2026-06-30) — because
+★1 and ★2 mean different things even though both usually end in deletion:
+
+- **★1 · Very bin it** — "you hate these; select all and clear them out in bulk."
+- **★2 · Bin it** — "you don't like these, but here's a chance to reconsider before they go."
+
+Each list has its **own** select-all + delete, so you can blitz the ★1s and pick through the
+★2s independently. The subtle framing nudge — bulk-delete vs. reconsider — is the whole point;
+mechanically both call the same delete path. In each list you **tick** the ones to remove (or
+"select all"), then **confirm**. Nothing is pre-selected — deletion is destructive and real (no
+tombstones; see *Import & deletion model* in [`refine-spec.md`](refine-spec.md)), so the
+conservative default is to select nothing. A list is hidden entirely when that tier is empty.
 
 ## The single delete path (total)
 
