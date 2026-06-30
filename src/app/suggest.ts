@@ -31,6 +31,12 @@ export interface SuggestWeekParams {
   taken?: string[]
   /** Rejected recipe ids to keep out of the pool (rerolled away). */
   exclude?: string[]
+  /**
+   * Draw from **unrated** recipes too, treating each as a neutral ★3 ◆3 — so the planner is
+   * usable before the whole collection has been triaged. Binned (★1–2) recipes are still never
+   * suggested. Off by default.
+   */
+  includeUnrated?: boolean
 }
 
 /**
@@ -44,6 +50,7 @@ export async function suggestWeekPlan({
   config,
   taken = [],
   exclude = [],
+  includeUnrated = false,
 }: SuggestWeekParams): Promise<Suggestion[]> {
   const [recipes, userData, cooked, groups, plan] = await Promise.all([
     db.recipes.toArray(),
@@ -79,9 +86,13 @@ export async function suggestWeekPlan({
   const takenSet = new Set(taken)
   const excludeSet = new Set(exclude)
 
+  // An unrated recipe counts as a neutral ★3 when opted in (rotation falls back to ◆3 in the
+  // scorer's dueness curve). Binned recipes are filtered out before this is ever read.
+  const effectiveStars = (id: string): number => starsById.get(id) ?? (includeUnrated ? 3 : 0)
+
   const toCandidate = (r: Recipe): Candidate => ({
     id: r.id,
-    stars: starsById.get(r.id) ?? 0,
+    stars: effectiveStars(r.id),
     rotation: rotationById.get(r.id),
     cuisine: r.cuisine,
     mainProtein: r.mainProtein,
@@ -90,11 +101,12 @@ export async function suggestWeekPlan({
     groupId: groupByRecipe.get(r.id),
   })
 
-  // Eligible: keepers (★3+), not a no-go, not already planned / taken / rejected. (The cooldown
-  // lives in the scorer.)
+  // Eligible: keepers (★3+) — or unrated when opted in — never binned (★1–2), not a no-go, not
+  // already planned / taken / rejected. (The cooldown lives in the scorer.)
   const eligible = recipes.filter((r) => {
     const s = starsById.get(r.id)
-    if (!s || s < 3) return false
+    const ratingOk = s === undefined ? includeUnrated : s >= 3
+    if (!ratingOk) return false
     if (r.allergens.some((a) => NOGO_ALLERGENS.includes(a))) return false
     if (plannedIds.has(r.id) || takenSet.has(r.id) || excludeSet.has(r.id)) return false
     return true
@@ -103,7 +115,7 @@ export async function suggestWeekPlan({
   // Collapse each variant group to a single representative — highest ★, then rotation, then
   // least-recently cooked — so a group is offered once; the UI can swap to a sibling.
   const representativeRank = (r: Recipe): [number, number, number] => [
-    starsById.get(r.id) ?? 0,
+    effectiveStars(r.id),
     rotationById.get(r.id) ?? 0,
     daysSinceCookedFor(r.id) ?? Number.POSITIVE_INFINITY,
   ]

@@ -42,6 +42,9 @@ export function PlanPage() {
   // Assisted "suggest a varied week": a non-destructive shortlist you reroll / lock / swap /
   // accept. The target count persists; the shortlist is transient until accepted.
   const [suggestCount, setSuggestCount] = usePersistentState('plan.suggestCount', 5)
+  // Draw from unrated recipes too (treated as a neutral ★3 ◆3), so the planner works before the
+  // whole collection is triaged. On by default; persisted.
+  const [includeUnrated, setIncludeUnrated] = usePersistentState('plan.includeUnrated', true)
   const [shortlist, setShortlist] = useState<Slot[]>([])
   const [suggesting, setSuggesting] = useState(false)
   const [suggestedEmpty, setSuggestedEmpty] = useState(false)
@@ -85,7 +88,7 @@ export function PlanPage() {
   async function runSuggest() {
     setSuggesting(true)
     try {
-      const res = await suggestWeekPlan({ count: suggestCount, seed: freshSeed() })
+      const res = await suggestWeekPlan({ count: suggestCount, seed: freshSeed(), includeUnrated })
       setShortlist(res.map((s) => ({ ...s, locked: false })))
       setSuggestedEmpty(res.length === 0)
     } finally {
@@ -102,6 +105,7 @@ export function PlanPage() {
         count: suggestCount,
         seed: freshSeed(),
         taken: locked.map((s) => s.id),
+        includeUnrated,
       })
       let ri = 0
       const next: Slot[] = []
@@ -125,6 +129,7 @@ export function PlanPage() {
       seed: freshSeed(),
       taken: others.map((s) => s.id),
       exclude: [slot.id],
+      includeUnrated,
     })
     if (res[0]) {
       setShortlist((sl) => sl.map((s, i) => (i === index ? { ...res[0], locked: s.locked } : s)))
@@ -238,6 +243,18 @@ export function PlanPage() {
           />
           <span>meals a week</span>
         </label>
+        <label
+          className="flex items-center gap-1.5 text-sm text-stone-500"
+          title="Also draw from recipes you haven’t rated yet, treating them as a neutral ★3"
+        >
+          <input
+            type="checkbox"
+            checked={includeUnrated}
+            onChange={(e) => setIncludeUnrated(e.target.checked)}
+            className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+          />
+          Include unrated
+        </label>
         {plannedCount > 0 && (
           <span className="text-xs text-stone-400">
             fills the {Math.max(0, suggestCount - plannedCount)} slots left after {plannedCount} planned
@@ -322,15 +339,18 @@ export function PlanPage() {
                         <span>· ⏱ {r.prepTime} min</span>
                         <span className={rec.warn ? 'text-amber-600' : 'text-stone-400'}>· {rec.text}</span>
                       </div>
-                      {slot.reasons.length > 0 && (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {slot.reasons.map((why) => (
-                            <span key={why} className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
-                              {why}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {!starsById.has(slot.id) && (
+                          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
+                            unrated
+                          </span>
+                        )}
+                        {slot.reasons.map((why) => (
+                          <span key={why} className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
+                            {why}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </Link>
 

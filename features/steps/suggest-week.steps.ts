@@ -64,6 +64,18 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('the suggestions are exactly {string}', exactly)
   })
 
+  Scenario('Unrated recipes are drawn in when opted in, but never binned ones', ({ Given, And, When, Then }) => {
+    Given('recipes {string} rated {int} stars', rateList)
+    And('recipes {string} rated {int} stars', rateList)
+    And('recipe {string} is unrated', async (_, id: string) => {
+      await db.recipes.put(makeRecipe({ id }))
+    })
+    When('I suggest a week of {int} including unrated', async (_, count: number) => {
+      suggestions = await suggestWeekPlan({ count, seed: SEED, includeUnrated: true })
+    })
+    Then('the suggestions are exactly {string}', exactly)
+  })
+
   Scenario('A no-go recipe is never suggested', ({ Given, And, When, Then }) => {
     Given('recipes {string} rated {int} stars', rateList)
     And(
