@@ -1,15 +1,21 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
-import { clearCuration, setRotation, setStars } from '../../src/app/curation'
+import { applyRatingToGroup, clearCuration, setRotation, setStars } from '../../src/app/curation'
+import { createGroup } from '../../src/app/groups'
 import type { Rotation, Stars } from '../../src/schema/userData'
 
 const feature = await loadFeature('features/curation.feature')
+
+function ids(list: string): string[] {
+  return list.split(',').map((s) => s.trim()).filter(Boolean)
+}
 
 describeFeature(feature, ({ Background, Scenario }) => {
   Background(({ Given }) => {
     Given('no recipes have been rated', async () => {
       await db.userData.clear()
+      await db.variantGroups.clear()
       expect(await db.userData.count()).toBe(0)
     })
   })
@@ -151,4 +157,73 @@ describeFeature(feature, ({ Background, Scenario }) => {
       expect((await db.userData.get(id))?.notes).toBe(note)
     })
   })
+
+  Scenario(
+    'Applying a rating across a variant group rates the unrated siblings',
+    ({ Given, And, When, Then }) => {
+      Given('recipes {string} are a variant group', async (_, list: string) => {
+        await createGroup(ids(list).map((id) => ({ recipeId: id, label: id })))
+      })
+      And('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
+        await setStars(id, n as Stars)
+      })
+      And('I have set the rotation on recipe {string} to {int}', async (_, id: string, r: number) => {
+        await setRotation(id, r as Rotation)
+      })
+      When("I apply recipe {string}'s rating across its group", async (_, id: string) => {
+        await applyRatingToGroup(id)
+      })
+      Then('recipe {string} has {int} stars', async (_, id: string, n: number) => {
+        expect((await db.userData.get(id))?.stars).toBe(n)
+      })
+      And('recipe {string} has rotation {int}', async (_, id: string, r: number) => {
+        expect((await db.userData.get(id))?.rotation).toBe(r)
+      })
+      And('recipe {string} has {int} stars', async (_, id: string, n: number) => {
+        expect((await db.userData.get(id))?.stars).toBe(n)
+      })
+    },
+  )
+
+  Scenario(
+    'Applying a rating across a group never overwrites an already-rated variant',
+    ({ Given, And, When, Then }) => {
+      Given('recipes {string} are a variant group', async (_, list: string) => {
+        await createGroup(ids(list).map((id) => ({ recipeId: id, label: id })))
+      })
+      And('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
+        await setStars(id, n as Stars)
+      })
+      And('recipe {string} already has {int} stars', async (_, id: string, n: number) => {
+        await setStars(id, n as Stars)
+      })
+      When("I apply recipe {string}'s rating across its group", async (_, id: string) => {
+        await applyRatingToGroup(id)
+      })
+      Then('recipe {string} has {int} stars', async (_, id: string, n: number) => {
+        expect((await db.userData.get(id))?.stars).toBe(n)
+      })
+      And('recipe {string} has {int} stars', async (_, id: string, n: number) => {
+        expect((await db.userData.get(id))?.stars).toBe(n)
+      })
+    },
+  )
+
+  Scenario(
+    'Applying a rating from an ungrouped recipe changes nothing',
+    ({ Given, When, Then, And }) => {
+      Given('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
+        await setStars(id, n as Stars)
+      })
+      When("I apply recipe {string}'s rating across its group", async (_, id: string) => {
+        await applyRatingToGroup(id)
+      })
+      Then('recipe {string} has {int} stars', async (_, id: string, n: number) => {
+        expect((await db.userData.get(id))?.stars).toBe(n)
+      })
+      And('only {int} recipe is rated', async (_, n: number) => {
+        expect(await db.userData.count()).toBe(n)
+      })
+    },
+  )
 })
