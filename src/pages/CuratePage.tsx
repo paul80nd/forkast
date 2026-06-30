@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { setStars, STAR_LABELS } from '../lib/curation'
 import { StarRating } from '../components/StarRating'
+import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
@@ -12,6 +13,11 @@ export function CuratePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
   const userData = useLiveQuery(() => db.userData.toArray(), [])
   const [cursor, setCursor] = useState(0)
+  // Filters scope Curate's whole working set — both the triage backlog and the rated
+  // overview — so you can focus on one cuisine/protein at a time. Persisted (separately
+  // from Browse) so the focus survives navigation and reload.
+  const [fCuisine, setFCuisine] = usePersistentState('curate.cuisine', 'all')
+  const [fProtein, setFProtein] = usePersistentState('curate.protein', 'all')
 
   const starsById = useMemo(() => {
     const m = new Map<string, Stars>()
@@ -19,13 +25,41 @@ export function CuratePage() {
     return m
   }, [userData])
 
+  // Filter option lists drawn from the whole collection (the overview is filtered too, so
+  // a fully-rated cuisine still needs to be selectable to review it).
+  const cuisines = useMemo(
+    () => Array.from(new Set((recipes ?? []).map((r) => r.cuisine).filter(Boolean))).sort(),
+    [recipes],
+  )
+  const proteins = useMemo(
+    () =>
+      Array.from(
+        new Set((recipes ?? []).map((r) => r.mainProtein).filter((p): p is string => Boolean(p))),
+      ).sort(),
+    [recipes],
+  )
+
+  const inFilter = useMemo(() => {
+    return (r: Recipe) =>
+      (fCuisine === 'all' || r.cuisine === fCuisine) &&
+      (fProtein === 'all' || r.mainProtein === fProtein)
+  }, [fCuisine, fProtein])
+  const filterActive = fCuisine !== 'all' || fProtein !== 'all'
+
+  // The working set: recipes matching the active filter. Counts and both lists derive from it.
+  const scoped = useMemo(() => (recipes ?? []).filter(inFilter), [recipes, inFilter])
   const backlog = useMemo(
     () =>
-      (recipes ?? [])
+      scoped
         .filter((r) => !starsById.has(r.id))
         .sort((a, b) => a.title.localeCompare(b.title)),
-    [recipes, starsById],
+    [scoped, starsById],
   )
+
+  // Restart triage at the top of the list whenever the filter changes the backlog.
+  useEffect(() => {
+    setCursor(0)
+  }, [fCuisine, fProtein])
 
   const current = backlog.length ? backlog[Math.min(cursor, backlog.length - 1)] : undefined
 
@@ -51,7 +85,11 @@ export function CuratePage() {
     return <p className="text-stone-500">Loading…</p>
   }
 
-  const ratedCount = recipes.length - backlog.length
+  // Counts reflect the active filter (the working set), not the whole collection.
+  const ratedCount = scoped.length - backlog.length
+
+  const selectClass =
+    'rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
 
   return (
     <section>
@@ -59,6 +97,7 @@ export function CuratePage() {
         <h1 className="text-2xl font-semibold tracking-tight">Curate</h1>
         <span className="text-sm text-stone-500">
           {ratedCount} rated · {backlog.length} to triage
+          {filterActive && ' (in filter)'}
         </span>
       </div>
 
@@ -68,6 +107,48 @@ export function CuratePage() {
         <span className="font-medium text-stone-600">★3</span> variety-only ·{' '}
         <span className="font-medium text-stone-600">★1–2</span> bin
       </p>
+
+      {/* Focus the working set — rate one cuisine / protein at a time for consistency. */}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <select
+          value={fCuisine}
+          onChange={(e) => setFCuisine(e.target.value)}
+          aria-label="Filter by cuisine"
+          className={selectClass}
+        >
+          <option value="all">All cuisines</option>
+          {cuisines.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select
+          value={fProtein}
+          onChange={(e) => setFProtein(e.target.value)}
+          aria-label="Filter by main protein"
+          className={`${selectClass} capitalize`}
+        >
+          <option value="all">All proteins</option>
+          {proteins.map((p) => (
+            <option key={p} value={p} className="capitalize">
+              {p}
+            </option>
+          ))}
+        </select>
+        {filterActive && (
+          <button
+            type="button"
+            onClick={() => {
+              setFCuisine('all')
+              setFProtein('all')
+            }}
+            className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-500 hover:bg-stone-100"
+          >
+            Clear filter
+          </button>
+        )}
+      </div>
 
       {/* Triage */}
       {current ? (
@@ -128,18 +209,22 @@ export function CuratePage() {
         </div>
       ) : (
         <div className="mt-5 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-10 text-center">
-          <p className="text-lg font-medium text-stone-700">All triaged 🎉</p>
+          <p className="text-lg font-medium text-stone-700">
+            {filterActive ? 'Nothing left to triage in this filter 🎉' : 'All triaged 🎉'}
+          </p>
           <p className="mt-1 text-sm text-stone-500">
-            Every recipe has a rating. Re-rate any below.
+            {filterActive
+              ? 'Clear the filter to triage the rest, or re-rate any below.'
+              : 'Every recipe has a rating. Re-rate any below.'}
           </p>
         </div>
       )}
 
-      {/* Rated overview */}
+      {/* Rated overview — scoped to the active filter, like the triage backlog. */}
       {ratedCount > 0 && (
         <div className="mt-10 space-y-6">
           {([5, 4, 3, 2, 1] as Stars[]).map((tier) => {
-            const items = recipes
+            const items = scoped
               .filter((r) => starsById.get(r.id) === tier)
               .sort((a, b) => a.title.localeCompare(b.title))
             if (!items.length) return null

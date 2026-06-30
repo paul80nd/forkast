@@ -43,6 +43,18 @@ you can **re-rate** anything without re-triaging.
 
 The header shows the running tally: `N rated · M to triage`.
 
+### Focus filters (cuisine / protein) — built 2026-06-30
+Two selects (cuisine, main protein) scope Curate's **whole working set** — both the triage
+backlog *and* the rated overview — so you can rate one cuisine or protein at a time. Batching
+by a single axis gives mental context, so ratings come faster and more consistently (and you
+can see how you've already rated siblings). Filtering both lists (not just the backlog) keeps
+the page coherent: it becomes "everything Curate is working on, scoped". The header counts and
+the "all triaged" empty state both follow the filter (the latter distinguishes "nothing left
+in this filter" from "all triaged"). Filters persist to localStorage, **separately from
+Browse** (`curate.cuisine` / `curate.protein` via `usePersistentState`) — focusing Browse on
+chicken shouldn't force Curate to. Presentation-only (pure UI filtering, like Browse) → no
+Gherkin; the rating writes it sits on top of are covered by `features/curation.feature`.
+
 ## Planned
 
 Curate today captures exactly one signal — ★ = *how good is this recipe*. The assisted
@@ -52,9 +64,9 @@ the ★3 pool. Three of those axes already come from import; ★ comes from here
 should fill is **eligibility and rotation** — signals ★ alone can't express. Sketch, not yet
 committed:
 
-1. **Scope the triage backlog.** Reuse Browse's persistent filters so you can triage *by
-   cuisine or protein* ("rate all the Thai", "rate all the chicken"). Mental context per
-   batch → faster, more consistent ratings. Low risk; lifts existing Browse components.
+1. ~~**Scope the triage backlog.**~~ **Built 2026-06-30** — see *Focus filters* above. (Went
+   a touch further than the original sketch: the filter scopes the rated overview too, so the
+   whole page focuses on one cuisine/protein.)
 2. **A rotation / frequency signal.** ★ says a recipe is great; it doesn't say you'd happily
    eat it weekly vs. it being a once-a-month treat. A per-recipe field (e.g. *weekly / often /
    occasional / treat*) set alongside the stars gives the planner what it needs to avoid
