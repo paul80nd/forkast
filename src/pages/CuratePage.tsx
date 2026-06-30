@@ -412,35 +412,140 @@ export function CuratePage() {
 
       {/* Rated overview — scoped to the active filter, like the triage backlog. */}
       {ratedCount > 0 && (
-        <div className="mt-10 space-y-6">
-          {([5, 4, 3, 2, 1] as Stars[]).map((tier) => {
-            const items = scoped
-              .filter((r) => starsById.get(r.id) === tier)
-              .sort((a, b) => a.title.localeCompare(b.title))
-            if (!items.length) return null
-            return (
+        <RatedOverview recipes={scoped} starsById={starsById} rotationById={rotationById} />
+      )}
+    </section>
+  )
+}
+
+// The rated overview, built to stay usable at thousands of rows: tiers ★5→★1, each title-sorted,
+// with a search box and a tier filter, rendered a page at a time (50, growing on scroll) across
+// the tiers so the DOM never holds them all. The page's cuisine/protein focus filter already
+// scoped `recipes`; this narrows further. Controls persist like Browse's.
+function RatedOverview({
+  recipes,
+  starsById,
+  rotationById,
+}: {
+  recipes: Recipe[]
+  starsById: Map<string, Stars>
+  rotationById: Map<string, Rotation>
+}) {
+  const [query, setQuery] = usePersistentState('curate.ratedQuery', '')
+  const [tierFilter, setTierFilter] = usePersistentState<'all' | Stars>('curate.ratedTier', 'all')
+
+  const PAGE = 50
+  const [visible, setVisible] = useState(PAGE)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  const q = query.trim().toLowerCase()
+
+  // Rated recipes grouped by tier (★5→★1), each title-sorted, scoped by the tier filter + search.
+  const tiers = useMemo(() => {
+    return ([5, 4, 3, 2, 1] as Stars[])
+      .filter((t) => tierFilter === 'all' || tierFilter === t)
+      .map((tier) => ({
+        tier,
+        items: recipes
+          .filter((r) => starsById.get(r.id) === tier)
+          .filter(
+            (r) => !q || r.title.toLowerCase().includes(q) || r.cuisine.toLowerCase().includes(q),
+          )
+          .sort((a, b) => a.title.localeCompare(b.title)),
+      }))
+      .filter((g) => g.items.length > 0)
+  }, [recipes, starsById, q, tierFilter])
+
+  const total = useMemo(() => tiers.reduce((n, g) => n + g.items.length, 0), [tiers])
+
+  // First page again when the filter/search changes — but not when a rating changes (which
+  // leaves the scoped recipe set and these controls untouched).
+  useEffect(() => setVisible(PAGE), [q, tierFilter, recipes])
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) setVisible((v) => v + PAGE)
+      },
+      { rootMargin: '400px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [total, visible])
+
+  // Window across the tiers: spend a shared `visible` budget down the list so headers stay but
+  // the rendered rows are capped overall.
+  let budget = visible
+  const shown = tiers
+    .map((g) => {
+      const slice = g.items.slice(0, Math.max(0, budget))
+      budget -= g.items.length
+      return { tier: g.tier, slice, fullCount: g.items.length }
+    })
+    .filter((g) => g.slice.length > 0)
+
+  const controlClass =
+    'rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
+
+  return (
+    <div className="mt-10">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h2 className="text-lg font-semibold">
+          Rated <span className="text-sm font-normal text-stone-400">({total})</span>
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search rated…"
+            className={`${controlClass} w-44`}
+          />
+          <select
+            value={String(tierFilter)}
+            onChange={(e) => setTierFilter(e.target.value === 'all' ? 'all' : (Number(e.target.value) as Stars))}
+            aria-label="Filter by star tier"
+            className={controlClass}
+          >
+            <option value="all">All ratings</option>
+            {([5, 4, 3, 2, 1] as Stars[]).map((t) => (
+              <option key={t} value={t}>
+                {'★'.repeat(t)} {STAR_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {total === 0 ? (
+        <p className="mt-2 text-sm text-stone-500">No rated recipes match.</p>
+      ) : (
+        <>
+          <p className="mt-2 text-xs text-stone-400">
+            Showing {Math.min(visible, total)} of {total}.
+          </p>
+          <div className="mt-2 space-y-6">
+            {shown.map(({ tier, slice, fullCount }) => (
               <div key={tier}>
                 <h3 className="text-sm font-semibold text-stone-600">
                   <span className="text-amber-500">{'★'.repeat(tier)}</span>{' '}
                   <span className="text-stone-400">{STAR_LABELS[tier]}</span>{' '}
-                  <span className="text-stone-400">· {items.length}</span>
+                  <span className="text-stone-400">· {fullCount}</span>
                 </h3>
                 <ul className="mt-2 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
-                  {items.map((r) => (
-                    <RatedRow
-                      key={r.id}
-                      recipe={r}
-                      stars={tier}
-                      rotation={rotationById.get(r.id)}
-                    />
+                  {slice.map((r) => (
+                    <RatedRow key={r.id} recipe={r} stars={tier} rotation={rotationById.get(r.id)} />
                   ))}
                 </ul>
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+          {visible < total && <div ref={sentinelRef} className="h-4" />}
+        </>
       )}
-    </section>
+    </div>
   )
 }
 

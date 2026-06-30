@@ -60,6 +60,12 @@ Below the triage card, the rated recipes are grouped into **tiers (★5 → ★1
 titled list with a count. Every row links to the recipe and carries an inline star control, so
 you can **re-rate** anything without re-triaging.
 
+Built to stay usable once thousands are rated: a **search box** (title + cuisine) and a **tier
+filter** (all / one star tier) narrow the list — on top of the page's cuisine/protein focus
+filter — and it renders **a page at a time** (50, growing on scroll) *across* the tiers, so the
+DOM never holds every row. Tier headers keep their **full** count even while only a page is shown.
+Both controls persist (`curate.ratedQuery` / `curate.ratedTier`), like Browse's.
+
 The header shows the running tally: `N rated · M to triage`.
 
 ### Focus filters (cuisine / protein) — built 2026-06-30
