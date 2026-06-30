@@ -1,8 +1,8 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
-import { setStars } from '../../src/lib/curation'
-import type { Stars } from '../../src/schema/userData'
+import { setRotation, setStars } from '../../src/app/curation'
+import type { Rotation, Stars } from '../../src/schema/userData'
 
 const feature = await loadFeature('features/curation.feature')
 
@@ -62,6 +62,60 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     But('recipe {string} still has the note {string}', async (_, id: string, note: string) => {
       expect((await db.userData.get(id))?.notes).toBe(note)
+    })
+  })
+
+  Scenario('Setting a rotation stores it', ({ When, Then }) => {
+    When('I set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+      await setRotation(id, r as Rotation)
+    })
+    Then('recipe {string} has rotation {string}', async (_, id: string, r: string) => {
+      expect((await db.userData.get(id))?.rotation).toBe(r)
+    })
+  })
+
+  Scenario('Stars and rotation live together on one recipe', ({ Given, When, Then, And }) => {
+    Given('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
+      await setStars(id, n as Stars)
+    })
+    When('I set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+      await setRotation(id, r as Rotation)
+    })
+    Then('recipe {string} has {int} stars', async (_, id: string, n: number) => {
+      expect((await db.userData.get(id))?.stars).toBe(n)
+    })
+    And('recipe {string} has rotation {string}', async (_, id: string, r: string) => {
+      expect((await db.userData.get(id))?.rotation).toBe(r)
+    })
+  })
+
+  Scenario('Clearing the rating keeps the row when it carries a rotation', ({ Given, And, When, Then, But }) => {
+    Given('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
+      await setStars(id, n as Stars)
+    })
+    And('I have set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+      await setRotation(id, r as Rotation)
+    })
+    When('I clear the rating on recipe {string}', async (_, id: string) => {
+      await setStars(id, undefined)
+    })
+    Then('recipe {string} has no stars', async (_, id: string) => {
+      expect((await db.userData.get(id))?.stars).toBeUndefined()
+    })
+    But('recipe {string} has rotation {string}', async (_, id: string, r: string) => {
+      expect((await db.userData.get(id))?.rotation).toBe(r)
+    })
+  })
+
+  Scenario('Clearing the only rotation on a recipe removes its row', ({ Given, When, Then }) => {
+    Given('I have set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+      await setRotation(id, r as Rotation)
+    })
+    When('I clear the rotation on recipe {string}', async (_, id: string) => {
+      await setRotation(id, undefined)
+    })
+    Then('recipe {string} has no curation row', async (_, id: string) => {
+      expect(await db.userData.get(id)).toBeUndefined()
     })
   })
 })

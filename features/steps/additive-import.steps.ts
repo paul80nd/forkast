@@ -2,7 +2,7 @@ import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
 import { importRecipeDataset } from '../../src/app/dataset'
-import { setStars } from '../../src/lib/curation'
+import { setStars } from '../../src/app/curation'
 import { makeRecipe } from '../../test/factories'
 
 const feature = await loadFeature('features/additive-import.feature')

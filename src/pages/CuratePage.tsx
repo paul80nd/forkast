@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
-import { setStars, STAR_LABELS } from '../lib/curation'
+import { setRotation, setStars } from '../app/curation'
+import { ROTATION_LABELS, ROTATIONS, STAR_LABELS } from '../lib/curation'
 import { StarRating } from '../components/StarRating'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
-import type { Stars } from '../schema/userData'
+import type { Rotation, Stars } from '../schema/userData'
 
 export function CuratePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
@@ -22,6 +23,12 @@ export function CuratePage() {
   const starsById = useMemo(() => {
     const m = new Map<string, Stars>()
     for (const u of userData ?? []) if (u.stars) m.set(u.recipeId, u.stars)
+    return m
+  }, [userData])
+
+  const rotationById = useMemo(() => {
+    const m = new Map<string, Rotation>()
+    for (const u of userData ?? []) if (u.rotation) m.set(u.recipeId, u.rotation)
     return m
   }, [userData])
 
@@ -237,7 +244,12 @@ export function CuratePage() {
                 </h3>
                 <ul className="mt-2 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
                   {items.map((r) => (
-                    <RatedRow key={r.id} recipe={r} stars={tier} />
+                    <RatedRow
+                      key={r.id}
+                      recipe={r}
+                      stars={tier}
+                      rotation={rotationById.get(r.id)}
+                    />
                   ))}
                 </ul>
               </div>
@@ -249,7 +261,15 @@ export function CuratePage() {
   )
 }
 
-function RatedRow({ recipe, stars }: { recipe: Recipe; stars: Stars }) {
+function RatedRow({
+  recipe,
+  stars,
+  rotation,
+}: {
+  recipe: Recipe
+  stars: Stars
+  rotation: Rotation | undefined
+}) {
   return (
     <li className="flex items-center gap-3 px-3 py-2">
       <Link to={`/recipe/${recipe.id}`} className="flex min-w-0 flex-1 items-center gap-3">
@@ -261,6 +281,25 @@ function RatedRow({ recipe, stars }: { recipe: Recipe; stars: Stars }) {
         <span className="truncate font-medium text-stone-800">{recipe.title}</span>
         <span className="shrink-0 text-xs text-stone-400">{recipe.cuisine}</span>
       </Link>
+      {/* Rotation (how often) is a keeper concern — only offered for the planner's pool (★3+). */}
+      {stars >= 3 && (
+        <select
+          value={rotation ?? ''}
+          onChange={(e) =>
+            setRotation(recipe.id, (e.target.value || undefined) as Rotation | undefined)
+          }
+          aria-label="How often to cook"
+          title="How often you'd want this in rotation"
+          className="shrink-0 rounded-md border border-stone-300 bg-white px-1.5 py-1 text-xs text-stone-600 dark:bg-stone-100"
+        >
+          <option value="">How often…</option>
+          {ROTATIONS.map((r) => (
+            <option key={r} value={r}>
+              {ROTATION_LABELS[r]}
+            </option>
+          ))}
+        </select>
+      )}
       <StarRating
         size="sm"
         value={stars}
