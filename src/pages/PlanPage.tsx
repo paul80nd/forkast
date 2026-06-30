@@ -7,6 +7,7 @@ import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
 import { addToPlan, addRecipesToPlan, removeFromPlan, setPortions, markCooked } from '../app/plan'
 import { suggestWeekPlan } from '../app/suggest'
 import { usePersistentState } from '../hooks/usePersistentState'
+import { RecipePreview } from '../components/RecipePreview'
 import type { Suggestion } from '../lib/suggest'
 import type { Recipe } from '../schema/recipe'
 import type { Stars, VariantGroup } from '../schema/userData'
@@ -323,80 +324,20 @@ export function PlanPage() {
               if (!r) return null
               const group = groupByRecipe.get(slot.id)
               const siblings = group?.members.filter((m) => m.recipeId !== slot.id) ?? []
-              const rec = recency(lastCookedById.get(slot.id))
               return (
-                <li
-                  key={`${i}-${slot.id}`}
-                  className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-2.5"
-                >
-                  <Link to={`/recipe/${r.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-                    <img src={resolveAsset(r.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
-                    <div className="min-w-0">
-                      <div className="truncate font-medium text-stone-800">{r.title}</div>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
-                        <span>{r.cuisine}</span>
-                        {r.mainProtein && <span className="capitalize">· {r.mainProtein}</span>}
-                        <span>· ⏱ {r.prepTime} min</span>
-                        <span className={rec.warn ? 'text-amber-600' : 'text-stone-400'}>· {rec.text}</span>
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {!starsById.has(slot.id) && (
-                          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
-                            unrated
-                          </span>
-                        )}
-                        {slot.reasons.map((why) => (
-                          <span key={why} className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
-                            {why}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </Link>
-
-                  {siblings.length > 0 && (
-                    <select
-                      value=""
-                      onChange={(e) => e.target.value && swapVariant(i, e.target.value)}
-                      aria-label="Swap to a variant"
-                      className="max-w-32 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-1.5 py-1 text-xs text-stone-600"
-                    >
-                      <option value="">Swap variant…</option>
-                      {siblings.map((m) => (
-                        <option key={m.recipeId} value={m.recipeId}>
-                          {m.label || byId.get(m.recipeId)?.title || m.recipeId}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => toggleLock(i)}
-                    aria-pressed={slot.locked}
-                    title={slot.locked ? 'Locked — kept when re-suggesting' : 'Lock this slot'}
-                    className={`rounded-md px-2 py-1 text-sm transition ${
-                      slot.locked ? 'bg-sky-100 text-sky-700' : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600'
-                    }`}
-                  >
-                    {slot.locked ? '🔒' : '🔓'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => reroll(i)}
-                    title="Reroll this slot"
-                    className="rounded-md px-2 py-1 text-sm text-stone-400 hover:bg-stone-100 hover:text-stone-600"
-                  >
-                    ↻
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeSlot(i)}
-                    title="Remove from suggestion"
-                    className="rounded-md px-2 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
-                  >
-                    ✕
-                  </button>
-                </li>
+                <SuggestionSlot
+                  key={slot.id}
+                  recipe={r}
+                  slot={slot}
+                  unrated={!starsById.has(slot.id)}
+                  lastCooked={lastCookedById.get(slot.id)}
+                  siblings={siblings}
+                  byId={byId}
+                  onLock={() => toggleLock(i)}
+                  onReroll={() => reroll(i)}
+                  onSwap={(sid) => swapVariant(i, sid)}
+                  onRemove={() => removeSlot(i)}
+                />
               )
             })}
           </ul>
@@ -501,6 +442,127 @@ export function PlanPage() {
         )}
       </div>
     </section>
+  )
+}
+
+// One suggested meal: a compact row (image + meta + "why" tags + lock/reroll/swap/remove) that
+// expands in place to show the full recipe detail — so reviewing a proposal never navigates away.
+function SuggestionSlot({
+  recipe,
+  slot,
+  unrated,
+  lastCooked,
+  siblings,
+  byId,
+  onLock,
+  onReroll,
+  onSwap,
+  onRemove,
+}: {
+  recipe: Recipe
+  slot: Slot
+  unrated: boolean
+  lastCooked: string | undefined
+  siblings: VariantGroup['members']
+  byId: Map<string, Recipe>
+  onLock: () => void
+  onReroll: () => void
+  onSwap: (siblingId: string) => void
+  onRemove: () => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const rec = recency(lastCooked)
+  return (
+    <li className="overflow-hidden rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
+      <div className="flex items-center gap-3 p-2.5">
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          aria-expanded={expanded}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <img src={resolveAsset(recipe.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-stone-400">{expanded ? '▾' : '▸'}</span>
+              <span className="truncate font-medium text-stone-800">{recipe.title}</span>
+            </div>
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
+              <span>{recipe.cuisine}</span>
+              {recipe.mainProtein && <span className="capitalize">· {recipe.mainProtein}</span>}
+              <span>· ⏱ {recipe.prepTime} min</span>
+              <span className={rec.warn ? 'text-amber-600' : 'text-stone-400'}>· {rec.text}</span>
+            </div>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {unrated && (
+                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
+                  unrated
+                </span>
+              )}
+              {slot.reasons.map((why) => (
+                <span key={why} className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
+                  {why}
+                </span>
+              ))}
+            </div>
+          </div>
+        </button>
+
+        {siblings.length > 0 && (
+          <select
+            value=""
+            onChange={(e) => e.target.value && onSwap(e.target.value)}
+            aria-label="Swap to a variant"
+            className="max-w-32 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-1.5 py-1 text-xs text-stone-600"
+          >
+            <option value="">Swap variant…</option>
+            {siblings.map((m) => (
+              <option key={m.recipeId} value={m.recipeId}>
+                {m.label || byId.get(m.recipeId)?.title || m.recipeId}
+              </option>
+            ))}
+          </select>
+        )}
+        <button
+          type="button"
+          onClick={onLock}
+          aria-pressed={slot.locked}
+          title={slot.locked ? 'Locked — kept when re-suggesting' : 'Lock this slot'}
+          className={`rounded-md px-2 py-1 text-sm transition ${
+            slot.locked ? 'bg-sky-100 text-sky-700' : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600'
+          }`}
+        >
+          {slot.locked ? '🔒' : '🔓'}
+        </button>
+        <button
+          type="button"
+          onClick={onReroll}
+          title="Reroll this slot"
+          className="rounded-md px-2 py-1 text-sm text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+        >
+          ↻
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          title="Remove from suggestion"
+          className="rounded-md px-2 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+        >
+          ✕
+        </button>
+      </div>
+
+      {expanded && (
+        <>
+          <RecipePreview recipe={recipe} />
+          <div className="px-3 pb-3">
+            <Link to={`/recipe/${recipe.id}`} className="text-xs text-orange-600 hover:underline">
+              Open full page →
+            </Link>
+          </div>
+        </>
+      )}
+    </li>
   )
 }
 

@@ -107,6 +107,9 @@ the result as a **reviewable shortlist**, not a committed plan:
 
 - Each suggested slot shows the recipe, plus a short **"why"** (e.g. *favourite · new cuisine ·
   due*), and controls:
+  - **Expand** — clicking the row opens the **full recipe detail in place** (meta, description,
+    nutrition, ingredients, method — the read-only `RecipePreview` component) so you can vet a
+    proposal without navigating away; an "Open full page →" link is offered for the rest.
   - **Reroll** — replace this slot with the next-best candidate (the rejected one is excluded
     from this run).
   - **Lock** — keep this slot while rerolling the rest / re-suggesting.
