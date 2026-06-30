@@ -4,10 +4,12 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { StarRating } from '../components/StarRating'
-import { setStars } from '../app/curation'
+import { setRotation, setStars } from '../app/curation'
+import { ROTATION_LABELS, ROTATIONS } from '../lib/curation'
 import { CURRENT_PLAN_ID, addToPlan, removeFromPlan } from '../lib/plan'
 import { seeAlsoFor } from '../app/groups'
 import { deleteRecipe } from '../app/cleanup'
+import type { Rotation } from '../schema/userData'
 
 export function RecipePage() {
   const { id = '' } = useParams()
@@ -16,6 +18,7 @@ export function RecipePage() {
   // undefined = loading, null = not found
   const recipe = useLiveQuery(async () => (await db.recipes.get(id)) ?? null, [id])
   const stars = useLiveQuery(async () => (await db.userData.get(id))?.stars, [id])
+  const rotation = useLiveQuery(async () => (await db.userData.get(id))?.rotation, [id])
   const inPlan = useLiveQuery(
     async () => ((await db.plans.get(CURRENT_PLAN_ID))?.recipeIds ?? []).includes(id),
     [id],
@@ -61,9 +64,26 @@ export function RecipePage() {
           </dl>
 
           <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
-            <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
-              Your rating
-            </h3>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+                Your rating
+              </h3>
+              {/* Reset to unrated — back into the Curate triage backlog, e.g. to cook it
+                  first before deciding (clears both the stars and any rotation). */}
+              {(stars !== undefined || rotation !== undefined) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    void setStars(recipe.id, undefined)
+                    void setRotation(recipe.id, undefined)
+                  }}
+                  title="Clear your rating — sends it back to triage"
+                  className="text-xs font-medium text-stone-400 hover:text-rose-600"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
             <div className="mt-1.5">
               <StarRating
                 size="lg"
@@ -71,6 +91,26 @@ export function RecipePage() {
                 onChange={(v) => setStars(recipe.id, v)}
               />
             </div>
+            {/* Rotation matters only for the planner's pool (★3+); mirrors Curate. */}
+            {stars !== undefined && stars >= 3 && (
+              <label className="mt-3 flex items-center gap-2 text-xs text-stone-500">
+                How often
+                <select
+                  value={rotation ?? ''}
+                  onChange={(e) =>
+                    setRotation(recipe.id, (e.target.value || undefined) as Rotation | undefined)
+                  }
+                  className="rounded-md border border-stone-300 bg-white px-1.5 py-1 text-xs text-stone-600 dark:bg-stone-100"
+                >
+                  <option value="">How often…</option>
+                  {ROTATIONS.map((r) => (
+                    <option key={r} value={r}>
+                      {ROTATION_LABELS[r]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
 
           {recipe.allergens.length > 0 && (

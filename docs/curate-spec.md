@@ -71,6 +71,16 @@ variety and **not over-suggest favourites**. ★ alone can't express that.
 - Rides the backup automatically (it's a field on the exported `userData` rows) and is purged
   with the row when a recipe is deleted. Covered by `features/curation.feature`.
 
+### Rating on the recipe page — built 2026-06-30
+The recipe detail page's **"Your rating"** panel mirrors the curation controls so you can rate
+(and reconsider) a recipe while looking at it: the ★ control, the rotation select (★3+), and an
+explicit **Clear** that resets *both* stars and rotation — sending the recipe back to the
+unrated **triage backlog**. The use case: you misrated something, or want to **cook it first**
+before deciding. (★ could already be cleared by re-clicking the active star — undiscoverable;
+the Clear button makes "reset to unrated" obvious and also wipes rotation in one go.) The
+Browse grid card stays read-only — a star badge only — so ticking/navigating isn't muddled by
+inline editing. Wiring only; the underlying clears are covered by `features/curation.feature`.
+
 ## Planned
 
 Curate today captures exactly one signal — ★ = *how good is this recipe*. The assisted
