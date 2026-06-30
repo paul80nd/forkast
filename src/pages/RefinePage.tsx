@@ -11,6 +11,7 @@ import {
   createGroup,
   deleteGroup,
   removeRecipeFromGroup,
+  setMemberLabel,
   suggestGroupCandidates,
   type GroupMemberInput,
 } from '../app/groups'
@@ -847,11 +848,7 @@ function GroupRow({
                 key={m.recipeId}
                 className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 py-1 pr-1 pl-2.5 text-sm"
               >
-                {m.label && (
-                  <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500">
-                    {m.label}
-                  </span>
-                )}
+                <MemberChip groupId={group.id} recipeId={m.recipeId} label={m.label} />
                 <Link to={`/recipe/${m.recipeId}`} className="hover:text-orange-700">
                   {byId.get(m.recipeId)?.title ?? m.recipeId}
                 </Link>
@@ -996,6 +993,65 @@ function CleanupList({
         ))}
       </ul>
     </div>
+  )
+}
+
+// A group member's variant label, editable inline — the auto-suggested labels are often noisy
+// ("cornflour"), so tidying them during review is a click. Click the chip to edit; Enter/blur
+// saves, Esc cancels. An empty label shows a faint "+ label" affordance.
+function MemberChip({
+  groupId,
+  recipeId,
+  label,
+}: {
+  groupId: string
+  recipeId: string
+  label: string
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(label)
+
+  function startEdit() {
+    setDraft(label)
+    setEditing(true)
+  }
+  async function commit() {
+    setEditing(false)
+    const next = draft.trim()
+    if (next !== label) await setMemberLabel(groupId, recipeId, next)
+  }
+
+  if (editing) {
+    return (
+      <input
+        type="text"
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void commit()
+          else if (e.key === 'Escape') setEditing(false)
+        }}
+        placeholder="label"
+        aria-label="Edit variant label"
+        className="w-24 rounded border border-stone-300 px-1.5 py-0.5 text-xs"
+      />
+    )
+  }
+  return (
+    <button
+      type="button"
+      onClick={startEdit}
+      title="Edit label"
+      className={`rounded px-1.5 py-0.5 text-xs font-medium ${
+        label
+          ? 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+          : 'text-stone-400 italic hover:bg-stone-100'
+      }`}
+    >
+      {label || '+ label'}
+    </button>
   )
 }
 

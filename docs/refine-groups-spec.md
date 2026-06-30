@@ -33,6 +33,11 @@ into the labelled member chips (with Compare, disband, per-member remove). A **s
 filters. The list renders **a page at a time** (50, growing on scroll) so the DOM never holds
 every group at once.
 
+Each member's **variant label is editable inline** on the expanded row (`setMemberLabel`) —
+the auto-suggested labels are best-effort and often noisy, so tidying them during review is a
+click: click the chip, type, Enter/blur to save (Esc cancels). An empty label shows a faint
+"+ label" affordance.
+
 ### Similarity suggester
 Proposes candidate clusters from the **ungrouped** recipes so you don't have to find variants
 by hand. `suggestGroupCandidates()` (`src/app/groups.ts`) reads the store and feeds the pure

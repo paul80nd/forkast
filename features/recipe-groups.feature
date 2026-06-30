@@ -55,3 +55,9 @@ Feature: Group related recipes
     When I delete recipe "r2"
     Then recipe "r1" is in no group
     And there are no groups
+
+  Scenario: Relabelling a member updates only that member's label
+    Given I have grouped recipes "r1, r2"
+    When I relabel recipe "r1" to "Beef"
+    Then recipe "r1" has the label "Beef"
+    And recipe "r2" has the label "r2"
