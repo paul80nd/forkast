@@ -20,6 +20,15 @@ export async function addToPlan(recipeId: string): Promise<void> {
   }
 }
 
+/** Add several recipes to the plan in one write, skipping any already on it (order preserved). */
+export async function addRecipesToPlan(recipeIds: string[]): Promise<void> {
+  const plan = await getOrCreatePlan()
+  const have = new Set(plan.recipeIds)
+  const added = recipeIds.filter((id) => !have.has(id))
+  if (added.length === 0) return
+  await db.plans.put({ ...plan, recipeIds: [...plan.recipeIds, ...added] })
+}
+
 export async function removeFromPlan(recipeId: string): Promise<void> {
   const plan = await getOrCreatePlan()
   await db.plans.put({
