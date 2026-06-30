@@ -34,7 +34,8 @@ Variants stay first-class, searchable, and **linked** (not hidden, demoted, or e
 the relationship surfaces as "see also". **Delete means delete — no tombstone ledger**: the
 JSON export is the durable state and already reflects deletions, so only a deliberate raw
 re-import can resurrect a recipe (acceptable). Import becomes additive-by-default with a
-replace-all option. Full design and the resolved sub-decisions: [`groups-spec.md`](groups-spec.md).
+replace-all option. Full design: the groups model in [`groups-spec.md`](groups-spec.md); the
+import & deletion model (additive/replace-all, no-tombstones) in [`refine-spec.md`](refine-spec.md).
 
 ## 2026-06-29 — Deleting a recipe purges its user data too
 

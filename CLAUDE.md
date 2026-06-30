@@ -17,8 +17,15 @@ Prose specs are the source of truth for *design + rationale*; the Gherkin `featu
 the executable proof. If code and a doc disagree, fix the doc in the same change.
 
 - [`docs/spec.md`](docs/spec.md) — whole-app design, persistence, data model, MVP scope.
-- [`docs/groups-spec.md`](docs/groups-spec.md) — feature spec for Recipe Groups (per-feature
-  specs live in `docs/`).
+- Per-feature specs (live in `docs/`):
+  - [`docs/curate-spec.md`](docs/curate-spec.md) — Curate (★ rating + triage).
+  - [`docs/refine-spec.md`](docs/refine-spec.md) — Refine umbrella (the tidying section +
+    shared principles + the import/deletion model), linking its three job specs:
+    [`refine-groups-spec.md`](docs/refine-groups-spec.md),
+    [`refine-duplicates-spec.md`](docs/refine-duplicates-spec.md),
+    [`refine-cleanup-spec.md`](docs/refine-cleanup-spec.md).
+  - [`docs/groups-spec.md`](docs/groups-spec.md) — Recipe Groups *data feature* (the
+    `variantGroups` model + "see also"; the Refine UI that edits it is in refine-groups-spec).
 - [`docs/decisions.md`](docs/decisions.md) — the cross-cutting decision trail ("how we got
   here"). Add an entry when you make an architectural call.
 - `features/*.feature` (+ `features/steps/`) — behaviour, run as tests.
