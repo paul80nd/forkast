@@ -153,7 +153,8 @@ Conceptual; the exact record shapes are the TS types in `src/schema/userData.ts`
   axes the household cares about: **cuisine, main protein, cooking time/effort,
   recency (not cooked recently)**. ★3s are the variety pool, and each recipe's
   **`rotation`** (how often you'd want it — captured in Curate) caps how readily a
-  favourite is re-suggested.
+  favourite is re-suggested. **Designed** in
+  [`plan-suggest-spec.md`](plan-suggest-spec.md) (group-aware; propose-then-accept).
 - Leftovers/batch awareness, multi-week plan history. (Per-serving nutrition is
   **captured at import and already shown** on the recipe page; a richer nutrition view
   could come later.)
