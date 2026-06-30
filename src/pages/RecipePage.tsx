@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { StarRating } from '../components/StarRating'
-import { setRotation, setStars } from '../app/curation'
+import { clearCuration, setRotation, setStars } from '../app/curation'
 import { ROTATION_LABELS, ROTATIONS } from '../lib/curation'
 import { CURRENT_PLAN_ID, addToPlan, removeFromPlan } from '../lib/plan'
 import { seeAlsoFor } from '../app/groups'
@@ -73,10 +73,7 @@ export function RecipePage() {
               {(stars !== undefined || rotation !== undefined) && (
                 <button
                   type="button"
-                  onClick={() => {
-                    void setStars(recipe.id, undefined)
-                    void setRotation(recipe.id, undefined)
-                  }}
+                  onClick={() => void clearCuration(recipe.id)}
                   title="Clear your rating — sends it back to triage"
                   className="text-xs font-medium text-stone-400 hover:text-rose-600"
                 >

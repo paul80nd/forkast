@@ -48,3 +48,19 @@ export async function setRotation(
   }
   await db.userData.put({ ...(existing ?? { recipeId }), recipeId, rotation })
 }
+
+/**
+ * Clear a recipe's rating *and* rotation in one read-modify-write, sending it back to the
+ * unrated triage backlog. Notes/tags are kept (the row survives if it has them). Done as a
+ * single operation deliberately: calling setStars + setRotation concurrently would race on
+ * the same row, with the second write resurrecting the value the first cleared.
+ */
+export async function clearCuration(recipeId: string): Promise<void> {
+  const existing = await db.userData.get(recipeId)
+  if (!existing) return
+  if (existing.notes || existing.userTags?.length) {
+    await db.userData.put({ ...existing, stars: undefined, rotation: undefined })
+  } else {
+    await db.userData.delete(recipeId)
+  }
+}
