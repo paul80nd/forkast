@@ -47,3 +47,15 @@ Feature: Rate recipes with stars
     Given I have set the rotation on recipe "r1" to "occasional"
     When I clear the rotation on recipe "r1"
     Then recipe "r1" has no curation row
+
+  Scenario: Clearing curation removes both stars and rotation at once
+    Given I have rated recipe "r1" 3 stars
+    And I have set the rotation on recipe "r1" to "weekly"
+    When I clear the curation on recipe "r1"
+    Then recipe "r1" has no curation row
+
+  Scenario: Clearing curation keeps the row when it carries a note
+    Given recipe "r1" is rated 4 stars and has a note "great with rice"
+    When I clear the curation on recipe "r1"
+    Then recipe "r1" has no stars
+    But recipe "r1" still has the note "great with rice"
