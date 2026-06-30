@@ -1,13 +1,8 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
-import {
-  addToPlan,
-  removeFromPlan,
-  setPortions,
-  markCooked,
-  CURRENT_PLAN_ID,
-} from '../../src/lib/plan'
+import { CURRENT_PLAN_ID } from '../../src/lib/plan'
+import { addToPlan, removeFromPlan, setPortions, markCooked } from '../../src/app/plan'
 
 const feature = await loadFeature('features/plan-week.feature')
 

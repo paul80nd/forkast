@@ -120,10 +120,9 @@ variety penalty, group exclusion, small-pool fallback). The **Dexie reads** that
 candidate set and the **writes** that accept a suggestion go through `src/app/` (alongside the
 existing plan writes).
 
-> **House-keeping note:** the current plan writes live in `src/lib/plan.ts`, which does Dexie
-> I/O — the same `src/lib` → `src/app` wrinkle Curate had before the rotation work. Building the
-> suggester is a natural moment to move the plan Dexie writes to `src/app/plan.ts` and keep
-> `src/lib` pure (the suggester's scorer being the first pure-lib resident).
+> **House-keeping note:** the plan Dexie writes now live in `src/app/plan.ts` (moved
+> 2026-06-30, slice 1 of this build); `src/lib/plan.ts` keeps only the pure helpers
+> (`CURRENT_PLAN_ID`, `todayISO`, `daysSince`). The suggester's scorer joins them as pure lib.
 
 Planned Gherkin (`features/suggest-week.feature`), driving the app layer against
 `fake-indexeddb`:
