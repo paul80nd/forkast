@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { applyRatingToGroup, clearCuration, setRotation, setStars } from '../app/curation'
-import { STAR_LABELS } from '../lib/curation'
+import { ROTATION_LABELS, STAR_LABELS } from '../lib/curation'
 import { RotationRating, StarRating } from '../components/RatingScale'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
@@ -191,12 +191,25 @@ export function CuratePage() {
         </span>
       </div>
 
-      <p className="mt-2 text-sm text-stone-500">
-        <span className="font-medium text-stone-600">★5</span> favourite ·{' '}
-        <span className="font-medium text-stone-600">★4</span> nice ·{' '}
-        <span className="font-medium text-stone-600">★3</span> variety-only ·{' '}
-        <span className="font-medium text-stone-600">★1–2</span> bin
-      </p>
+      {/* Legend driven off the label maps so it can't drift: ★ = how good, ◆ = how often. */}
+      <div className="mt-2 flex flex-wrap justify-between gap-x-6 gap-y-1 text-sm text-stone-500">
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+          {([5, 4, 3, 2, 1] as Stars[]).map((n) => (
+            <span key={n} className="whitespace-nowrap">
+              <span className="font-medium text-amber-500">★{n}</span>{' '}
+              {STAR_LABELS[n]}
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+          {([5, 4, 3, 2, 1] as Rotation[]).map((n) => (
+            <span key={n} className="whitespace-nowrap">
+              <span className="font-medium text-sky-500">◆{n}</span>{' '}
+              {ROTATION_LABELS[n]}
+            </span>
+          ))}
+        </div>
+      </div>
 
       {/* Focus the working set — rate one cuisine / protein at a time for consistency. */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
