@@ -55,6 +55,22 @@ Browse** (`curate.cuisine` / `curate.protein` via `usePersistentState`) — focu
 chicken shouldn't force Curate to. Presentation-only (pure UI filtering, like Browse) → no
 Gherkin; the rating writes it sits on top of are covered by `features/curation.feature`.
 
+### Rotation — how often (★3+) — built 2026-06-30
+A second per-recipe signal beside the stars: **how often you'd want this in rotation**
+(*Weekly / Often / Occasional / Treat*), stored as `rotation` on the user-data row
+(`schema/userData.ts`). It's independent of ★ — a ★5 you'd happily eat weekly differs from a
+★5 you only want occasionally — and exists to feed the assisted planner so it can balance
+variety and **not over-suggest favourites**. ★ alone can't express that.
+
+- Offered only on the **rated overview** rows rated **★3 or above** — the planner's pool
+  (variety ★3 + keepers ★4/5). ★1–2 are bin, so rotation is moot there; and the triage card
+  stays a fast ★-only decision (rating a recipe drops it from the backlog immediately, so
+  there's no "after rating" moment on that card — rotation is a considered second pass).
+- A `<select>` defaulting to "How often…" (unset); choosing a value writes it, choosing the
+  blank clears it. Optional throughout — most recipes never get one.
+- Rides the backup automatically (it's a field on the exported `userData` rows) and is purged
+  with the row when a recipe is deleted. Covered by `features/curation.feature`.
+
 ## Planned
 
 Curate today captures exactly one signal — ★ = *how good is this recipe*. The assisted
@@ -67,10 +83,7 @@ committed:
 1. ~~**Scope the triage backlog.**~~ **Built 2026-06-30** — see *Focus filters* above. (Went
    a touch further than the original sketch: the filter scopes the rated overview too, so the
    whole page focuses on one cuisine/protein.)
-2. **A rotation / frequency signal.** ★ says a recipe is great; it doesn't say you'd happily
-   eat it weekly vs. it being a once-a-month treat. A per-recipe field (e.g. *weekly / often /
-   occasional / treat*) set alongside the stars gives the planner what it needs to avoid
-   over-suggesting your ★5s. New user-data field.
+2. ~~**A rotation / frequency signal.**~~ **Built 2026-06-30** — see *Rotation* above.
 3. **Group-aware rating** (ties to [Refine → Group](refine-groups-spec.md)). When a recipe is
    one of a variant group, show "1 of N variants" and offer to apply the rating to siblings —
    you shouldn't independently triage near-identical dishes, and the planner treats the group
@@ -85,10 +98,11 @@ missing. (3) and (4) are strong follow-ons.
 
 ## App layer & testing
 
-Star writes are pure-ish helpers in `src/lib/curation.ts` (`setStars`, `STAR_LABELS`) against
-Dexie; `CuratePage.tsx` is a thin shell reading live queries. Curation behaviour is covered by
-`features/curation.feature` (driving the store against `fake-indexeddb`).
+The curation writes (`setStars`, `setRotation`) live in **`src/app/curation.ts`** — the
+house-rules Dexie seam the UI and feature tests both call. The pure vocabulary (`STAR_LABELS`,
+`ROTATIONS`, `ROTATION_LABELS`) stays in `src/lib/curation.ts`. `CuratePage.tsx` is a thin
+shell reading live queries. Curation behaviour is covered by `features/curation.feature`
+(driving the store against `fake-indexeddb`).
 
-> Note: `curation.ts` does Dexie writes but currently lives in `src/lib/` rather than
-> `src/app/` (the house-rules seam). Tested in place; a move to `src/app/` is a tidy-up if the
-> rating logic grows (e.g. the rotation field above).
+> The Dexie writes moved from `src/lib/` to `src/app/` when the rotation field landed
+> (2026-06-30), resolving the earlier house-rules wrinkle.

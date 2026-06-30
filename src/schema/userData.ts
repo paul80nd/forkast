@@ -6,10 +6,18 @@ import type { Recipe } from './recipe'
 /** Household sticky-note semantics: 5 favourite · 4 nice · 3 variety-only · 1-2 bin. */
 export type Stars = 1 | 2 | 3 | 4 | 5
 
+/**
+ * How often you'd want this recipe in rotation — a *frequency* signal independent of ★
+ * (quality). A ★5 you'd happily eat weekly differs from a ★5 you only want occasionally;
+ * the assisted planner uses this to balance variety and avoid over-suggesting favourites.
+ */
+export type Rotation = 'weekly' | 'often' | 'occasional' | 'treat'
+
 /** Per-recipe curation. Keyed by recipeId. */
 export interface UserRecipeData {
   recipeId: string
   stars?: Stars
+  rotation?: Rotation
   notes?: string
   userTags?: string[]
 }

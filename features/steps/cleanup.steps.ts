@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 import { db } from '../../src/db/db'
 import { createGroup, groupForRecipe } from '../../src/app/groups'
 import { deleteRecipes } from '../../src/app/cleanup'
-import { setStars } from '../../src/lib/curation'
+import { setStars } from '../../src/app/curation'
 import { addToPlan, markCooked, CURRENT_PLAN_ID } from '../../src/lib/plan'
 import { makeRecipe } from '../../test/factories'
 

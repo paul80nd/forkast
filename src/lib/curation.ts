@@ -1,5 +1,7 @@
-import { db } from '../db/db'
-import type { Stars } from '../schema/userData'
+// Pure curation vocabulary — labels and orderings, no I/O. The Dexie writes that act on
+// these (setStars / setRotation) live in src/app/curation.ts.
+
+import type { Rotation, Stars } from '../schema/userData'
 
 /** The household's sticky-note meaning for each star tier. */
 export const STAR_LABELS: Record<Stars, string> = {
@@ -10,22 +12,13 @@ export const STAR_LABELS: Record<Stars, string> = {
   1: 'Very bin it',
 }
 
-/**
- * Set (or clear, with `undefined`) a recipe's star rating, preserving any notes
- * or tags already on the row. Clearing a row that has nothing else removes it.
- */
-export async function setStars(
-  recipeId: string,
-  stars: Stars | undefined,
-): Promise<void> {
-  const existing = await db.userData.get(recipeId)
-  if (stars === undefined) {
-    if (existing && (existing.notes || existing.userTags?.length)) {
-      await db.userData.put({ ...existing, stars: undefined })
-    } else if (existing) {
-      await db.userData.delete(recipeId)
-    }
-    return
-  }
-  await db.userData.put({ ...(existing ?? { recipeId }), recipeId, stars })
+/** Rotation tiers, most-wanted → rarest (display order). */
+export const ROTATIONS: Rotation[] = ['weekly', 'often', 'occasional', 'treat']
+
+/** Human label for each rotation tier. */
+export const ROTATION_LABELS: Record<Rotation, string> = {
+  weekly: 'Weekly',
+  often: 'Often',
+  occasional: 'Occasional',
+  treat: 'Treat',
 }
