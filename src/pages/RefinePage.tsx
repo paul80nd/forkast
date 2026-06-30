@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
+import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import { STAR_LABELS } from '../lib/curation'
 import type { Recipe } from '../schema/recipe'
@@ -267,18 +268,7 @@ export function RefinePage() {
       </div>
 
       {/* Existing groups */}
-      <h2 className="mt-6 text-lg font-semibold">
-        Groups <span className="text-sm font-normal text-stone-400">({groups.length})</span>
-      </h2>
-      {groups.length === 0 ? (
-        <p className="mt-2 text-sm text-stone-500">No groups yet.</p>
-      ) : (
-        <ul className="mt-2 space-y-3">
-          {groups.map((g) => (
-            <GroupCard key={g.id} group={g} byId={byId} />
-          ))}
-        </ul>
-      )}
+      <GroupsList groups={groups} byId={byId} />
         </>
       )}
 
@@ -666,63 +656,220 @@ function SuggestionCard({
   )
 }
 
-// One saved group: its labelled members with a Compare toggle, plus disband / remove.
-function GroupCard({ group, byId }: { group: VariantGroup; byId: Map<string, Recipe> }) {
+type AxisFilter = 'all' | NonNullable<VariantGroup['axis']> | 'none'
+type GroupSort = 'size' | 'axis' | 'title'
+
+// The saved-groups list — built to stay scannable at hundreds of groups. Each group collapses
+// to a one-line row (expand on demand); a search box, axis filter, and sort scope the list, and
+// it renders incrementally (page-at-a-time) so the DOM never holds all of them at once. Filters
+// persist like Browse's. A thin shell over src/app/groups.ts (member/group mutations live there).
+function GroupsList({ groups, byId }: { groups: VariantGroup[]; byId: Map<string, Recipe> }) {
+  const [query, setQuery] = usePersistentState('refine.groups.query', '')
+  const [axisFilter, setAxisFilter] = usePersistentState<AxisFilter>('refine.groups.axis', 'all')
+  const [sort, setSort] = usePersistentState<GroupSort>('refine.groups.sort', 'size')
+
+  const PAGE = 50
+  const [visible, setVisible] = useState(PAGE)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  // Precompute each group's member titles, a representative (alphabetically-first) title for
+  // sorting/summary, and a lowercased search haystack — so filtering/sorting don't re-walk
+  // members on every keystroke.
+  const decorated = useMemo(
+    () =>
+      groups.map((g) => {
+        const titles = g.members.map((m) => byId.get(m.recipeId)?.title ?? m.recipeId)
+        const labels = g.members.map((m) => m.label).filter(Boolean)
+        const repTitle = [...titles].sort((a, b) => a.localeCompare(b))[0] ?? ''
+        return { group: g, titles, repTitle, haystack: [...titles, ...labels].join(' ').toLowerCase() }
+      }),
+    [groups, byId],
+  )
+
+  const q = query.trim().toLowerCase()
+  const filtered = useMemo(() => {
+    let out = decorated
+    if (axisFilter === 'none') out = out.filter((d) => !d.group.axis)
+    else if (axisFilter !== 'all') out = out.filter((d) => d.group.axis === axisFilter)
+    if (q) out = out.filter((d) => d.haystack.includes(q))
+    return [...out].sort((a, b) => {
+      if (sort === 'size') {
+        return b.group.members.length - a.group.members.length || a.repTitle.localeCompare(b.repTitle)
+      }
+      if (sort === 'axis') {
+        return (a.group.axis ?? '~').localeCompare(b.group.axis ?? '~') || a.repTitle.localeCompare(b.repTitle)
+      }
+      return a.repTitle.localeCompare(b.repTitle)
+    })
+  }, [decorated, axisFilter, q, sort])
+
+  // Back to the first page whenever the filters or sort change.
+  useEffect(() => setVisible(PAGE), [q, axisFilter, sort])
+
+  // Grow the visible count when the bottom sentinel scrolls into view (mirrors Browse).
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) setVisible((v) => v + PAGE)
+      },
+      { rootMargin: '400px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [filtered.length, visible])
+
+  const controlClass =
+    'rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
+
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h2 className="text-lg font-semibold">
+          Groups <span className="text-sm font-normal text-stone-400">({groups.length})</span>
+        </h2>
+        {groups.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search groups…"
+              className={`${controlClass} w-44`}
+            />
+            <select
+              value={axisFilter}
+              onChange={(e) => setAxisFilter(e.target.value as AxisFilter)}
+              aria-label="Filter by axis"
+              className={controlClass}
+            >
+              <option value="all">All axes</option>
+              <option value="protein">Protein</option>
+              <option value="carb">Carb</option>
+              <option value="mixed">Mixed</option>
+              <option value="none">No axis</option>
+            </select>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as GroupSort)}
+              aria-label="Sort groups"
+              className={controlClass}
+            >
+              <option value="size">Most variants</option>
+              <option value="axis">By axis</option>
+              <option value="title">A–Z</option>
+            </select>
+          </div>
+        )}
+      </div>
+
+      {groups.length === 0 ? (
+        <p className="mt-2 text-sm text-stone-500">No groups yet.</p>
+      ) : filtered.length === 0 ? (
+        <p className="mt-2 text-sm text-stone-500">No groups match your search.</p>
+      ) : (
+        <>
+          <p className="mt-2 text-xs text-stone-400">
+            Showing {Math.min(visible, filtered.length)} of {filtered.length}
+            {filtered.length !== groups.length ? ` (filtered from ${groups.length})` : ''}.
+          </p>
+          <ul className="mt-2 space-y-2">
+            {filtered.slice(0, visible).map((d) => (
+              <GroupRow key={d.group.id} group={d.group} byId={byId} titles={d.titles} />
+            ))}
+          </ul>
+          {visible < filtered.length && <div ref={sentinelRef} className="h-4" />}
+        </>
+      )}
+    </div>
+  )
+}
+
+// One saved group as a collapsible row: a dense summary line (axis · count · member titles)
+// that expands to the labelled member chips with Compare, plus disband / per-member remove.
+function GroupRow({
+  group,
+  byId,
+  titles,
+}: {
+  group: VariantGroup
+  byId: Map<string, Recipe>
+  titles: string[]
+}) {
+  const [expanded, setExpanded] = useState(false)
   const [comparing, setComparing] = useState(false)
   const members = group.members
     .map((m) => byId.get(m.recipeId))
     .filter((r): r is Recipe => r !== undefined)
 
   return (
-    <li className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium tracking-wide text-stone-500 uppercase">
-          {group.axis ? `${group.axis} group` : 'group'}
+    <li className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
+      <button
+        type="button"
+        onClick={() => setExpanded((e) => !e)}
+        aria-expanded={expanded}
+        className="flex w-full items-center gap-2.5 px-3 py-2 text-left"
+      >
+        <span className="w-3 shrink-0 text-stone-400">{expanded ? '▾' : '▸'}</span>
+        <span className="shrink-0 rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium tracking-wide text-stone-500 uppercase">
+          {group.axis ?? 'group'}
         </span>
-        <div className="flex gap-1.5">
-          <button
-            type="button"
-            onClick={() => setComparing((c) => !c)}
-            className="rounded px-2 py-0.5 text-xs font-medium text-stone-500 hover:bg-stone-100"
-          >
-            {comparing ? 'Hide compare' : 'Compare'}
-          </button>
-          <button
-            type="button"
-            onClick={() => deleteGroup(group.id)}
-            className="rounded px-2 py-0.5 text-xs font-medium text-rose-600 hover:bg-rose-50"
-          >
-            Disband
-          </button>
-        </div>
-      </div>
-      <ul className="mt-2 flex flex-wrap gap-2">
-        {group.members.map((m) => (
-          <li
-            key={m.recipeId}
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 py-1 pr-1 pl-2.5 text-sm"
-          >
-            {m.label && (
-              <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500">
-                {m.label}
-              </span>
-            )}
-            <Link to={`/recipe/${m.recipeId}`} className="hover:text-orange-700">
-              {byId.get(m.recipeId)?.title ?? m.recipeId}
-            </Link>
+        <span className="shrink-0 text-xs text-stone-400">{group.members.length}</span>
+        <span
+          className={`min-w-0 flex-1 truncate text-sm ${expanded ? 'text-stone-400' : 'text-stone-800'}`}
+        >
+          {titles.join('  ·  ')}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="border-t border-stone-100 px-3 pt-2 pb-3">
+          <div className="flex justify-end gap-1.5">
             <button
               type="button"
-              onClick={() => removeRecipeFromGroup(m.recipeId)}
-              className="rounded-full px-1.5 text-stone-400 hover:bg-stone-200 hover:text-stone-600"
-              aria-label="Remove from group"
+              onClick={() => setComparing((c) => !c)}
+              className="rounded px-2 py-0.5 text-xs font-medium text-stone-500 hover:bg-stone-100"
             >
-              ✕
+              {comparing ? 'Hide compare' : 'Compare'}
             </button>
-          </li>
-        ))}
-      </ul>
+            <button
+              type="button"
+              onClick={() => deleteGroup(group.id)}
+              className="rounded px-2 py-0.5 text-xs font-medium text-rose-600 hover:bg-rose-50"
+            >
+              Disband
+            </button>
+          </div>
+          <ul className="mt-1 flex flex-wrap gap-2">
+            {group.members.map((m) => (
+              <li
+                key={m.recipeId}
+                className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 py-1 pr-1 pl-2.5 text-sm"
+              >
+                {m.label && (
+                  <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500">
+                    {m.label}
+                  </span>
+                )}
+                <Link to={`/recipe/${m.recipeId}`} className="hover:text-orange-700">
+                  {byId.get(m.recipeId)?.title ?? m.recipeId}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => removeRecipeFromGroup(m.recipeId)}
+                  className="rounded-full px-1.5 text-stone-400 hover:bg-stone-200 hover:text-stone-600"
+                  aria-label="Remove from group"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
 
-      {comparing && <CompareView recipes={members} />}
+          {comparing && <CompareView recipes={members} />}
+        </div>
+      )}
     </li>
   )
 }

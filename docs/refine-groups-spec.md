@@ -24,6 +24,15 @@ Existing groups list below with **disband** and **per-member remove**. The integ
 invariants (one group per recipe, min two members, delete cascades) are enforced in the app
 layer — see [`groups-spec.md`](groups-spec.md).
 
+### Reviewing existing groups
+The saved-groups list is built to stay scannable once there are hundreds. Each group is a
+**collapsed one-line row** — axis · member count · member titles — that **expands on click**
+into the labelled member chips (with Compare, disband, per-member remove). A **search box**
+(matches member titles + labels), an **axis filter** (protein / carb / mixed / none), and a
+**sort** (most variants / by axis / A–Z) scope the list; all three persist like Browse's
+filters. The list renders **a page at a time** (50, growing on scroll) so the DOM never holds
+every group at once.
+
 ### Similarity suggester
 Proposes candidate clusters from the **ungrouped** recipes so you don't have to find variants
 by hand. `suggestGroupCandidates()` (`src/app/groups.ts`) reads the store and feeds the pure
