@@ -32,12 +32,28 @@ the backup, never mutating the re-importable recipe record. Writes go through `s
 ### Triage
 The page leads with a **one-recipe-at-a-time** triage of the **unrated backlog** (every recipe
 with no ★ yet, sorted by title). The card shows the image, cuisine / prep-time / main-protein,
-title, and description, with a large star control.
+title, and description, with the ★ rating and (for keepers) the ◆ rotation controls.
 
-- **Keyboard-first:** `1`–`5` rate the current recipe, `→` or `S` skip, `←` step back.
-  (Keys are ignored while focus is in an input/textarea/select.)
-- **Buttons:** Back / Skip, and the star control, mirror the keys for mouse use.
-- Rating advances through the backlog; when it empties, an "All triaged 🎉" state shows.
+**Two-step per card, ★ then ◆** — designed for speed:
+
+- Set the **rating**. A bin score (★1–2) advances straight to the next card — rotation is
+  moot. A keeper (★3–5) instead **reveals the rotation control** and waits.
+- Set the **rotation** (◆1–5). That records "how often" and advances to the next card.
+- So the fast path is two taps/keys: e.g. `3` then `2` (★3, then ◆2 = Occasionally) → next.
+
+- **Keyboard-first:** `1`–`5` set the ★, then `1`–`5` set the ◆ (a local *phase* tracks which,
+  so a fast "3 then 2" can't be misread as two star presses while the write lands); `→`/`S`
+  skip, `←` step back, `Backspace` clears the card. (Keys ignored while focus is in a field.)
+- **Buttons + controls** mirror the keys for mouse use; click an active icon to clear it.
+- **You're never trapped:** Back/Skip always work, even if you've only set the ★ (rotation is
+  optional). Clearing the ★ (or `Backspace`) wipes rotation too, so an unrated card never keeps
+  an orphan rotation.
+
+The triage walks a **frozen session queue** — the unrated recipes in the active filter,
+captured when the filter (or recipe set) changes, *not* on each rating. That's what lets a card
+stay put while you rate it and lets Back/Skip revisit cards you've already rated this session
+(rather than the card vanishing the instant it leaves the live "unrated" set). At the end an
+"End of the batch" / "All triaged" state offers a Back link; any skipped count is shown.
 
 ### Rated overview
 Below the triage card, the rated recipes are grouped into **tiers (★5 → ★1)**, each tier a

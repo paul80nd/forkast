@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
-import { setRotation, setStars } from '../app/curation'
+import { clearCuration, setRotation, setStars } from '../app/curation'
 import { STAR_LABELS } from '../lib/curation'
 import { RotationRating, StarRating } from '../components/RatingScale'
 import { usePersistentState } from '../hooks/usePersistentState'
@@ -13,7 +13,6 @@ import type { Rotation, Stars } from '../schema/userData'
 export function CuratePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
   const userData = useLiveQuery(() => db.userData.toArray(), [])
-  const [cursor, setCursor] = useState(0)
   // Filters scope Curate's whole working set — both the triage backlog and the rated
   // overview — so you can focus on one cuisine/protein at a time. Persisted (separately
   // from Browse) so the focus survives navigation and reload.
@@ -55,45 +54,97 @@ export function CuratePage() {
 
   // The working set: recipes matching the active filter. Counts and both lists derive from it.
   const scoped = useMemo(() => (recipes ?? []).filter(inFilter), [recipes, inFilter])
-  const backlog = useMemo(
-    () =>
-      scoped
-        .filter((r) => !starsById.has(r.id))
-        .sort((a, b) => a.title.localeCompare(b.title)),
-    [scoped, starsById],
-  )
+  const byId = useMemo(() => new Map((recipes ?? []).map((r) => [r.id, r])), [recipes])
 
-  // Restart triage at the top of the list whenever the filter changes the backlog.
+  // Frozen triage queue: the unrated recipes in the active filter, captured when the filter
+  // (or recipe set) changes — NOT when ratings change. So a card stays put while you rate it
+  // (you advance explicitly) and Back/Skip can revisit cards already rated this session. A
+  // ref holds the latest ratings so the capture doesn't re-run on every rating.
+  const [queue, setQueue] = useState<string[]>([])
+  const [index, setIndex] = useState(0)
+  // Keyboard phase for the current card: digits set the ★ first, then the ◆ rotation. Kept
+  // local (not derived from the async-updated rating) so a fast "3 then 2" can't be misread.
+  const [phase, setPhase] = useState<'stars' | 'rotation'>('stars')
+  const starsRef = useRef(starsById)
+  starsRef.current = starsById
+
+  // Capture only once both tables have loaded (else an early recipes-only load would treat
+  // already-rated recipes as unrated). `dataReady` flips false→true once, so this fires on
+  // first load and on filter change — but not on each rating (which leaves recipes/filter
+  // unchanged), keeping the card put while you rate it.
+  const dataReady = recipes !== undefined && userData !== undefined
   useEffect(() => {
-    setCursor(0)
-  }, [fCuisine, fProtein])
+    if (!dataReady) return
+    setQueue(
+      recipes!
+        .filter(inFilter)
+        .filter((r) => !starsRef.current.has(r.id))
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .map((r) => r.id),
+    )
+    setIndex(0)
+  }, [recipes, inFilter, dataReady])
 
-  const current = backlog.length ? backlog[Math.min(cursor, backlog.length - 1)] : undefined
-
-  // Keyboard triage: 1–5 rate, →/S skip, ← back.
+  // Each new card starts in the ★ phase.
   useEffect(() => {
-    if (!current) return
+    setPhase('stars')
+  }, [index])
+
+  const currentId = queue[index]
+  const current = currentId ? byId.get(currentId) : undefined
+  const currentStars = currentId ? starsById.get(currentId) : undefined
+  const currentRotation = currentId ? rotationById.get(currentId) : undefined
+
+  const advance = () => setIndex((i) => Math.min(i + 1, queue.length))
+  const back = () => setIndex((i) => Math.max(i - 1, 0))
+
+  function rateStars(v: Stars | undefined) {
+    if (!currentId) return
+    if (v === undefined) {
+      void clearCuration(currentId) // clears rotation too — no orphan rotation on an unrated card
+      setPhase('stars')
+      return
+    }
+    void setStars(currentId, v)
+    if (v <= 2) advance() // bin → straight to the next card (rotation is moot)
+    else setPhase('rotation') // keeper → await the ◆ rotation, then advance
+  }
+  function rateRotation(v: Rotation | undefined) {
+    if (!currentId) return
+    void setRotation(currentId, v)
+    if (v !== undefined) advance()
+  }
+
+  // Keyboard: digit sets ★ then ◆ (advancing as it goes), ←/→ (or S) navigate, Backspace clears.
+  useEffect(() => {
+    if (!currentId) return
     function onKey(e: KeyboardEvent) {
       const el = e.target as HTMLElement | null
       if (el && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)) return
       if (e.key >= '1' && e.key <= '5') {
-        void setStars(current!.id, Number(e.key) as Stars)
+        const n = Number(e.key) as 1 | 2 | 3 | 4 | 5
+        if (phase === 'rotation') rateRotation(n)
+        else rateStars(n)
       } else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 's') {
-        setCursor((c) => Math.min(c + 1, backlog.length - 1))
+        advance()
       } else if (e.key === 'ArrowLeft') {
-        setCursor((c) => Math.max(c - 1, 0))
+        back()
+      } else if (e.key === 'Backspace') {
+        void clearCuration(currentId!)
+        setPhase('stars')
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [current, backlog.length])
+  }, [currentId, phase, queue.length])
 
   if (recipes === undefined || userData === undefined) {
     return <p className="text-stone-500">Loading…</p>
   }
 
   // Counts reflect the active filter (the working set), not the whole collection.
-  const ratedCount = scoped.length - backlog.length
+  const ratedCount = scoped.filter((r) => starsById.has(r.id)).length
+  const remaining = queue.filter((id) => !starsById.has(id)).length
 
   const selectClass =
     'rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
@@ -103,7 +154,7 @@ export function CuratePage() {
       <div className="flex items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Curate</h1>
         <span className="text-sm text-stone-500">
-          {ratedCount} rated · {backlog.length} to triage
+          {ratedCount} rated · {remaining} to triage
           {filterActive && ' (in filter)'}
         </span>
       </div>
@@ -184,32 +235,42 @@ export function CuratePage() {
             </Link>
             <p className="mt-1 text-sm text-stone-500">{current.description}</p>
 
-            <div className="mt-auto pt-5">
-              <StarRating
-                size="lg"
-                showLabel
-                onChange={(v) => v && setStars(current.id, v)}
-              />
-              <div className="mt-3 flex items-center gap-2 text-sm">
+            <div className="mt-auto space-y-2 pt-5">
+              <div className="flex items-center gap-3">
+                <span className="w-16 shrink-0 text-xs font-medium tracking-wide text-stone-400 uppercase">
+                  Rating
+                </span>
+                <StarRating size="lg" showLabel value={currentStars} onChange={rateStars} />
+              </div>
+              {/* Rotation appears once it's a keeper (★3+); set it to move on. */}
+              {currentStars !== undefined && currentStars >= 3 && (
+                <div className="flex items-center gap-3">
+                  <span className="w-16 shrink-0 text-xs font-medium tracking-wide text-stone-400 uppercase">
+                    How often
+                  </span>
+                  <RotationRating size="lg" showLabel value={currentRotation} onChange={rateRotation} />
+                </div>
+              )}
+              <div className="flex items-center gap-2 pt-2 text-sm">
                 <button
                   type="button"
-                  onClick={() => setCursor((c) => Math.max(c - 1, 0))}
+                  onClick={back}
                   className="rounded-md px-2.5 py-1 text-stone-500 hover:bg-stone-100"
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
-                  onClick={() =>
-                    setCursor((c) => Math.min(c + 1, backlog.length - 1))
-                  }
+                  onClick={advance}
                   className="rounded-md px-2.5 py-1 text-stone-500 hover:bg-stone-100"
                 >
                   Skip →
                 </button>
-                <span className="ml-auto text-xs text-stone-400">
-                  Press <kbd className="rounded bg-stone-100 px-1">1</kbd>–
-                  <kbd className="rounded bg-stone-100 px-1">5</kbd> to rate
+                <span className="ml-auto text-right text-xs text-stone-400">
+                  {phase === 'rotation'
+                    ? 'Now press 1–5 for how often'
+                    : 'Press 1–5 to rate'}
+                  <span className="ml-1 text-stone-300">· {index + 1}/{queue.length}</span>
                 </span>
               </div>
             </div>
@@ -217,14 +278,29 @@ export function CuratePage() {
         </div>
       ) : (
         <div className="mt-5 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-10 text-center">
-          <p className="text-lg font-medium text-stone-700">
-            {filterActive ? 'Nothing left to triage in this filter 🎉' : 'All triaged 🎉'}
-          </p>
-          <p className="mt-1 text-sm text-stone-500">
-            {filterActive
-              ? 'Clear the filter to triage the rest, or re-rate any below.'
-              : 'Every recipe has a rating. Re-rate any below.'}
-          </p>
+          {queue.length === 0 ? (
+            <>
+              <p className="text-lg font-medium text-stone-700">
+                {filterActive ? 'Nothing to triage in this filter 🎉' : 'All triaged 🎉'}
+              </p>
+              <p className="mt-1 text-sm text-stone-500">
+                {filterActive
+                  ? 'Clear the filter to triage the rest, or re-rate any below.'
+                  : 'Every recipe has a rating. Re-rate any below.'}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-medium text-stone-700">End of the batch 🎉</p>
+              <p className="mt-1 text-sm text-stone-500">
+                {remaining > 0 ? `${remaining} skipped — ` : 'All rated. '}
+                <button type="button" onClick={back} className="text-orange-600 hover:underline">
+                  ← Back
+                </button>{' '}
+                to revisit, or re-rate any below.
+              </p>
+            </>
+          )}
         </div>
       )}
 
