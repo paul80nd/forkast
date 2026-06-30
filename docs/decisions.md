@@ -8,6 +8,20 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-06-30 — Assisted planner: greedy weighted fill, group-aware, propose-then-accept
+
+The "suggest a varied week" suggester (designed in [`plan-suggest-spec.md`](plan-suggest-spec.md))
+selects by a **greedy weighted fill**: each candidate scores on **quality (★)** + **dueness**
+(recency folded with the `rotation` frequency into one `daysSince / expectedInterval` term) minus
+a **dynamic variety penalty** over cuisine / protein / time-band that grows as the basket fills.
+*Why greedy over a global optimiser:* simple, fast, explainable ("picked for variety"), and it
+supports per-slot reroll naturally. A **variant group counts as one unit** (never two members in a
+week). Resolved choices: soft variety (penalise, don't forbid); favour favourites with no quota;
+**propose-then-accept** (non-destructive, like the other suggesters); **weighted-random + seed**
+so weeks vary but tests stay deterministic; week length 5, adjustable. The pure scorer lands in
+`src/lib/` (the first pure resident); plan Dexie writes move `src/lib/plan.ts` → `src/app/plan.ts`
+to fix the long-standing lib→app wrinkle. Not built yet.
+
 ## 2026-06-29 — Duplicate detection reuses the variant scorer, separated by title overlap
 
 The Refine "Duplicates" finder doesn't get its own algorithm: it's the same pure
