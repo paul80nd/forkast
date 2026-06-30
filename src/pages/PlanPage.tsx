@@ -3,14 +3,8 @@ import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
-import {
-  CURRENT_PLAN_ID,
-  addToPlan,
-  removeFromPlan,
-  setPortions,
-  markCooked,
-  daysSince,
-} from '../lib/plan'
+import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
+import { addToPlan, removeFromPlan, setPortions, markCooked } from '../app/plan'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
 

@@ -4,7 +4,8 @@ import { db } from '../../src/db/db'
 import { createGroup, groupForRecipe } from '../../src/app/groups'
 import { deleteRecipes } from '../../src/app/cleanup'
 import { setStars } from '../../src/app/curation'
-import { addToPlan, markCooked, CURRENT_PLAN_ID } from '../../src/lib/plan'
+import { CURRENT_PLAN_ID } from '../../src/lib/plan'
+import { addToPlan, markCooked } from '../../src/app/plan'
 import { makeRecipe } from '../../test/factories'
 
 const feature = await loadFeature('features/cleanup.feature')
