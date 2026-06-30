@@ -2,22 +2,27 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
-import { clearCuration, setRotation, setStars } from '../app/curation'
+import { applyRatingToGroup, clearCuration, setRotation, setStars } from '../app/curation'
 import { STAR_LABELS } from '../lib/curation'
 import { RotationRating, StarRating } from '../components/RatingScale'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
-import type { Rotation, Stars } from '../schema/userData'
+import type { Rotation, Stars, VariantGroup } from '../schema/userData'
 
 export function CuratePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
   const userData = useLiveQuery(() => db.userData.toArray(), [])
+  const groups = useLiveQuery(() => db.variantGroups.toArray(), [])
   // Filters scope Curate's whole working set — both the triage backlog and the rated
   // overview — so you can focus on one cuisine/protein at a time. Persisted (separately
   // from Browse) so the focus survives navigation and reload.
   const [fCuisine, setFCuisine] = usePersistentState('curate.cuisine', 'all')
   const [fProtein, setFProtein] = usePersistentState('curate.protein', 'all')
+  // When on (default), rating a grouped recipe auto-applies that rating to its still-unrated
+  // variants and drops them from the triage queue — you rarely want to score near-identical
+  // dishes separately. Persisted so the preference sticks.
+  const [applyToVariants, setApplyToVariants] = usePersistentState('curate.applyToVariants', true)
 
   const starsById = useMemo(() => {
     const m = new Map<string, Stars>()
@@ -44,6 +49,14 @@ export function CuratePage() {
       ).sort(),
     [recipes],
   )
+
+  // Reverse index recipeId → its variant group, so the triage card can offer to rate the
+  // whole group at once (near-identical variants shouldn't be triaged independently).
+  const groupByRecipe = useMemo(() => {
+    const m = new Map<string, VariantGroup>()
+    for (const g of groups ?? []) for (const mem of g.members) m.set(mem.recipeId, g)
+    return m
+  }, [groups])
 
   const inFilter = useMemo(() => {
     return (r: Recipe) =>
@@ -94,25 +107,44 @@ export function CuratePage() {
   const current = currentId ? byId.get(currentId) : undefined
   const currentStars = currentId ? starsById.get(currentId) : undefined
   const currentRotation = currentId ? rotationById.get(currentId) : undefined
+  const currentGroup = currentId ? groupByRecipe.get(currentId) : undefined
 
   const advance = () => setIndex((i) => Math.min(i + 1, queue.length))
   const back = () => setIndex((i) => Math.max(i - 1, 0))
 
-  function rateStars(v: Stars | undefined) {
+  // When the toggle is on, fan the current card's finalised rating out to its unrated variants
+  // and drop those (ahead of here) from the queue so they aren't triaged again. No-op otherwise.
+  async function cascadeToVariants() {
+    if (!applyToVariants || !currentGroup || !currentId) return
+    const written = await applyRatingToGroup(currentId)
+    if (written.length) {
+      const siblings = new Set(written)
+      setQueue((q) => q.filter((id, i) => i <= index || !siblings.has(id)))
+    }
+  }
+
+  async function rateStars(v: Stars | undefined) {
     if (!currentId) return
     if (v === undefined) {
       void clearCuration(currentId) // clears rotation too — no orphan rotation on an unrated card
       setPhase('stars')
       return
     }
-    void setStars(currentId, v)
-    if (v <= 2) advance() // bin → straight to the next card (rotation is moot)
-    else setPhase('rotation') // keeper → await the ◆ rotation, then advance
+    await setStars(currentId, v)
+    if (v <= 2) {
+      await cascadeToVariants() // bin is final → fan out, then move on (rotation is moot)
+      advance()
+    } else {
+      setPhase('rotation') // keeper → await the ◆ rotation, which finalises and cascades
+    }
   }
-  function rateRotation(v: Rotation | undefined) {
+  async function rateRotation(v: Rotation | undefined) {
     if (!currentId) return
-    void setRotation(currentId, v)
-    if (v !== undefined) advance()
+    await setRotation(currentId, v)
+    if (v !== undefined) {
+      await cascadeToVariants() // keeper now complete (stars + rotation) → fan out, then move on
+      advance()
+    }
   }
 
   // Keyboard: digit sets ★ then ◆ (advancing as it goes), ←/→ (or S) navigate, Backspace clears.
@@ -136,7 +168,7 @@ export function CuratePage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [currentId, phase, queue.length])
+  }, [currentId, phase, queue.length, applyToVariants])
 
   if (recipes === undefined || userData === undefined) {
     return <p className="text-stone-500">Loading…</p>
@@ -206,6 +238,15 @@ export function CuratePage() {
             Clear filter
           </button>
         )}
+        <label className="ml-auto flex items-center gap-2 text-sm text-stone-600">
+          <input
+            type="checkbox"
+            checked={applyToVariants}
+            onChange={(e) => setApplyToVariants(e.target.checked)}
+            className="size-4 rounded border-stone-300 text-sky-500 focus:ring-sky-400"
+          />
+          Apply rating to variants
+        </label>
       </div>
 
       {/* Triage */}
@@ -249,6 +290,58 @@ export function CuratePage() {
                     How often
                   </span>
                   <RotationRating size="lg" showLabel value={currentRotation} onChange={rateRotation} />
+                </div>
+              )}
+              {/* Group-aware rating: this card is one of a variant set. With the toggle on, the
+                  rating fans out to the unrated variants (which then leave the queue); off, it's
+                  just a heads-up with a one-click way to opt in for this session onward. */}
+              {currentGroup && (
+                <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium">
+                      1 of {currentGroup.members.length} variants
+                    </span>
+                    {applyToVariants ? (
+                      <span className="shrink-0 text-xs">rating also rates the unrated ones ↓</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setApplyToVariants(true)}
+                        className="shrink-0 rounded-md bg-sky-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-sky-700"
+                      >
+                        Rate them together
+                      </button>
+                    )}
+                  </div>
+                  <ul className="mt-1.5 space-y-0.5 text-xs">
+                    {currentGroup.members
+                      .filter((m) => m.recipeId !== currentId)
+                      .map((m) => {
+                        const s = starsById.get(m.recipeId)
+                        return (
+                          <li key={m.recipeId} className="flex items-center gap-1.5">
+                            {m.label && (
+                              <span className="shrink-0 rounded bg-sky-100 px-1 font-medium">
+                                {m.label}
+                              </span>
+                            )}
+                            <span className="truncate">
+                              {byId.get(m.recipeId)?.title ?? m.recipeId}
+                            </span>
+                            {s ? (
+                              <span className="shrink-0 text-amber-600">
+                                {'★'.repeat(s)}
+                                {applyToVariants && <span className="ml-1 text-sky-400">kept</span>}
+                              </span>
+                            ) : (
+                              <span className="shrink-0 text-sky-400">
+                                {applyToVariants ? 'will match' : 'unrated'}
+                              </span>
+                            )}
+                          </li>
+                        )
+                      })}
+                  </ul>
                 </div>
               )}
               <div className="flex items-center gap-2 pt-2 text-sm">

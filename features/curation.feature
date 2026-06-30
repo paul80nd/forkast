@@ -59,3 +59,26 @@ Feature: Rate recipes with stars
     When I clear the curation on recipe "r1"
     Then recipe "r1" has no stars
     But recipe "r1" still has the note "great with rice"
+
+  Scenario: Applying a rating across a variant group rates the unrated siblings
+    Given recipes "r1, r2, r3" are a variant group
+    And I have rated recipe "r1" 4 stars
+    And I have set the rotation on recipe "r1" to 5
+    When I apply recipe "r1"'s rating across its group
+    Then recipe "r2" has 4 stars
+    And recipe "r2" has rotation 5
+    And recipe "r3" has 4 stars
+
+  Scenario: Applying a rating across a group never overwrites an already-rated variant
+    Given recipes "r1, r2, r3" are a variant group
+    And I have rated recipe "r1" 4 stars
+    And recipe "r2" already has 2 stars
+    When I apply recipe "r1"'s rating across its group
+    Then recipe "r2" has 2 stars
+    And recipe "r3" has 4 stars
+
+  Scenario: Applying a rating from an ungrouped recipe changes nothing
+    Given I have rated recipe "r1" 4 stars
+    When I apply recipe "r1"'s rating across its group
+    Then recipe "r1" has 4 stars
+    And only 1 recipe is rated

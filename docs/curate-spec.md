@@ -105,6 +105,26 @@ the Clear button makes "reset to unrated" obvious and also wipes rotation in one
 Browse grid card stays read-only — a star badge only — so ticking/navigating isn't muddled by
 inline editing. Wiring only; the underlying clears are covered by `features/curation.feature`.
 
+### Group-aware rating — built 2026-06-30
+Near-identical variants shouldn't be triaged independently, so Curate can fan a rating across a
+group (see [Refine → Group](refine-groups-spec.md)). An **"Apply rating to variants"** checkbox
+sits to the right of the focus filters, **on by default** and persisted (`curate.applyToVariants`).
+
+When the triaged card is one of a variant group, a sky **"1 of N variants"** panel appears under
+the rating controls, listing the siblings with their current ★ (or "unrated"):
+
+- **Toggle on** — finalising the card's rating (the ★ for a bin, the ◆ rotation for a keeper)
+  copies its **stars *and* rotation** onto every **still-unrated** sibling
+  (`applyRatingToGroup`, `src/app/curation.ts`) and drops those siblings from the rest of the
+  triage queue. A sibling that **already** carries a rating is **never overwritten** (your earlier
+  verdict wins — shown as "kept"); its notes/tags are preserved.
+- **Toggle off** — the panel is just a heads-up that the card belongs to a group, with a **"Rate
+  them together"** button that flips the toggle on (this card's rating then fans out, and the
+  preference sticks for the rest of the session).
+
+The cascade is gated on the toggle, fans out only to *unrated* members, and matches how the
+planner treats a group as one unit. Covered by `features/curation.feature`.
+
 ## Planned
 
 Curate today captures exactly one signal — ★ = *how good is this recipe*. The assisted
@@ -118,22 +138,20 @@ committed:
    a touch further than the original sketch: the filter scopes the rated overview too, so the
    whole page focuses on one cuisine/protein.)
 2. ~~**A rotation / frequency signal.**~~ **Built 2026-06-30** — see *Rotation* above.
-3. **Group-aware rating** (ties to [Refine → Group](refine-groups-spec.md)). When a recipe is
-   one of a variant group, show "1 of N variants" and offer to apply the rating to siblings —
-   you shouldn't independently triage near-identical dishes, and the planner treats the group
-   as one unit anyway.
+3. ~~**Group-aware rating**~~ **Built 2026-06-30** — see *Group-aware rating* above.
 4. **A readiness / coverage view.** Evolve the rated-overview from "list by tier" into "can
    this collection actually fill a varied week?" — keepers across each cuisine / protein, with
    gaps surfaced ("pork mains rated 4+: only 3"). Doubles as the proof that Curate has fed
    Plan what it needs.
 
-Priority leans to **(1) + (2)**: a better rating loop plus the one signal the planner is
-missing. (3) and (4) are strong follow-ons.
+Of these, (1)–(3) are built; **(4) the readiness / coverage view** is the remaining follow-on,
+and reads as much like a lead-in to the assisted planner as a Curate feature.
 
 ## App layer & testing
 
-The curation writes (`setStars`, `setRotation`) live in **`src/app/curation.ts`** — the
-house-rules Dexie seam the UI and feature tests both call. The pure vocabulary (`STAR_LABELS`,
+The curation writes (`setStars`, `setRotation`, `clearCuration`, and the group-aware
+`applyRatingToGroup`) live in **`src/app/curation.ts`** — the house-rules Dexie seam the UI and
+feature tests both call. The pure vocabulary (`STAR_LABELS`,
 `ROTATIONS`, `ROTATION_LABELS`) stays in `src/lib/curation.ts`. `CuratePage.tsx` is a thin
 shell reading live queries. Curation behaviour is covered by `features/curation.feature`
 (driving the store against `fake-indexeddb`).
