@@ -12,17 +12,20 @@ future assisted planner. Provider-neutral by design.
 
 ## ★ semantics
 
-The rating is opinionated and specific (the same scale used everywhere — see [`spec.md`](spec.md)):
+The rating is opinionated and specific (the same scale used everywhere — see [`spec.md`](spec.md)).
+Each tier has a **jovial verdict** (shown beside the stars, `STAR_LABELS`) and a functional
+meaning that drives the rest of the app:
 
-- **★5** — favourite
-- **★4** — nice
-- **★3** — only for variety (an explicit "variety injector" pool)
-- **★1–2** — binned (★2 "bin it", ★1 "very bin it" — fed to Refine's Clean up tab)
+- **★5** — "Yum Yum" · favourite
+- **★4** — "Like it" · nice
+- **★3** — "I'd eat it" · only for variety (an explicit "variety injector" pool)
+- **★2** — "Rather not" · binned (fed to Refine's Clean up tab)
+- **★1** — "Yuk" · binned
 - **unrated** — the triage backlog
 
 Stars live in **user data** (`userData.stars`, keyed by recipe id) — precious, exported with
 the backup, never mutating the re-importable recipe record. Writes go through `setStars` in
-`src/lib/curation.ts`.
+`src/app/curation.ts`; the verdict labels are pure data in `src/lib/curation.ts`.
 
 ## Current behaviour (built)
 
@@ -56,26 +59,31 @@ chicken shouldn't force Curate to. Presentation-only (pure UI filtering, like Br
 Gherkin; the rating writes it sits on top of are covered by `features/curation.feature`.
 
 ### Rotation — how often (★3+) — built 2026-06-30
-A second per-recipe signal beside the stars: **how often you'd want this in rotation**
-(*Weekly / Often / Occasional / Treat*), stored as `rotation` on the user-data row
-(`schema/userData.ts`). It's independent of ★ — a ★5 you'd happily eat weekly differs from a
-★5 you only want occasionally — and exists to feed the assisted planner so it can balance
-variety and **not over-suggest favourites**. ★ alone can't express that.
+A second per-recipe signal beside the stars: **how often you'd want this in rotation**, stored
+as `rotation` on the user-data row (`schema/userData.ts`). It's independent of ★ — a ★5 you'd
+happily eat weekly differs from a ★5 you only want occasionally — and exists to feed the
+assisted planner so it can balance variety and **not over-suggest favourites**.
 
-- Offered only on the **rated overview** rows rated **★3 or above** — the planner's pool
-  (variety ★3 + keepers ★4/5). ★1–2 are bin, so rotation is moot there; and the triage card
-  stays a fast ★-only decision (rating a recipe drops it from the backlog immediately, so
-  there's no "after rating" moment on that card — rotation is a considered second pass).
-- A `<select>` defaulting to "How often…" (unset); choosing a value writes it, choosing the
-  blank clears it. Optional throughout — most recipes never get one.
-- Rides the backup automatically (it's a field on the exported `userData` rows) and is purged
-  with the row when a recipe is deleted. Covered by `features/curation.feature`.
+- A **1–5 scale with 3 as the neutral middle** (4–5 = cook it more often, 1–2 = less):
+  *1 Rarely · 2 Occasionally · 3 Now & then · 4 Often · 5 On repeat* (`ROTATION_LABELS`).
+- Set via the **same fillable control as the rating** but with **◆ diamonds** (sky, vs the
+  amber ★) so the two scales read as distinct — `RotationRating`, a preset of the shared
+  `RatingScale` component. Click a diamond to set, click the current one to clear.
+- Offered only where stars are **★3 or above** — the planner's pool (variety ★3 + keepers
+  ★4/5). ★1–2 are bin, so rotation is moot there; and the triage card stays a fast ★-only
+  decision (rating a recipe drops it from the backlog immediately, so there's no "after
+  rating" moment on that card — rotation is a considered second pass on the rated rows / the
+  recipe page).
+- Optional throughout (most recipes never get one). Rides the backup automatically (a field on
+  the exported `userData` rows) and is purged with the row when a recipe is deleted. The field
+  is **number-only** (no legacy-string migration — the earlier string scale was never used in
+  anger). Covered by `features/curation.feature`.
 
 ### Rating on the recipe page — built 2026-06-30
 The recipe detail page's **"Your rating"** panel mirrors the curation controls so you can rate
-(and reconsider) a recipe while looking at it: the ★ control, the rotation select (★3+), and an
-explicit **Clear** that resets *both* stars and rotation — sending the recipe back to the
-unrated **triage backlog**. The use case: you misrated something, or want to **cook it first**
+(and reconsider) a recipe while looking at it: the ★ control (with its verdict label), the ◆
+rotation control (★3+), and an explicit **Clear** that resets *both* stars and rotation —
+sending the recipe back to the unrated **triage backlog**. The use case: you misrated something, or want to **cook it first**
 before deciding. (★ could already be cleared by re-clicking the active star — undiscoverable;
 the Clear button makes "reset to unrated" obvious and also wipes rotation in one go.) The
 Browse grid card stays read-only — a star badge only — so ticking/navigating isn't muddled by

@@ -8,10 +8,10 @@ export type Stars = 1 | 2 | 3 | 4 | 5
 
 /**
  * How often you'd want this recipe in rotation — a *frequency* signal independent of ★
- * (quality). A ★5 you'd happily eat weekly differs from a ★5 you only want occasionally;
- * the assisted planner uses this to balance variety and avoid over-suggesting favourites.
+ * (quality). A 1–5 scale with 3 as neutral ground: 4–5 you'd cook more often, 1–2 less.
+ * The assisted planner uses it to balance variety and avoid over-suggesting favourites.
  */
-export type Rotation = 'weekly' | 'often' | 'occasional' | 'treat'
+export type Rotation = 1 | 2 | 3 | 4 | 5
 
 /** Per-recipe curation. Keyed by recipeId. */
 export interface UserRecipeData {

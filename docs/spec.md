@@ -114,7 +114,7 @@ Conceptual; the exact record shapes are the TS types in `src/schema/userData.ts`
 
 | Store           | Notes                                                                                                                                   |
 |-----------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| `userData`      | per-recipe `{ stars?, rotation?, notes?, userTags? }`, keyed by `recipeId` — `rotation` is the desired cook frequency (planner input); see rating semantics |
+| `userData`      | per-recipe `{ stars?, rotation?, notes?, userTags? }`, keyed by `recipeId` — `rotation` is the desired cook frequency on a 1–5 scale (planner input); see rating semantics |
 | `cooked`        | one row per cook `{ recipeId, date }` — feeds "not cooked recently"                                                                     |
 | `plans`         | `{ id, portions, recipeIds[] }` — MVP is a single current week                                                                          |
 | `shopping`      | per-plan `{ checked[], extras[] }` — tick-off state + manual extras; the list itself is derived                                         |

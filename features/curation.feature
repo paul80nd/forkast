@@ -27,30 +27,30 @@ Feature: Rate recipes with stars
     But recipe "r1" still has the note "great with rice"
 
   Scenario: Setting a rotation stores it
-    When I set the rotation on recipe "r1" to "weekly"
-    Then recipe "r1" has rotation "weekly"
+    When I set the rotation on recipe "r1" to 5
+    Then recipe "r1" has rotation 5
 
   Scenario: Stars and rotation live together on one recipe
     Given I have rated recipe "r1" 5 stars
-    When I set the rotation on recipe "r1" to "treat"
+    When I set the rotation on recipe "r1" to 1
     Then recipe "r1" has 5 stars
-    And recipe "r1" has rotation "treat"
+    And recipe "r1" has rotation 1
 
   Scenario: Clearing the rating keeps the row when it carries a rotation
     Given I have rated recipe "r1" 4 stars
-    And I have set the rotation on recipe "r1" to "often"
+    And I have set the rotation on recipe "r1" to 4
     When I clear the rating on recipe "r1"
     Then recipe "r1" has no stars
-    But recipe "r1" has rotation "often"
+    But recipe "r1" has rotation 4
 
   Scenario: Clearing the only rotation on a recipe removes its row
-    Given I have set the rotation on recipe "r1" to "occasional"
+    Given I have set the rotation on recipe "r1" to 2
     When I clear the rotation on recipe "r1"
     Then recipe "r1" has no curation row
 
   Scenario: Clearing curation removes both stars and rotation at once
     Given I have rated recipe "r1" 3 stars
-    And I have set the rotation on recipe "r1" to "weekly"
+    And I have set the rotation on recipe "r1" to 5
     When I clear the curation on recipe "r1"
     Then recipe "r1" has no curation row
 
