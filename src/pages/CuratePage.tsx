@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { setRotation, setStars } from '../app/curation'
-import { ROTATION_LABELS, ROTATIONS, STAR_LABELS } from '../lib/curation'
-import { StarRating } from '../components/StarRating'
+import { STAR_LABELS } from '../lib/curation'
+import { RotationRating, StarRating } from '../components/RatingScale'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
@@ -187,6 +187,7 @@ export function CuratePage() {
             <div className="mt-auto pt-5">
               <StarRating
                 size="lg"
+                showLabel
                 onChange={(v) => v && setStars(current.id, v)}
               />
               <div className="mt-3 flex items-center gap-2 text-sm">
@@ -283,28 +284,13 @@ function RatedRow({
       </Link>
       {/* Rotation (how often) is a keeper concern — only offered for the planner's pool (★3+). */}
       {stars >= 3 && (
-        <select
-          value={rotation ?? ''}
-          onChange={(e) =>
-            setRotation(recipe.id, (e.target.value || undefined) as Rotation | undefined)
-          }
-          aria-label="How often to cook"
-          title="How often you'd want this in rotation"
-          className="shrink-0 rounded-md border border-stone-300 bg-white px-1.5 py-1 text-xs text-stone-600 dark:bg-stone-100"
-        >
-          <option value="">How often…</option>
-          {ROTATIONS.map((r) => (
-            <option key={r} value={r}>
-              {ROTATION_LABELS[r]}
-            </option>
-          ))}
-        </select>
+        <RotationRating
+          size="sm"
+          value={rotation}
+          onChange={(v) => setRotation(recipe.id, v)}
+        />
       )}
-      <StarRating
-        size="sm"
-        value={stars}
-        onChange={(v) => setStars(recipe.id, v)}
-      />
+      <StarRating size="sm" value={stars} onChange={(v) => setStars(recipe.id, v)} />
     </li>
   )
 }

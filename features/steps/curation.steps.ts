@@ -66,10 +66,10 @@ describeFeature(feature, ({ Background, Scenario }) => {
   })
 
   Scenario('Setting a rotation stores it', ({ When, Then }) => {
-    When('I set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+    When('I set the rotation on recipe {string} to {int}', async (_, id: string, r: number) => {
       await setRotation(id, r as Rotation)
     })
-    Then('recipe {string} has rotation {string}', async (_, id: string, r: string) => {
+    Then('recipe {string} has rotation {int}', async (_, id: string, r: number) => {
       expect((await db.userData.get(id))?.rotation).toBe(r)
     })
   })
@@ -78,13 +78,13 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Given('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
       await setStars(id, n as Stars)
     })
-    When('I set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+    When('I set the rotation on recipe {string} to {int}', async (_, id: string, r: number) => {
       await setRotation(id, r as Rotation)
     })
     Then('recipe {string} has {int} stars', async (_, id: string, n: number) => {
       expect((await db.userData.get(id))?.stars).toBe(n)
     })
-    And('recipe {string} has rotation {string}', async (_, id: string, r: string) => {
+    And('recipe {string} has rotation {int}', async (_, id: string, r: number) => {
       expect((await db.userData.get(id))?.rotation).toBe(r)
     })
   })
@@ -93,7 +93,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Given('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
       await setStars(id, n as Stars)
     })
-    And('I have set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+    And('I have set the rotation on recipe {string} to {int}', async (_, id: string, r: number) => {
       await setRotation(id, r as Rotation)
     })
     When('I clear the rating on recipe {string}', async (_, id: string) => {
@@ -102,13 +102,13 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('recipe {string} has no stars', async (_, id: string) => {
       expect((await db.userData.get(id))?.stars).toBeUndefined()
     })
-    But('recipe {string} has rotation {string}', async (_, id: string, r: string) => {
+    But('recipe {string} has rotation {int}', async (_, id: string, r: number) => {
       expect((await db.userData.get(id))?.rotation).toBe(r)
     })
   })
 
   Scenario('Clearing the only rotation on a recipe removes its row', ({ Given, When, Then }) => {
-    Given('I have set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+    Given('I have set the rotation on recipe {string} to {int}', async (_, id: string, r: number) => {
       await setRotation(id, r as Rotation)
     })
     When('I clear the rotation on recipe {string}', async (_, id: string) => {
@@ -123,7 +123,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Given('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
       await setStars(id, n as Stars)
     })
-    And('I have set the rotation on recipe {string} to {string}', async (_, id: string, r: string) => {
+    And('I have set the rotation on recipe {string} to {int}', async (_, id: string, r: number) => {
       await setRotation(id, r as Rotation)
     })
     When('I clear the curation on recipe {string}', async (_, id: string) => {

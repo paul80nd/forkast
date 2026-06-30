@@ -3,13 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
-import { StarRating } from '../components/StarRating'
+import { RotationRating, StarRating } from '../components/RatingScale'
 import { clearCuration, setRotation, setStars } from '../app/curation'
-import { ROTATION_LABELS, ROTATIONS } from '../lib/curation'
 import { CURRENT_PLAN_ID, addToPlan, removeFromPlan } from '../lib/plan'
 import { seeAlsoFor } from '../app/groups'
 import { deleteRecipe } from '../app/cleanup'
-import type { Rotation } from '../schema/userData'
 
 export function RecipePage() {
   const { id = '' } = useParams()
@@ -84,29 +82,21 @@ export function RecipePage() {
             <div className="mt-1.5">
               <StarRating
                 size="lg"
+                showLabel
                 value={stars}
                 onChange={(v) => setStars(recipe.id, v)}
               />
             </div>
             {/* Rotation matters only for the planner's pool (★3+); mirrors Curate. */}
             {stars !== undefined && stars >= 3 && (
-              <label className="mt-3 flex items-center gap-2 text-xs text-stone-500">
-                How often
-                <select
-                  value={rotation ?? ''}
-                  onChange={(e) =>
-                    setRotation(recipe.id, (e.target.value || undefined) as Rotation | undefined)
-                  }
-                  className="rounded-md border border-stone-300 bg-white px-1.5 py-1 text-xs text-stone-600 dark:bg-stone-100"
-                >
-                  <option value="">How often…</option>
-                  {ROTATIONS.map((r) => (
-                    <option key={r} value={r}>
-                      {ROTATION_LABELS[r]}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="text-xs text-stone-500">How often</span>
+                <RotationRating
+                  showLabel
+                  value={rotation}
+                  onChange={(v) => setRotation(recipe.id, v)}
+                />
+              </div>
             )}
           </div>
 
