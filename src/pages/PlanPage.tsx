@@ -4,9 +4,22 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
-import { addToPlan, removeFromPlan, setPortions, markCooked } from '../app/plan'
+import { addToPlan, addRecipesToPlan, removeFromPlan, setPortions, markCooked } from '../app/plan'
+import { suggestWeekPlan } from '../app/suggest'
+import { usePersistentState } from '../hooks/usePersistentState'
+import type { Suggestion } from '../lib/suggest'
 import type { Recipe } from '../schema/recipe'
-import type { Stars } from '../schema/userData'
+import type { Stars, VariantGroup } from '../schema/userData'
+
+/** A shortlist slot under review — a suggested recipe plus its lock state. */
+interface Slot extends Suggestion {
+  locked: boolean
+}
+
+/** A fresh 32-bit seed per suggestion run, so weeks vary (deterministic only in tests). */
+function freshSeed(): number {
+  return Math.floor(Math.random() * 0xffffffff)
+}
 
 const PORTION_OPTIONS = [2, 4, 6]
 
@@ -23,7 +36,15 @@ export function PlanPage() {
   const userData = useLiveQuery(() => db.userData.toArray(), [])
   const plan = useLiveQuery(() => db.plans.get(CURRENT_PLAN_ID), [])
   const cooked = useLiveQuery(() => db.cooked.toArray(), [])
+  const groups = useLiveQuery(() => db.variantGroups.toArray(), [])
   const [pickerQuery, setPickerQuery] = useState('')
+
+  // Assisted "suggest a varied week": a non-destructive shortlist you reroll / lock / swap /
+  // accept. The target count persists; the shortlist is transient until accepted.
+  const [suggestCount, setSuggestCount] = usePersistentState('plan.suggestCount', 5)
+  const [shortlist, setShortlist] = useState<Slot[]>([])
+  const [suggesting, setSuggesting] = useState(false)
+  const [suggestedEmpty, setSuggestedEmpty] = useState(false)
 
   const byId = useMemo(() => {
     const m = new Map<string, Recipe>()
@@ -46,10 +67,90 @@ export function PlanPage() {
     return m
   }, [cooked])
 
+  // recipeId → its variant group, for the "swap variant" action on a suggested slot.
+  const groupByRecipe = useMemo(() => {
+    const m = new Map<string, VariantGroup>()
+    for (const g of groups ?? []) for (const mem of g.members) m.set(mem.recipeId, g)
+    return m
+  }, [groups])
+
   const plannedIds = plan?.recipeIds ?? []
   const portions = plan?.portions ?? 2
   const planned = plannedIds
     .map((id) => byId.get(id))
+    .filter((r): r is Recipe => r != null)
+  const plannedCount = planned.length
+
+  // Suggest the meals to fill the week — a fresh shortlist, all unlocked.
+  async function runSuggest() {
+    setSuggesting(true)
+    try {
+      const res = await suggestWeekPlan({ count: suggestCount, seed: freshSeed() })
+      setShortlist(res.map((s) => ({ ...s, locked: false })))
+      setSuggestedEmpty(res.length === 0)
+    } finally {
+      setSuggesting(false)
+    }
+  }
+
+  // Reroll the unlocked slots, keeping locked ones (and their variety) in place.
+  async function reSuggest() {
+    setSuggesting(true)
+    try {
+      const locked = shortlist.filter((s) => s.locked)
+      const res = await suggestWeekPlan({
+        count: suggestCount,
+        seed: freshSeed(),
+        taken: locked.map((s) => s.id),
+      })
+      let ri = 0
+      const next: Slot[] = []
+      for (const s of shortlist) {
+        if (s.locked) next.push(s)
+        else if (res[ri]) next.push({ ...res[ri++], locked: false })
+      }
+      while (ri < res.length) next.push({ ...res[ri++], locked: false })
+      setShortlist(next)
+    } finally {
+      setSuggesting(false)
+    }
+  }
+
+  // Replace one slot with a different pick, varied against the others and excluding the rejected.
+  async function reroll(index: number) {
+    const slot = shortlist[index]
+    const others = shortlist.filter((_, i) => i !== index)
+    const res = await suggestWeekPlan({
+      count: plannedCount + shortlist.length, // basket = planned + others ⇒ need exactly 1
+      seed: freshSeed(),
+      taken: others.map((s) => s.id),
+      exclude: [slot.id],
+    })
+    if (res[0]) {
+      setShortlist((sl) => sl.map((s, i) => (i === index ? { ...res[0], locked: s.locked } : s)))
+    }
+  }
+
+  // Swap a slot to a named sibling in its variant group (no scoring — a direct choice).
+  function swapVariant(index: number, siblingId: string) {
+    setShortlist((sl) =>
+      sl.map((s, i) => (i === index ? { ...s, id: siblingId, reasons: ['variant'] } : s)),
+    )
+  }
+  function toggleLock(index: number) {
+    setShortlist((sl) => sl.map((s, i) => (i === index ? { ...s, locked: !s.locked } : s)))
+  }
+  function removeSlot(index: number) {
+    setShortlist((sl) => sl.filter((_, i) => i !== index))
+  }
+  async function acceptShortlist() {
+    await addRecipesToPlan(shortlist.map((s) => s.id))
+    setShortlist([])
+    setSuggestedEmpty(false)
+  }
+
+  const shortlistRecipes = shortlist
+    .map((s) => byId.get(s.id))
     .filter((r): r is Recipe => r != null)
 
   // Variety tallies across the planned week.
@@ -115,6 +216,172 @@ export function PlanPage() {
           </div>
         </div>
       </div>
+
+      {/* Suggest a varied week */}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          disabled={suggesting}
+          onClick={runSuggest}
+          className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
+        >
+          {suggesting ? 'Thinking…' : 'Suggest a varied week'}
+        </button>
+        <label className="flex items-center gap-1.5 text-sm text-stone-500">
+          <input
+            type="number"
+            min={1}
+            max={14}
+            value={suggestCount}
+            onChange={(e) => setSuggestCount(Math.max(1, Math.min(14, Number(e.target.value) || 1)))}
+            className="w-16 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2 py-1 text-sm"
+          />
+          <span>meals a week</span>
+        </label>
+        {plannedCount > 0 && (
+          <span className="text-xs text-stone-400">
+            fills the {Math.max(0, suggestCount - plannedCount)} slots left after {plannedCount} planned
+          </span>
+        )}
+      </div>
+
+      {suggestedEmpty && shortlist.length === 0 && (
+        <p className="mt-3 text-sm text-stone-500">
+          Nothing to suggest — your week may be full, or there aren’t enough rated,
+          not-recently-cooked recipes.{' '}
+          <Link to="/curate" className="text-orange-600 hover:underline">
+            Rate more →
+          </Link>
+        </p>
+      )}
+
+      {shortlist.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-semibold text-sky-900">Suggested week</h2>
+              <p className="text-xs text-sky-700">
+                A proposal — reroll, lock, or swap any, then accept. Nothing’s added yet.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={acceptShortlist}
+                className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-sky-700"
+              >
+                Accept {shortlist.length} → week
+              </button>
+              <button
+                type="button"
+                disabled={suggesting}
+                onClick={reSuggest}
+                className="rounded-md px-2.5 py-1.5 text-sm font-medium text-sky-700 hover:bg-sky-100 disabled:opacity-50"
+              >
+                Re-suggest
+              </button>
+              <button
+                type="button"
+                onClick={() => setShortlist([])}
+                className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-500 hover:bg-stone-100"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          {/* Variety summary of the proposal */}
+          <div className="mt-3 flex flex-wrap gap-4 text-sm">
+            <VarietyGroup label="Cuisines" counts={tally(shortlistRecipes.map((r) => r.cuisine))} />
+            <VarietyGroup
+              label="Proteins"
+              counts={tally(shortlistRecipes.map((r) => r.mainProtein ?? 'other'))}
+              capitalize
+            />
+          </div>
+
+          <ul className="mt-3 space-y-2">
+            {shortlist.map((slot, i) => {
+              const r = byId.get(slot.id)
+              if (!r) return null
+              const group = groupByRecipe.get(slot.id)
+              const siblings = group?.members.filter((m) => m.recipeId !== slot.id) ?? []
+              const rec = recency(lastCookedById.get(slot.id))
+              return (
+                <li
+                  key={`${i}-${slot.id}`}
+                  className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-2.5"
+                >
+                  <Link to={`/recipe/${r.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                    <img src={resolveAsset(r.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-stone-800">{r.title}</div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
+                        <span>{r.cuisine}</span>
+                        {r.mainProtein && <span className="capitalize">· {r.mainProtein}</span>}
+                        <span>· ⏱ {r.prepTime} min</span>
+                        <span className={rec.warn ? 'text-amber-600' : 'text-stone-400'}>· {rec.text}</span>
+                      </div>
+                      {slot.reasons.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {slot.reasons.map((why) => (
+                            <span key={why} className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
+                              {why}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+
+                  {siblings.length > 0 && (
+                    <select
+                      value=""
+                      onChange={(e) => e.target.value && swapVariant(i, e.target.value)}
+                      aria-label="Swap to a variant"
+                      className="max-w-32 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-1.5 py-1 text-xs text-stone-600"
+                    >
+                      <option value="">Swap variant…</option>
+                      {siblings.map((m) => (
+                        <option key={m.recipeId} value={m.recipeId}>
+                          {m.label || byId.get(m.recipeId)?.title || m.recipeId}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => toggleLock(i)}
+                    aria-pressed={slot.locked}
+                    title={slot.locked ? 'Locked — kept when re-suggesting' : 'Lock this slot'}
+                    className={`rounded-md px-2 py-1 text-sm transition ${
+                      slot.locked ? 'bg-sky-100 text-sky-700' : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600'
+                    }`}
+                  >
+                    {slot.locked ? '🔒' : '🔓'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => reroll(i)}
+                    title="Reroll this slot"
+                    className="rounded-md px-2 py-1 text-sm text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+                  >
+                    ↻
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeSlot(i)}
+                    title="Remove from suggestion"
+                    className="rounded-md px-2 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+                  >
+                    ✕
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
 
       {/* The week */}
       {planned.length === 0 ? (

@@ -38,6 +38,16 @@ Feature: Suggest a varied week
     When I suggest a week of 5
     Then the suggestions are exactly "r1, r3"
 
+  Scenario: A locked (taken) recipe is not re-suggested
+    Given recipes "r1, r2" rated 4 stars
+    When I suggest a week of 5 keeping "r1"
+    Then the suggestions are exactly "r2"
+
+  Scenario: A rejected (rerolled) recipe is excluded
+    Given recipes "r1, r2" rated 4 stars
+    When I suggest a week of 5 excluding "r1"
+    Then the suggestions are exactly "r2"
+
   Scenario: Accepting the suggestions adds them to the plan
     Given recipes "r1, r2" rated 4 stars
     When I suggest a week of 5
