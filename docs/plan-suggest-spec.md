@@ -43,6 +43,11 @@ A candidate is eligible when it is:
 - **Not a household no-go** — same exclusion the manual picker already applies (e.g. `fish`).
   (No-go *proteins* are excluded upstream at dataset build; this is the belt-and-braces runtime
   filter the Plan picker already uses.)
+- **Rating gate** — by default only **★3+**. An **"Include unrated"** toggle (on the Plan page,
+  default **on**, persisted) also draws in **unrated** recipes, each treated as a neutral **★3 ◆3**,
+  so the planner is useful before a 3,000-recipe collection has been fully triaged. **Binned
+  (★1–2)** recipes are *never* suggested either way. Suggested-but-unrated meals carry an
+  "unrated" tag in the shortlist, a nudge to rate them once tried.
 - **Not already on the plan**, and **not from a variant group already represented** on the plan
   or earlier in the same suggestion run.
 

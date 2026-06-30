@@ -13,6 +13,13 @@ Feature: Suggest a varied week
     When I suggest a week of 5
     Then the suggestions are exactly "r1"
 
+  Scenario: Unrated recipes are drawn in when opted in, but never binned ones
+    Given recipes "r1" rated 4 stars
+    And recipes "r2" rated 1 stars
+    And recipe "r3" is unrated
+    When I suggest a week of 5 including unrated
+    Then the suggestions are exactly "r1, r3"
+
   Scenario: A no-go recipe is never suggested
     Given recipes "r1" rated 4 stars
     And recipe "fishy" rated 4 stars with allergen "fish"
