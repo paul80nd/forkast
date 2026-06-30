@@ -9,7 +9,8 @@ or accept. Provider-neutral by design.
 > cross-cutting [`decisions.md`](decisions.md). Living documentation — the build will ship with
 > Gherkin scenarios in `features/`; the planned ones are listed at the foot.
 >
-> **Status: spec only, not built.** This is the design to review and slice up.
+> **Status: design settled (2026-06-30), not built.** Decisions resolved at the foot; ready to
+> slice up and build.
 
 ## Why
 
@@ -139,22 +140,36 @@ Planned Gherkin (`features/suggest-week.feature`), driving the app layer against
 Determinism for tests comes from passing a fixed **seed** to the pure scorer; the UI uses a
 fresh seed per run for variety.
 
-## Open decisions (to settle before building)
+## Decisions (settled 2026-06-30)
 
-1. **Target week length** — fixed default (e.g. **5**) or a user-set count each time? Lean: a
-   count control defaulting to 5, remembered (persisted) like the focus filters.
-2. **Propose-then-accept vs populate-directly** — recommend **propose** (non-destructive
-   shortlist), matching the other suggesters. Confirm.
-3. **Serendipity** — strictly top-scoring (repeatable, "best week") vs weighted-random among the
-   top (fresh rerolls). Recommend **weighted-random + seed**. Confirm.
-4. **Variety hardness** — soft penalties (a great recipe may repeat a cuisine) vs hard
-   constraints (never repeat a protein in a week). Recommend **soft**; revisit if weeks feel
-   samey.
-5. **Favourites vs variety mix** — should a week guarantee *some* ★4–5, or is a ★3-heavy week
-   fine if that's what scores? Lean: weight favourites up, don't hard-require a quota.
-6. **Dueness specifics** — the cooldown window (days) and the `expectedInterval(rotation)`
-   mapping (e.g. ◆5≈1 week … ◆1≈ many weeks). Needs a first guess to tune by eye.
-7. **Never-cooked weighting** — treat as "very due" but capped, so a brand-new ◆1 doesn't crowd
-   out a due favourite. Pick the cap.
-8. **Multi-week awareness** — out of scope here (single current week, like the rest of Plan);
-   revisit with multi-week history.
+1. **Target week length — 5, adjustable.** A count control defaults to **5** and is **persisted**
+   (like the Curate focus filters); change it per week for leftovers / guests.
+2. **Propose-then-accept.** The suggestion is a **non-destructive shortlist**; nothing is written
+   to the plan until you Accept. Matches the group/duplicate suggesters.
+3. **Fresh each time.** Selection is **weighted-random among the leading candidates** (a softmax
+   over the top scores), so re-suggesting / rerolling yields a different valid week. A **seed**
+   per run makes it deterministic for tests; the UI uses a fresh seed each run.
+4. **Soft variety.** Repeating a cuisine / protein / time-band is **penalised, not forbidden** —
+   a standout recipe can still repeat an axis. Revisit toward harder constraints only if weeks
+   feel samey.
+5. **Favour favourites, no quota.** ★4–5 carry a real quality weight so a week leans on
+   favourites, but there's **no hard minimum** — a ★3-heavy week is allowed if variety/dueness
+   genuinely score it best.
+6. **Multi-week awareness — out of scope.** Single current week, like the rest of Plan; revisit
+   with multi-week history.
+
+### Tuning starting points (first guess — tune by eye)
+
+These set the *shape*; expect to adjust after seeing real weeks. All live as named constants on
+the pure scorer so they're one place to turn.
+
+- **Hard cooldown:** don't suggest anything **cooked in the last 7 days** (no re-suggesting this
+  week's meals), regardless of score. Beyond that, dueness governs softly.
+- **`expectedInterval(rotation)`** (days), roughly doubling as rotation drops:
+  ◆5 ≈ 7 · ◆4 ≈ 14 · ◆3 ≈ 28 · ◆2 ≈ 56 · ◆1 ≈ 112. `dueness = daysSinceCooked / interval`
+  (≥ 1 ≈ "due"). So an *On repeat* recipe is due again in a week; a *Rarely* one stays suppressed
+  for months.
+- **Never-cooked dueness capped at ≈ 2.0** (treated as "well overdue" but not infinite), so a
+  brand-new ◆1 doesn't crowd out a due favourite.
+- **Weights:** quality and dueness contribute on a comparable scale; each repeated variety axis
+  subtracts a penalty of similar magnitude to one ★ step. Exact numbers TBD in the unit tests.
