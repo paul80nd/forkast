@@ -1,0 +1,82 @@
+# Curate — feature spec
+
+Curate is the **rating** section of the app — the nav tab after Refine. Where Refine *shapes*
+the collection (group / dedup / bin), Curate *scores* it: assign every recipe a ★1–5 rating,
+fast. Those ratings are the signal that powers Browse's "top rated" sort and, crucially, the
+future assisted planner. Provider-neutral by design.
+
+> A **feature spec**: the design and rationale for one area, sitting alongside the whole-app
+> [`spec.md`](spec.md) and the cross-cutting [`decisions.md`](decisions.md). It's living
+> documentation — each piece ships with a Gherkin scenario in `features/`, which becomes the
+> executable proof, while this prose keeps the *why*.
+
+## ★ semantics
+
+The rating is opinionated and specific (the same scale used everywhere — see [`spec.md`](spec.md)):
+
+- **★5** — favourite
+- **★4** — nice
+- **★3** — only for variety (an explicit "variety injector" pool)
+- **★1–2** — binned (★2 "bin it", ★1 "very bin it" — fed to Refine's Clean up tab)
+- **unrated** — the triage backlog
+
+Stars live in **user data** (`userData.stars`, keyed by recipe id) — precious, exported with
+the backup, never mutating the re-importable recipe record. Writes go through `setStars` in
+`src/lib/curation.ts`.
+
+## Current behaviour (built)
+
+### Triage
+The page leads with a **one-recipe-at-a-time** triage of the **unrated backlog** (every recipe
+with no ★ yet, sorted by title). The card shows the image, cuisine / prep-time / main-protein,
+title, and description, with a large star control.
+
+- **Keyboard-first:** `1`–`5` rate the current recipe, `→` or `S` skip, `←` step back.
+  (Keys are ignored while focus is in an input/textarea/select.)
+- **Buttons:** Back / Skip, and the star control, mirror the keys for mouse use.
+- Rating advances through the backlog; when it empties, an "All triaged 🎉" state shows.
+
+### Rated overview
+Below the triage card, the rated recipes are grouped into **tiers (★5 → ★1)**, each tier a
+titled list with a count. Every row links to the recipe and carries an inline star control, so
+you can **re-rate** anything without re-triaging.
+
+The header shows the running tally: `N rated · M to triage`.
+
+## Planned
+
+Curate today captures exactly one signal — ★ = *how good is this recipe*. The assisted
+"suggest a varied week" planner (see [`spec.md`](spec.md) → Later) needs more than quality: it
+balances four **variety axes** (cuisine, main protein, time/effort, recency) and draws from
+the ★3 pool. Three of those axes already come from import; ★ comes from here. The gap Curate
+should fill is **eligibility and rotation** — signals ★ alone can't express. Sketch, not yet
+committed:
+
+1. **Scope the triage backlog.** Reuse Browse's persistent filters so you can triage *by
+   cuisine or protein* ("rate all the Thai", "rate all the chicken"). Mental context per
+   batch → faster, more consistent ratings. Low risk; lifts existing Browse components.
+2. **A rotation / frequency signal.** ★ says a recipe is great; it doesn't say you'd happily
+   eat it weekly vs. it being a once-a-month treat. A per-recipe field (e.g. *weekly / often /
+   occasional / treat*) set alongside the stars gives the planner what it needs to avoid
+   over-suggesting your ★5s. New user-data field.
+3. **Group-aware rating** (ties to [Refine → Group](refine-groups-spec.md)). When a recipe is
+   one of a variant group, show "1 of N variants" and offer to apply the rating to siblings —
+   you shouldn't independently triage near-identical dishes, and the planner treats the group
+   as one unit anyway.
+4. **A readiness / coverage view.** Evolve the rated-overview from "list by tier" into "can
+   this collection actually fill a varied week?" — keepers across each cuisine / protein, with
+   gaps surfaced ("pork mains rated 4+: only 3"). Doubles as the proof that Curate has fed
+   Plan what it needs.
+
+Priority leans to **(1) + (2)**: a better rating loop plus the one signal the planner is
+missing. (3) and (4) are strong follow-ons.
+
+## App layer & testing
+
+Star writes are pure-ish helpers in `src/lib/curation.ts` (`setStars`, `STAR_LABELS`) against
+Dexie; `CuratePage.tsx` is a thin shell reading live queries. Curation behaviour is covered by
+`features/curation.feature` (driving the store against `fake-indexeddb`).
+
+> Note: `curation.ts` does Dexie writes but currently lives in `src/lib/` rather than
+> `src/app/` (the house-rules seam). Tested in place; a move to `src/app/` is a tidy-up if the
+> rating logic grows (e.g. the rotation field above).
