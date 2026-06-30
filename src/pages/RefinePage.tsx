@@ -509,8 +509,10 @@ function DuplicateCard({
 }
 
 // One suggested cluster: members pre-ticked with a label defaulted from mainProtein. Untick
-// outliers, tweak labels, then create — or dismiss to hide it. Confirming/dismissing calls
-// onDone so the parent drops it from the list.
+// outliers, tweak labels, then create — or dismiss to hide it. Each member also has a
+// delete-for-good button, for when a suggestion surfaces a recipe you want gone there and
+// then; deleting the second-to-last member leaves nothing to group, so the card self-dismisses.
+// Confirming/dismissing calls onDone so the parent drops it from the list.
 function SuggestionCard({
   cluster,
   byId,
@@ -543,6 +545,7 @@ function SuggestionCard({
     }))
   })
   const [busy, setBusy] = useState(false)
+  const [removingId, setRemovingId] = useState<string | null>(null)
   const [comparing, setComparing] = useState(false)
   const chosen = rows.filter((r) => r.checked)
 
@@ -553,6 +556,28 @@ function SuggestionCard({
       onDone()
     } finally {
       setBusy(false)
+    }
+  }
+
+  // Delete one member for good (cascades via deleteRecipes). If fewer than two members are
+  // left there's no group to make, so drop the whole suggestion.
+  async function remove(recipeId: string) {
+    const title = byId.get(recipeId)?.title ?? 'this recipe'
+    if (
+      !window.confirm(
+        `Delete “${title}” for good?\n\nThis can’t be undone (re-import to restore).`,
+      )
+    ) {
+      return
+    }
+    setRemovingId(recipeId)
+    try {
+      await deleteRecipes([recipeId])
+      const remaining = rows.filter((r) => r.recipeId !== recipeId)
+      if (remaining.length < 2) onDone()
+      else setRows(remaining)
+    } finally {
+      setRemovingId(null)
     }
   }
 
@@ -622,6 +647,16 @@ function SuggestionCard({
               placeholder="label"
               className="w-28 rounded-md border border-stone-300 px-2 py-0.5 text-sm"
             />
+            <button
+              type="button"
+              onClick={() => remove(r.recipeId)}
+              disabled={removingId !== null}
+              aria-label={`Delete ${byId.get(r.recipeId)?.title ?? 'recipe'} for good`}
+              title="Delete this recipe for good"
+              className="shrink-0 rounded p-1 text-stone-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+            >
+              <TrashIcon />
+            </button>
           </li>
         ))}
       </ul>
@@ -814,6 +849,25 @@ function CleanupList({
         ))}
       </ul>
     </div>
+  )
+}
+
+// Small trash glyph for the per-member delete action (distinct from the ✕ "remove" glyphs,
+// which only unlink — this one deletes for good).
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className="size-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-.7 11.1a2 2 0 0 1-2 1.9H8.7a2 2 0 0 1-2-1.9L6 7m4 4v5m4-5v5" />
+    </svg>
   )
 }
 

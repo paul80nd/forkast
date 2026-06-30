@@ -30,6 +30,12 @@ by hand. `suggestGroupCandidates()` (`src/app/groups.ts`) reads the store and fe
 scorer (`src/lib/similarity.ts`, unit-tested). Members are **pre-ticked**; the user unticks
 outliers and **confirms**. It never auto-applies.
 
+Each suggested member also has a **delete-for-good** button — sometimes a suggestion surfaces
+a recipe you want gone outright rather than grouped. It deletes immediately (cascading via
+`deleteRecipes`, same path as Clean up / Duplicates) after a confirm. Deleting a member that
+leaves fewer than two behind dissolves the suggestion — nothing left to group — so the card
+auto-dismisses.
+
 Both the axis and the member labels are **pre-filled best-effort guesses** the user can
 override:
 
