@@ -9,8 +9,10 @@ or accept. Provider-neutral by design.
 > cross-cutting [`decisions.md`](decisions.md). Living documentation — the build will ship with
 > Gherkin scenarios in `features/`; the planned ones are listed at the foot.
 >
-> **Status: design settled (2026-06-30), not built.** Decisions resolved at the foot; ready to
-> slice up and build.
+> **Status: built 2026-06-30.** Pure scorer `src/lib/suggest.ts` (+ unit tests), app seam
+> `src/app/suggest.ts` (+ `features/suggest-week.feature`), and the Plan-page review UI. Decisions
+> resolved at the foot; the tuning constants in `DEFAULT_SUGGEST_CONFIG` are first-guesses to
+> adjust by eye.
 
 ## Why
 

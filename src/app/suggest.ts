@@ -18,11 +18,19 @@ import type { Recipe } from '../schema/recipe'
 const NOGO_ALLERGENS = ['fish']
 
 export interface SuggestWeekParams {
-  /** Target total meals for the week (the current plan counts toward it). */
+  /** Target total meals for the week (the current plan + `taken` count toward it). */
   count: number
   /** Seed for the weighted-random selection — fresh per UI run, fixed in tests. */
   seed: number
   config?: Partial<SuggestConfig>
+  /**
+   * Extra already-chosen recipe ids beyond the plan — the locked / sibling slots of a shortlist
+   * under review. Treated like the basket: they seed the variety axes, block their groups, and
+   * are themselves never re-suggested.
+   */
+  taken?: string[]
+  /** Rejected recipe ids to keep out of the pool (rerolled away). */
+  exclude?: string[]
 }
 
 /**
@@ -30,7 +38,13 @@ export interface SuggestWeekParams {
  * chosen** recipes (the already-planned ones aren't echoed back). The caller accepts them with
  * `addRecipesToPlan` (src/app/plan.ts). Non-destructive: this only reads.
  */
-export async function suggestWeekPlan({ count, seed, config }: SuggestWeekParams): Promise<Suggestion[]> {
+export async function suggestWeekPlan({
+  count,
+  seed,
+  config,
+  taken = [],
+  exclude = [],
+}: SuggestWeekParams): Promise<Suggestion[]> {
   const [recipes, userData, cooked, groups, plan] = await Promise.all([
     db.recipes.toArray(),
     db.userData.toArray(),
@@ -62,6 +76,8 @@ export async function suggestWeekPlan({ count, seed, config }: SuggestWeekParams
 
   const recipeById = new Map(recipes.map((r) => [r.id, r]))
   const plannedIds = new Set(plan?.recipeIds ?? [])
+  const takenSet = new Set(taken)
+  const excludeSet = new Set(exclude)
 
   const toCandidate = (r: Recipe): Candidate => ({
     id: r.id,
@@ -74,12 +90,13 @@ export async function suggestWeekPlan({ count, seed, config }: SuggestWeekParams
     groupId: groupByRecipe.get(r.id),
   })
 
-  // Eligible: keepers (★3+), not a no-go, not already planned. (Cooldown lives in the scorer.)
+  // Eligible: keepers (★3+), not a no-go, not already planned / taken / rejected. (The cooldown
+  // lives in the scorer.)
   const eligible = recipes.filter((r) => {
     const s = starsById.get(r.id)
     if (!s || s < 3) return false
     if (r.allergens.some((a) => NOGO_ALLERGENS.includes(a))) return false
-    if (plannedIds.has(r.id)) return false
+    if (plannedIds.has(r.id) || takenSet.has(r.id) || excludeSet.has(r.id)) return false
     return true
   })
 
@@ -104,8 +121,8 @@ export async function suggestWeekPlan({ count, seed, config }: SuggestWeekParams
     candidates.push(toCandidate(rep))
   }
 
-  // Basket = already-planned meals: they seed the variety axes and block their groups.
-  const basket: BasketItem[] = (plan?.recipeIds ?? [])
+  // Basket = already-planned meals + taken slots: they seed the variety axes and block groups.
+  const basket: BasketItem[] = [...(plan?.recipeIds ?? []), ...taken]
     .map((id) => recipeById.get(id))
     .filter((r): r is Recipe => r != null)
     .map((r) => ({

@@ -103,6 +103,22 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('the suggestions are exactly {string}', exactly)
   })
 
+  Scenario('A locked (taken) recipe is not re-suggested', ({ Given, When, Then }) => {
+    Given('recipes {string} rated {int} stars', rateList)
+    When('I suggest a week of {int} keeping {string}', async (_, count: number, list: string) => {
+      suggestions = await suggestWeekPlan({ count, seed: SEED, taken: ids(list) })
+    })
+    Then('the suggestions are exactly {string}', exactly)
+  })
+
+  Scenario('A rejected (rerolled) recipe is excluded', ({ Given, When, Then }) => {
+    Given('recipes {string} rated {int} stars', rateList)
+    When('I suggest a week of {int} excluding {string}', async (_, count: number, list: string) => {
+      suggestions = await suggestWeekPlan({ count, seed: SEED, exclude: ids(list) })
+    })
+    Then('the suggestions are exactly {string}', exactly)
+  })
+
   Scenario('Accepting the suggestions adds them to the plan', ({ Given, When, And, Then }) => {
     Given('recipes {string} rated {int} stars', rateList)
     When('I suggest a week of {int}', suggestStep)
