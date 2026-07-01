@@ -1,6 +1,7 @@
 import { db } from '../db/db'
 import { CURRENT_PLAN_ID } from '../lib/plan'
-import { buildShoppingList, type ShoppingList } from '../lib/shopping'
+import { buildShoppingList, normalizeName, type ShoppingList } from '../lib/shopping'
+import { INGREDIENTS_BY_ID, type IngredientDef } from '../data/ingredients'
 import type { Recipe } from '../schema/recipe'
 import type { ShoppingState } from '../schema/userData'
 
@@ -9,17 +10,25 @@ import type { ShoppingState } from '../schema/userData'
 
 /**
  * Assemble the shopping list for a plan from the store — its recipes scaled to its portions,
- * merged via the pure builder. (Ingredient dictionary + lazy bindings are threaded in a later
- * slice; for now the builder falls back to the built-in seed dictionary.)
+ * merged via the pure builder, resolving ingredients through the Dexie dictionary + lazy
+ * name bindings. Falls back to the built-in dictionary if the table is empty (e.g. right
+ * after restoring a pre-dictionary backup, before the startup reseed runs).
  */
 export async function getPlanShoppingList(planId: string = CURRENT_PLAN_ID): Promise<ShoppingList> {
   const plan = await db.plans.get(planId)
   const portions = plan?.portions ?? 2
   const ids = plan?.recipeIds ?? []
-  const recipes = (await Promise.all(ids.map((id) => db.recipes.get(id)))).filter(
-    (r): r is Recipe => r != null,
-  )
-  return buildShoppingList(recipes, portions)
+  const [recipeRows, dictRows, bindingRows] = await Promise.all([
+    Promise.all(ids.map((id) => db.recipes.get(id))),
+    db.dictionary.toArray(),
+    db.bindings.toArray(),
+  ])
+  const recipes = recipeRows.filter((r): r is Recipe => r != null)
+  const dict: Map<string, IngredientDef> = dictRows.length
+    ? new Map(dictRows.map((d) => [d.id, d]))
+    : INGREDIENTS_BY_ID
+  const bindings = new Map(bindingRows.map((b) => [normalizeName(b.name), b.ingredientId]))
+  return buildShoppingList(recipes, portions, dict, bindings)
 }
 
 // Tick-off + manual extras are scoped to the current plan.

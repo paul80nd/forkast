@@ -21,6 +21,8 @@ async function resetStore(): Promise<void> {
     db.plans.clear(),
     db.shopping.clear(),
     db.variantGroups.clear(),
+    db.dictionary.clear(),
+    db.bindings.clear(),
     db.settings.clear(),
   ])
 }
@@ -38,6 +40,8 @@ function dataOf(s: BackupSnapshot) {
     plans: byKey(s.plans),
     shopping: byKey(s.shopping),
     variantGroups: byKey(s.variantGroups),
+    dictionary: byKey(s.dictionary),
+    bindings: byKey(s.bindings),
     settings: byKey(s.settings),
   }
 }
@@ -61,6 +65,9 @@ describeFeature(feature, ({ Background, Scenario }) => {
       { recipeId: 'r1', label: 'A' },
       { recipeId: 'r3', label: 'B' },
     ])
+    // A user-created dictionary entry + a lazy binding, so the snapshot carries both.
+    await db.dictionary.put({ id: 'salt', name: 'salt', aisle: 'Pantry', purchaseUnit: 'g' })
+    await db.bindings.put({ name: 'salt', ingredientId: 'salt' })
   }
 
   Scenario('A backup round-trips the whole collection', ({ Given, When, And, Then }) => {
