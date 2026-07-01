@@ -11,6 +11,7 @@ import {
   setBinding,
   createIngredient,
   setIngredientDensity,
+  updateIngredient,
 } from '../../src/app/shopping'
 import { makeRecipe } from '../../test/factories'
 import type { ShoppingList } from '../../src/lib/shopping'
@@ -95,6 +96,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
   }
   const bindToNew = async (_: unknown, name: string) => setBinding(name, created.id)
   const setDensity = async (_: unknown, g: string) => setIngredientDensity(created.id, Number(g))
+  const moveIngredient = async (_: unknown, aisle: string, unit: string) =>
+    updateIngredient(created.id, { aisle, purchaseUnit: unit })
   const hasAisle = (_: unknown, aisle: string) => {
     expect(list.aisles.some((a) => a.aisle === aisle)).toBe(true)
   }
@@ -152,6 +155,16 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('I set the density of that ingredient to {string}', setDensity)
     When('I build the shopping list', build)
     Then('the list contains {string}', contains)
+  })
+
+  Scenario('Editing a bound ingredient changes its aisle and buy unit', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} with unbound {string}', unboundRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    And('I create an ingredient {string} in aisle {string} bought in {string}', createIng)
+    And('I bind {string} to that new ingredient', bindToNew)
+    And('I move that ingredient to aisle {string} bought in {string}', moveIngredient)
+    When('I build the shopping list', build)
+    Then('the list has an aisle {string}', hasAisle)
   })
 
   Scenario('A merged line records how many recipes it combines', ({ Given, And, When, Then }) => {

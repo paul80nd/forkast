@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { CURRENT_PLAN_ID } from '../lib/plan'
+import { usePersistentState } from '../hooks/usePersistentState'
 import {
   getPlanShoppingList,
   toggleChecked,
@@ -14,14 +15,21 @@ import {
   unbind,
   createIngredient,
   setIngredientDensity,
+  updateIngredient,
 } from '../app/shopping'
 import { matchIngredient } from '../lib/ingredientMatch'
 import { AISLE_ORDER, DENSITY_PRESETS, type IngredientDef } from '../data/ingredients'
 import type { ShopLine } from '../lib/shopping'
+import type { Binding } from '../schema/userData'
 
 /** Density only matters for weight/volume buys (bridging tbsp/tsp → grams); not for counts. */
 function needsDensity(purchaseUnit: string): boolean {
   return purchaseUnit !== 'each'
+}
+
+/** How a purchase unit reads after an ingredient name, e.g. "in g" / "each". */
+function buyUnitLabel(purchaseUnit: string): string {
+  return purchaseUnit === 'each' ? 'each' : `in ${purchaseUnit}`
 }
 
 // Base "buy" units offered when creating a new dictionary ingredient (recipe units like tsp
@@ -120,53 +128,7 @@ export function ShopPage() {
         )}
 
         {bindings && bindings.length > 0 && (
-          <details className="text-sm">
-            <summary className="cursor-pointer text-xs font-semibold tracking-wide text-stone-500 uppercase">
-              Your bindings ({bindings.length})
-            </summary>
-            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
-              {bindings.map((b) => {
-                const def = dict?.find((d) => d.id === b.ingredientId)
-                return (
-                  <li key={b.name} className="flex items-center justify-between gap-3 px-3 py-1.5">
-                    <span className="min-w-0 text-stone-600">
-                      {b.name} <span className="text-stone-400">→ {def?.name ?? b.ingredientId}</span>
-                    </span>
-                    <div className="flex shrink-0 items-center gap-2">
-                      {def && needsDensity(def.purchaseUnit) && (
-                        <select
-                          value={def.densityGPerMl ?? ''}
-                          onChange={(e) =>
-                            void setIngredientDensity(
-                              def.id,
-                              e.target.value ? Number(e.target.value) : undefined,
-                            )
-                          }
-                          title="Density — lets tbsp/tsp convert to the buy unit"
-                          className="rounded-md border border-stone-300 bg-white px-1.5 py-0.5 text-xs text-stone-600 dark:bg-stone-100"
-                        >
-                          <option value="">no spoon conversion</option>
-                          {DENSITY_PRESETS.map((p) => (
-                            <option key={p.label} value={p.gPerMl}>
-                              {p.label}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => void unbind(b.name)}
-                        className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
-                        title="Unbind — back to verbatim"
-                      >
-                        Unbind
-                      </button>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          </details>
+          <BindingsPanel bindings={bindings} dict={dict ?? []} />
         )}
 
         {list.unquantified.length > 0 && (
@@ -495,5 +457,155 @@ function BindPanel({
         </div>
       )}
     </div>
+  )
+}
+
+// Manage saved name→ingredient bindings: filter, edit the ingredient's aisle / buy unit /
+// density, or unbind. Windowed (infinite scroll) since the dictionary grows large over time.
+const BINDINGS_PAGE = 50
+
+function BindingsPanel({ bindings, dict }: { bindings: Binding[]; dict: IngredientDef[] }) {
+  const [query, setQuery] = usePersistentState('shop.bindingsQuery', '')
+  const [visible, setVisible] = useState(BINDINGS_PAGE)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  const byId = useMemo(() => new Map(dict.map((d) => [d.id, d])), [dict])
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return bindings
+      .filter(
+        (b) =>
+          !q || b.name.includes(q) || (byId.get(b.ingredientId)?.name.toLowerCase().includes(q) ?? false),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [bindings, byId, query])
+
+  useEffect(() => setVisible(BINDINGS_PAGE), [query])
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) setVisible((v) => v + BINDINGS_PAGE)
+      },
+      { rootMargin: '300px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [filtered.length, visible])
+
+  return (
+    <details className="text-sm">
+      <summary className="cursor-pointer text-xs font-semibold tracking-wide text-stone-500 uppercase">
+        Your bindings ({bindings.length})
+      </summary>
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Filter bindings…"
+        className="mt-2 w-full rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none dark:bg-stone-100"
+      />
+      <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
+        {filtered.slice(0, visible).map((b) => (
+          <BindingRow key={b.name} binding={b} def={byId.get(b.ingredientId)} />
+        ))}
+        {filtered.length === 0 && (
+          <li className="px-3 py-2 text-stone-400">No bindings match.</li>
+        )}
+      </ul>
+      {visible < filtered.length && <div ref={sentinelRef} className="h-1" />}
+    </details>
+  )
+}
+
+function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef }) {
+  const [editing, setEditing] = useState(false)
+  const selectClass =
+    'rounded-md border border-stone-300 bg-white px-1.5 py-0.5 text-xs text-stone-600 dark:bg-stone-100'
+  return (
+    <li className="px-3 py-1.5">
+      <div className="flex items-center justify-between gap-3">
+        <span className="min-w-0 text-stone-600">
+          {binding.name}{' '}
+          <span className="text-stone-400">
+            → {def?.name ?? binding.ingredientId}
+            {def && <span className="text-stone-300"> ({buyUnitLabel(def.purchaseUnit)})</span>}
+          </span>
+        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          {def && (
+            <button
+              type="button"
+              onClick={() => setEditing((e) => !e)}
+              aria-expanded={editing}
+              className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+            >
+              {editing ? 'Done' : 'Edit'}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void unbind(binding.name)}
+            className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
+            title="Unbind — back to verbatim"
+          >
+            Unbind
+          </button>
+        </div>
+      </div>
+
+      {editing && def && (
+        <div className="mt-2 flex flex-wrap items-end gap-2 pb-1">
+          <label className="text-xs text-stone-500">
+            Aisle
+            <select
+              value={def.aisle}
+              onChange={(e) => void updateIngredient(def.id, { aisle: e.target.value })}
+              className={`mt-0.5 block ${selectClass}`}
+            >
+              {AISLE_ORDER.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs text-stone-500">
+            Bought in
+            <select
+              value={def.purchaseUnit}
+              onChange={(e) => void updateIngredient(def.id, { purchaseUnit: e.target.value })}
+              className={`mt-0.5 block ${selectClass}`}
+            >
+              {PURCHASE_UNITS.map((u) => (
+                <option key={u} value={u}>
+                  {u === 'each' ? 'each (count)' : u}
+                </option>
+              ))}
+            </select>
+          </label>
+          {needsDensity(def.purchaseUnit) && (
+            <label className="text-xs text-stone-500" title="Lets tbsp/tsp convert to the buy unit">
+              Density
+              <select
+                value={def.densityGPerMl ?? ''}
+                onChange={(e) =>
+                  void setIngredientDensity(def.id, e.target.value ? Number(e.target.value) : undefined)
+                }
+                className={`mt-0.5 block ${selectClass}`}
+              >
+                <option value="">no spoon conversion</option>
+                {DENSITY_PRESETS.map((p) => (
+                  <option key={p.label} value={p.gPerMl}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
+    </li>
   )
 }
