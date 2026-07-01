@@ -34,7 +34,7 @@ data/private/
   household no-go like fish), and roughly how big a library they want. You'll use these
   in Phase 3.
 
-## 1. Find the recipe list (the sitemap)
+## 1. Find the recipe list
 
 - Read `https://<site>/robots.txt` and look for `Sitemap:` lines.
 - Fetch the sitemap. It's often a **sitemap index** → follow the child that holds
@@ -45,6 +45,24 @@ data/private/
   metadata* (a slug → categories map; great for curation and no-go filtering).
 - Save the raw sitemap to `data/private/sitemap-recipes.xml` and the parsed list to
   `data/private/recipe-slugs.json` (`[{ slug, categories: [...] }, ...]`).
+
+> **⚠ A sitemap can be a *curated subset*, not the full catalogue.** Don't trust it as
+> exhaustive. It may list only "current/featured" items while the API still serves many
+> more (often older ones). **Verify:** pick a recipe you know exists (browse the site) and
+> check it's in your slug list — if it isn't, the sitemap is lying about coverage.
+>
+> **The reliable complete list is usually the site's own browse/listing API** — the JSON
+> endpoint behind the category pages' "load more" button. It paginates, typically
+> `…/recipes?category=<all>&limit=<n>&offset=<m>`: walk `offset` in steps of `limit` until a
+> page comes back empty. Watch for (a) the pagination param name (`offset` vs `skip` vs
+> `page` — try each; a param the server ignores returns the *same* first page every time),
+> and (b) a `limit` ceiling (too-large values may 5xx). There's usually a catch-all category
+> (e.g. `recipes`/"All") that returns everything; dedupe by slug across pages. If an
+> **id-keyed** recipe endpoint exists you can enumerate by id instead, but most are
+> slug-keyed only.
+>
+> Treat the sitemap as a fast first cut and the browse API as the source of truth — diff the
+> two; the gap is real recipes you'd otherwise miss.
 
 ## 2. Learn the shape (one sample)
 
