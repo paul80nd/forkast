@@ -31,6 +31,38 @@ export async function getPlanShoppingList(planId: string = CURRENT_PLAN_ID): Pro
   return buildShoppingList(recipes, portions, dict, bindings)
 }
 
+// --- Lazy ingredient binding (at shopping time) ---
+
+/** Bind an ingredient name to a dictionary entry, so its lines merge across the plan. */
+export async function setBinding(name: string, ingredientId: string): Promise<void> {
+  await db.bindings.put({ name: normalizeName(name), ingredientId })
+}
+
+/** Drop a binding — the name's lines fall back to verbatim (unmerged). */
+export async function unbind(name: string): Promise<void> {
+  await db.bindings.delete(normalizeName(name))
+}
+
+/** URL/id-safe slug from a name, e.g. "Chicken Thighs" → "chicken-thighs". */
+function slugify(name: string): string {
+  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+/**
+ * Create a dictionary entry (for the "create new" path of the bind flow) and return it. The
+ * id is derived from the name, made unique against the existing dictionary.
+ */
+export async function createIngredient(
+  input: Omit<IngredientDef, 'id'> & { id?: string },
+): Promise<IngredientDef> {
+  const base = input.id?.trim() || slugify(input.name) || 'ingredient'
+  let id = base
+  for (let n = 2; await db.dictionary.get(id); n++) id = `${base}-${n}`
+  const def: IngredientDef = { ...input, id }
+  await db.dictionary.put(def)
+  return def
+}
+
 // Tick-off + manual extras are scoped to the current plan.
 async function getState(planId: string = CURRENT_PLAN_ID): Promise<ShoppingState> {
   return (await db.shopping.get(planId)) ?? { id: planId, checked: [], extras: [] }
