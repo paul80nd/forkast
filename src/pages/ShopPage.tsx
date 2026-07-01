@@ -1,40 +1,29 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { CURRENT_PLAN_ID } from '../lib/plan'
-import { buildShoppingList } from '../lib/shopping'
 import {
+  getPlanShoppingList,
   toggleChecked,
   clearChecked,
   addExtra,
   toggleExtra,
   removeExtra,
-} from '../lib/shoppingState'
-import type { Recipe } from '../schema/recipe'
+} from '../app/shopping'
 
 export function ShopPage() {
-  const recipes = useLiveQuery(() => db.recipes.toArray(), [])
   const plan = useLiveQuery(() => db.plans.get(CURRENT_PLAN_ID), [])
   const shopping = useLiveQuery(() => db.shopping.get(CURRENT_PLAN_ID), [])
+  const list = useLiveQuery(() => getPlanShoppingList(), [])
   const [extraText, setExtraText] = useState('')
 
-  const byId = useMemo(() => {
-    const m = new Map<string, Recipe>()
-    for (const r of recipes ?? []) m.set(r.id, r)
-    return m
-  }, [recipes])
-
   const portions = plan?.portions ?? 2
-  const planned = (plan?.recipeIds ?? [])
-    .map((id) => byId.get(id))
-    .filter((r): r is Recipe => r != null)
+  const plannedCount = plan?.recipeIds?.length ?? 0
 
-  const list = useMemo(() => buildShoppingList(planned, portions), [planned, portions])
+  if (plan === undefined || list === undefined) return <p className="text-stone-500">Loading…</p>
 
-  if (recipes === undefined) return <p className="text-stone-500">Loading…</p>
-
-  if (planned.length === 0) {
+  if (plannedCount === 0) {
     return (
       <section>
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
@@ -59,7 +48,7 @@ export function ShopPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
         <div className="flex items-center gap-3 text-sm text-stone-500">
           <span>
-            {itemCount} items · {planned.length} meals · for {portions}
+            {itemCount} items · {plannedCount} meals · for {portions}
           </span>
           {checked.size > 0 && (
             <button

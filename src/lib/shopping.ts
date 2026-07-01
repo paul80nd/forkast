@@ -14,6 +14,15 @@ export interface ShopLine {
   /** What the total is made of in recipe units, e.g. "3 tbsp" (when converted). */
   detail?: string
   aisle: string
+  /** Normalised ingredient name for the lazy-bind flow (present on unmatched lines). */
+  bindName?: string
+}
+
+const EMPTY_BINDINGS: ReadonlyMap<string, string> = new Map()
+
+/** The key ingredient bindings + the unmatched grouping use — case/space-insensitive name. */
+export function normalizeName(name: string): string {
+  return name.trim().toLowerCase()
 }
 
 export interface ShoppingList {
@@ -40,8 +49,18 @@ interface Acc {
  * Merge the ingredients of the planned recipes into a shopping list, scaled to
  * `portions`. Each ingredient is summed in its purchase unit where a conversion
  * exists; otherwise the recipe-unit amount is kept as its own line.
+ *
+ * A line resolves to a canonical ingredient by its own `ingredientId` if set,
+ * else by a lazy `bindings` entry (name → ingredientId) from shopping-time
+ * binding; unresolved lines stay verbatim in `unmatched`. `dict` defaults to the
+ * built-in seed dictionary so pure callers/tests need not thread it through.
  */
-export function buildShoppingList(recipes: Recipe[], portions: number): ShoppingList {
+export function buildShoppingList(
+  recipes: Recipe[],
+  portions: number,
+  dict: Map<string, IngredientDef> = INGREDIENTS_BY_ID,
+  bindings: ReadonlyMap<string, string> = EMPTY_BINDINGS,
+): ShoppingList {
   const matched = new Map<string, Acc>()
   const unmatchedMap = new Map<string, { qty: number; unitId: string; name: string }>()
   const unquantified = new Set<string>()
@@ -54,9 +73,8 @@ export function buildShoppingList(recipes: Recipe[], portions: number): Shopping
     for (const line of r.ingredients) {
       const unitId = line.unit ?? 'each'
       const scaled = line.qty == null ? null : line.qty * factor
-      const def = line.ingredientId
-        ? INGREDIENTS_BY_ID.get(line.ingredientId)
-        : undefined
+      const boundId = line.ingredientId ?? bindings.get(normalizeName(line.name))
+      const def = boundId ? dict.get(boundId) : undefined
 
       if (!def) {
         if (scaled == null) {
@@ -129,7 +147,7 @@ export function buildShoppingList(recipes: Recipe[], portions: number): Shopping
       const q = formatQty(u.qty, unit.dimension)
       const label =
         unit.dimension === 'count' ? `${q} ${u.name}` : `${q} ${unit.label} ${u.name}`
-      return { key: `x|${u.name}|${u.unitId}`, label, aisle: 'Other' }
+      return { key: `x|${u.name}|${u.unitId}`, label, aisle: 'Other', bindName: normalizeName(u.name) }
     })
     .sort((a, b) => a.label.localeCompare(b.label))
 
