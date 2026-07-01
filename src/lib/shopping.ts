@@ -155,13 +155,9 @@ export function buildShoppingList(
 
   const unmatched = [...unmatchedMap.values()]
     .map((u): ShopLine => {
-      const unit = getUnit(u.unitId)
-      const q = formatQty(u.qty, unit.dimension)
-      const label =
-        unit.dimension === 'count' ? `${q} ${u.name}` : `${q} ${unit.label} ${u.name}`
       return {
         key: `x|${u.name}|${u.unitId}`,
-        label,
+        label: shopLabel(u.name, u.qty, u.unitId),
         aisle: 'Other',
         bindName: normalizeName(u.name),
         recipeCount: u.recipeIds.size,
@@ -174,13 +170,21 @@ export function buildShoppingList(
 
 function formatLine(def: IngredientDef, qty: number, unitId: string): ShopLine {
   const unit = getUnit(unitId)
-  // Only countable things pluralise ("2 limes"); measured-by-weight/volume names are
-  // uncountable in this position ("1 tbsp garam masala", "45 ml soy sauce").
+  // Only countable things pluralise ("spring onions"); measured-by-weight/volume names are
+  // uncountable ("garam masala").
   const name = unit.dimension === 'count' && qty > 1 ? pluralOf(def) : def.name
-  return { key: `${def.id}|${unitId}`, label: `${formatAmount(qty, unitId)} ${name}`.trim(), aisle: def.aisle }
+  return { key: `${def.id}|${unitId}`, label: shopLabel(name, qty, unitId), aisle: def.aisle }
 }
 
-/** An amount without a name, e.g. "3 tbsp", "800 g", "5". */
+/** Name-first label, e.g. "dried chilli flakes · 11 g", "spring onions · × 2". */
+function shopLabel(name: string, qty: number, unitId: string): string {
+  const unit = getUnit(unitId)
+  const q = formatQty(qty, unit.dimension)
+  const amount = unit.dimension === 'count' ? `× ${q}` : `${q} ${unit.label}`
+  return `${name} · ${amount}`
+}
+
+/** An amount without a name, e.g. "3 tbsp", "800 g", "5" — for the breakdown detail. */
 function formatAmount(qty: number, unitId: string): string {
   const unit = getUnit(unitId)
   const q = formatQty(qty, unit.dimension)

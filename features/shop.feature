@@ -11,19 +11,19 @@ Feature: Shopping list
     And a recipe "r2" with "1 lime" bound to "lime"
     And recipes "r1, r2" are on the plan for 2
     When I build the shopping list
-    Then the list contains "2 limes"
+    Then the list contains "limes · × 2"
 
   Scenario: Quantities scale to the plan's portions
     Given a recipe "r1" with "2 garlic" bound to "garlic"
     And recipes "r1" are on the plan for 4
     When I build the shopping list
-    Then the list contains "4 garlic cloves"
+    Then the list contains "garlic cloves · × 4"
 
   Scenario: An unbound ingredient is listed verbatim, not dropped
     Given a recipe "r1" with unbound "mystery herb"
     And recipes "r1" are on the plan for 2
     When I build the shopping list
-    Then the unmatched items contain "1 mystery herb"
+    Then the unmatched items contain "mystery herb · × 1"
 
   Scenario: Binding an unbound ingredient makes it merge
     Given a recipe "r1" with unbound "lime"
@@ -31,7 +31,7 @@ Feature: Shopping list
     And recipes "r1, r2" are on the plan for 2
     And I bind "lime" to "lime"
     When I build the shopping list
-    Then the list contains "2 limes"
+    Then the list contains "limes · × 2"
     And the unmatched items do not contain "lime"
 
   Scenario: Creating a new ingredient and binding to it merges the lines
@@ -49,7 +49,7 @@ Feature: Shopping list
     And I bind "garam masala" to that new ingredient
     And I set the density of that ingredient to "0.5"
     When I build the shopping list
-    Then the list contains "15 g garam masala"
+    Then the list contains "garam masala · 15 g"
 
   Scenario: Editing a bound ingredient changes its aisle and buy unit
     Given a recipe "r1" with unbound "gochujang"
@@ -66,7 +66,7 @@ Feature: Shopping list
     And recipes "r1, r2" are on the plan for 2
     And I bind "soy sauce" to "soy-sauce"
     When I build the shopping list
-    Then the line "45 ml soy sauce" combines 2 recipes
+    Then the line "soy sauce · 45 ml" combines 2 recipes
 
   Scenario: Ticking an item off persists
     Given a recipe "r1" with "1 lime" bound to "lime"
