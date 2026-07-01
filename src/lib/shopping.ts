@@ -35,6 +35,8 @@ export interface ShoppingList {
   unquantified: string[]
   /** Store-cupboard basics, deduped — assumed in, listed for a glance. */
   basics: string[]
+  /** Number of recipes actually contributing — the plan's meals, minus any stale ids. */
+  mealCount: number
 }
 
 interface Acc {
@@ -165,7 +167,13 @@ export function buildShoppingList(
     })
     .sort((a, b) => a.label.localeCompare(b.label))
 
-  return { aisles, unmatched, unquantified: [...unquantified], basics: [...basics].sort() }
+  return {
+    aisles,
+    unmatched,
+    unquantified: [...unquantified],
+    basics: [...basics].sort(),
+    mealCount: recipes.length,
+  }
 }
 
 function formatLine(def: IngredientDef, qty: number, unitId: string): ShopLine {

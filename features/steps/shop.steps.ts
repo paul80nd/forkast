@@ -105,6 +105,9 @@ describeFeature(feature, ({ Background, Scenario }) => {
     const line = list.aisles.flatMap((a) => a.lines).find((l) => l.label === label)
     expect(line?.recipeCount).toBe(n)
   }
+  const hasMeals = (_: unknown, n: number) => {
+    expect(list.mealCount).toBe(n)
+  }
 
   Scenario('Ingredients merge across the planned recipes', ({ Given, And, When, Then }) => {
     Given('a recipe {string} with {string} bound to {string}', boundRecipe)
@@ -174,6 +177,14 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('I bind {string} to {string}', bind)
     When('I build the shopping list', build)
     Then('the line {string} combines {int} recipes', lineCombines)
+  })
+
+  Scenario("A stale plan id doesn't count as a meal", ({ Given, And, When, Then }) => {
+    Given('a recipe {string} with {string} bound to {string}', boundRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    When('I build the shopping list', build)
+    Then('the list has {int} meals', hasMeals)
+    And('the list contains {string}', contains)
   })
 
   Scenario('Ticking an item off persists', ({ Given, And, When, Then }) => {
