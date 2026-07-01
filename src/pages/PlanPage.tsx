@@ -7,7 +7,7 @@ import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
 import { addToPlan, addRecipesToPlan, removeFromPlan, setPortions, markCooked } from '../app/plan'
 import { suggestWeekPlan } from '../app/suggest'
 import { usePersistentState } from '../hooks/usePersistentState'
-import { RecipePreview } from '../components/RecipePreview'
+import { RecipeModal } from '../components/RecipeModal'
 import type { Suggestion } from '../lib/suggest'
 import type { Recipe } from '../schema/recipe'
 import type { Stars, VariantGroup } from '../schema/userData'
@@ -39,6 +39,8 @@ export function PlanPage() {
   const cooked = useLiveQuery(() => db.cooked.toArray(), [])
   const groups = useLiveQuery(() => db.variantGroups.toArray(), [])
   const [pickerQuery, setPickerQuery] = useState('')
+  // The recipe shown in the pop-up detail view (opened from a suggested or planned row); null = closed.
+  const [modalRecipe, setModalRecipe] = useState<Recipe | null>(null)
 
   // Assisted "suggest a varied week": a non-destructive shortlist you reroll / lock / swap /
   // accept. The target count persists; the shortlist is transient until accepted.
@@ -333,6 +335,7 @@ export function PlanPage() {
                   lastCooked={lastCookedById.get(slot.id)}
                   siblings={siblings}
                   byId={byId}
+                  onOpen={() => setModalRecipe(r)}
                   onLock={() => toggleLock(i)}
                   onReroll={() => reroll(i)}
                   onSwap={(sid) => swapVariant(i, sid)}
@@ -365,14 +368,22 @@ export function PlanPage() {
                   key={r.id}
                   className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-2.5"
                 >
-                  <Link to={`/recipe/${r.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
                     <img
                       src={resolveAsset(r.image)}
                       alt=""
                       className="size-14 shrink-0 rounded-lg object-cover"
                     />
                     <div className="min-w-0">
-                      <div className="truncate font-medium text-stone-800">{r.title}</div>
+                      {/* Only the title opens the detail pop-up — clearest affordance for "more detail". */}
+                      <button
+                        type="button"
+                        onClick={() => setModalRecipe(r)}
+                        title="View recipe"
+                        className="block max-w-full truncate text-left font-medium text-stone-800 hover:text-orange-600 hover:underline"
+                      >
+                        {r.title}
+                      </button>
                       <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
                         <span>{r.cuisine}</span>
                         {r.mainProtein && <span className="capitalize">· {r.mainProtein}</span>}
@@ -382,7 +393,7 @@ export function PlanPage() {
                         </span>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                   <button
                     type="button"
                     onClick={() => markCooked(r.id)}
@@ -441,12 +452,16 @@ export function PlanPage() {
           </p>
         )}
       </div>
+
+      {modalRecipe && (
+        <RecipeModal recipe={modalRecipe} onClose={() => setModalRecipe(null)} />
+      )}
     </section>
   )
 }
 
-// One suggested meal: a compact row (image + meta + "why" tags + lock/reroll/swap/remove) that
-// expands in place to show the full recipe detail — so reviewing a proposal never navigates away.
+// One suggested meal: a compact row (image + meta + "why" tags + lock/reroll/swap/remove). Clicking
+// the meal opens the full recipe detail in a pop-up — so reviewing a proposal never navigates away.
 function SuggestionSlot({
   recipe,
   slot,
@@ -454,6 +469,7 @@ function SuggestionSlot({
   lastCooked,
   siblings,
   byId,
+  onOpen,
   onLock,
   onReroll,
   onSwap,
@@ -465,28 +481,28 @@ function SuggestionSlot({
   lastCooked: string | undefined
   siblings: VariantGroup['members']
   byId: Map<string, Recipe>
+  onOpen: () => void
   onLock: () => void
   onReroll: () => void
   onSwap: (siblingId: string) => void
   onRemove: () => void
 }) {
-  const [expanded, setExpanded] = useState(false)
   const rec = recency(lastCooked)
   return (
     <li className="overflow-hidden rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
       <div className="flex items-center gap-3 p-2.5">
-        <button
-          type="button"
-          onClick={() => setExpanded((e) => !e)}
-          aria-expanded={expanded}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left"
-        >
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <img src={resolveAsset(recipe.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-stone-400">{expanded ? '▾' : '▸'}</span>
-              <span className="truncate font-medium text-stone-800">{recipe.title}</span>
-            </div>
+            {/* Only the title opens the detail pop-up — clearest affordance for "more detail". */}
+            <button
+              type="button"
+              onClick={onOpen}
+              title="View recipe"
+              className="block max-w-full truncate text-left font-medium text-stone-800 hover:text-orange-600 hover:underline"
+            >
+              {recipe.title}
+            </button>
             <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
               <span>{recipe.cuisine}</span>
               {recipe.mainProtein && <span className="capitalize">· {recipe.mainProtein}</span>}
@@ -506,7 +522,7 @@ function SuggestionSlot({
               ))}
             </div>
           </div>
-        </button>
+        </div>
 
         {siblings.length > 0 && (
           <select
@@ -551,17 +567,6 @@ function SuggestionSlot({
           ✕
         </button>
       </div>
-
-      {expanded && (
-        <>
-          <RecipePreview recipe={recipe} />
-          <div className="px-3 pb-3">
-            <Link to={`/recipe/${recipe.id}`} className="text-xs text-orange-600 hover:underline">
-              Open full page →
-            </Link>
-          </div>
-        </>
-      )}
     </li>
   )
 }
