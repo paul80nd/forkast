@@ -5,6 +5,7 @@ import { CURRENT_PLAN_ID } from '../../src/lib/plan'
 import { addToPlan, setPortions } from '../../src/app/plan'
 import {
   getPlanShoppingList,
+  getBindingUsage,
   toggleChecked,
   addExtra,
   removeExtra,
@@ -12,9 +13,19 @@ import {
   createIngredient,
 } from '../../src/app/shopping'
 import { makeRecipe } from '../../test/factories'
-import type { ShoppingList } from '../../src/lib/shopping'
+import type { BindingUsage, ShoppingList } from '../../src/lib/shopping'
 import type { Ingredient } from '../../src/schema/recipe'
 import type { IngredientDef } from '../../src/data/ingredients'
+
+const KNOWN_UNITS = new Set(['tsp', 'tbsp', 'g', 'kg', 'ml', 'l', 'each'])
+
+/** Parse "3 tsp soy sauce" → qty 3, unit tsp, name "soy sauce" (unit optional). */
+function parseQtyUnit(spec: string): { qty: number; unit?: string; name: string } {
+  const m = spec.match(/^(\d+)\s+(\S+)\s+(.*)$/)
+  if (m && KNOWN_UNITS.has(m[2])) return { qty: Number(m[1]), unit: m[2], name: m[3] }
+  const n = spec.match(/^(\d+)\s+(.*)$/)
+  return n ? { qty: Number(n[1]), name: n[2] } : { qty: 1, name: spec }
+}
 
 const feature = await loadFeature('features/shop.feature')
 
@@ -35,6 +46,7 @@ function labels(list: ShoppingList): string[] {
 describeFeature(feature, ({ Background, Scenario }) => {
   let list: ShoppingList
   let created: IngredientDef
+  let usageMap: Map<string, BindingUsage>
 
   Background(({ Given }) => {
     Given('a clean collection', async () => {
@@ -55,6 +67,11 @@ describeFeature(feature, ({ Background, Scenario }) => {
   }
   const unboundRecipe = async (_: unknown, id: string, name: string) => {
     const ing: Ingredient = { rawLabel: `1 ${name}`, name, qty: 1 }
+    await db.recipes.put(makeRecipe({ id, ingredients: [ing] }))
+  }
+  const usingRecipe = async (_: unknown, id: string, spec: string) => {
+    const { qty, unit, name } = parseQtyUnit(spec)
+    const ing: Ingredient = { rawLabel: spec, name, qty, unit }
     await db.recipes.put(makeRecipe({ id, ingredients: [ing] }))
   }
   const onPlan = async (_: unknown, list: string, portions: number) => {
@@ -80,6 +97,15 @@ describeFeature(feature, ({ Background, Scenario }) => {
   const bindToNew = async (_: unknown, name: string) => setBinding(name, created.id)
   const hasAisle = (_: unknown, aisle: string) => {
     expect(list.aisles.some((a) => a.aisle === aisle)).toBe(true)
+  }
+  const readUsage = async () => {
+    usageMap = await getBindingUsage()
+  }
+  const mergesRecipes = (_: unknown, name: string, n: number) => {
+    expect(usageMap.get(name.trim().toLowerCase())?.recipeCount).toBe(n)
+  }
+  const breaksDown = (_: unknown, name: string, breakdown: string) => {
+    expect(usageMap.get(name.trim().toLowerCase())?.breakdown).toBe(breakdown)
   }
 
   Scenario('Ingredients merge across the planned recipes', ({ Given, And, When, Then }) => {
@@ -121,6 +147,16 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('I bind {string} to that new ingredient', bindToNew)
     When('I build the shopping list', build)
     Then('the list has an aisle {string}', hasAisle)
+  })
+
+  Scenario('A binding summary shows the recipe count and merged amounts', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} using {string}', usingRecipe)
+    And('a recipe {string} using {string}', usingRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    And('I bind {string} to {string}', bind)
+    When('I read the binding usage', readUsage)
+    Then('the binding {string} merges {int} recipes', mergesRecipes)
+    And('the binding {string} breaks down as {string}', breaksDown)
   })
 
   Scenario('Ticking an item off persists', ({ Given, And, When, Then }) => {

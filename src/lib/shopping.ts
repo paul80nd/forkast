@@ -154,6 +154,63 @@ export function buildShoppingList(
   return { aisles, unmatched, unquantified: [...unquantified], basics: [...basics].sort() }
 }
 
+export interface BindingUsage {
+  /** How many planned recipes contribute a line of this ingredient name. */
+  recipeCount: number
+  /** Recipe-unit breakdown of what's being merged, e.g. "3 tsp + 1 tbsp". */
+  breakdown: string
+  /** Merged total in the purchase unit, when the amounts convert, e.g. "30 g". */
+  total?: string
+}
+
+/**
+ * Summarise what a name binding merges across the plan: how many recipes use it and the
+ * recipe-unit amounts that combine (scaled to `portions`). `def` gives the purchase-unit
+ * total where the amounts convert. Pure — the Dexie assembly is in src/app/shopping.ts.
+ */
+export function bindingUsage(
+  recipes: Recipe[],
+  portions: number,
+  name: string,
+  def: IngredientDef | undefined,
+): BindingUsage {
+  const target = normalizeName(name)
+  const perUnit = new Map<string, number>()
+  const recipeIds = new Set<string>()
+  let convertedTotal = 0
+  let anyConverted = false
+
+  for (const r of recipes) {
+    const factor = portions / (r.serves || 2)
+    let used = false
+    for (const line of r.ingredients) {
+      if (normalizeName(line.name) !== target) continue
+      used = true
+      if (line.qty == null) continue
+      const unitId = line.unit ?? 'each'
+      const scaled = line.qty * factor
+      perUnit.set(unitId, (perUnit.get(unitId) ?? 0) + scaled)
+      if (def) {
+        const c = convert(scaled, unitId, def.purchaseUnit, def.densityGPerMl)
+        if (c != null) {
+          convertedTotal += c
+          anyConverted = true
+        }
+      }
+    }
+    if (used) recipeIds.add(r.id)
+  }
+
+  const breakdown = [...perUnit.entries()]
+    .map(([unitId, qty]) => formatAmount(qty, unitId))
+    .join(' + ')
+  return {
+    recipeCount: recipeIds.size,
+    breakdown,
+    total: def && anyConverted ? formatAmount(convertedTotal, def.purchaseUnit) : undefined,
+  }
+}
+
 function formatLine(def: IngredientDef, qty: number, unitId: string): ShopLine {
   const unit = getUnit(unitId)
   const name =
