@@ -54,6 +54,13 @@ export async function unbind(name: string): Promise<void> {
   await db.bindings.delete(normalizeName(name))
 }
 
+/** Set (or clear) a dictionary ingredient's density, so spoon amounts convert to its buy unit. */
+export async function setIngredientDensity(id: string, gPerMl: number | undefined): Promise<void> {
+  const def = await db.dictionary.get(id)
+  if (!def) return
+  await db.dictionary.put({ ...def, densityGPerMl: gPerMl })
+}
+
 /** URL/id-safe slug from a name, e.g. "Chicken Thighs" → "chicken-thighs". */
 function slugify(name: string): string {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')

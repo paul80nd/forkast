@@ -114,6 +114,19 @@ describe('buildShoppingList', () => {
     expect(labels(buildShoppingList([a], 2, dict))).toContain('1 tbsp garam masala')
   })
 
+  it('converts a spoon amount to the buy unit when a density is set, keeping the original in detail', () => {
+    const dict = new Map([
+      ['gm', { id: 'gm', name: 'garam masala', aisle: 'Pantry', purchaseUnit: 'g', densityGPerMl: 0.5 }],
+    ])
+    const a = recipe('a', [
+      { rawLabel: '1 tbsp garam masala', name: 'garam masala', qty: 1, unit: 'tbsp', ingredientId: 'gm' },
+    ])
+    const list = buildShoppingList([a], 2, dict)
+    // 1 tbsp = 15 ml × 0.5 g/ml = 7.5 g
+    expect(labels(list)).toContain('7.5 g garam masala')
+    expect(findLine(list, '7.5 g garam masala')?.detail).toBe('1 tbsp')
+  })
+
   it('records how many recipes contribute to a merged line', () => {
     const a = recipe('a', [{ rawLabel: '2 tbsp soy sauce', name: 'soy sauce', qty: 2, unit: 'tbsp', ingredientId: 'soy-sauce' }])
     const b = recipe('b', [{ rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp', ingredientId: 'soy-sauce' }])

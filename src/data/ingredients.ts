@@ -83,3 +83,23 @@ export const INGREDIENTS: IngredientDef[] = [
 ]
 
 export const INGREDIENTS_BY_ID = new Map(INGREDIENTS.map((i) => [i.id, i]))
+
+/**
+ * Approximate densities (grams per ml) by ingredient type, so a weight-bought item measured
+ * in spoons (tbsp/tsp) converts to grams. Generic cooking-reference approximations — good
+ * enough for a shopping estimate. Offered as presets when creating an ingredient.
+ */
+export interface DensityPreset {
+  label: string
+  gPerMl: number
+}
+
+export const DENSITY_PRESETS: DensityPreset[] = [
+  { label: 'Dried herb / flakes', gPerMl: 0.2 },
+  { label: 'Ground spice / powder', gPerMl: 0.47 },
+  { label: 'Whole seeds', gPerMl: 0.55 },
+  { label: 'Flour', gPerMl: 0.55 },
+  { label: 'Sugar', gPerMl: 0.85 },
+  { label: 'Oil / sauce', gPerMl: 1.0 },
+  { label: 'Salt', gPerMl: 1.2 },
+]
