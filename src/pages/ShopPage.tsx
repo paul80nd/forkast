@@ -13,10 +13,16 @@ import {
   setBinding,
   unbind,
   createIngredient,
+  setIngredientDensity,
 } from '../app/shopping'
 import { matchIngredient } from '../lib/ingredientMatch'
-import { AISLE_ORDER, type IngredientDef } from '../data/ingredients'
+import { AISLE_ORDER, DENSITY_PRESETS, type IngredientDef } from '../data/ingredients'
 import type { ShopLine } from '../lib/shopping'
+
+/** Density only matters for weight/volume buys (bridging tbsp/tsp → grams); not for counts. */
+function needsDensity(purchaseUnit: string): boolean {
+  return purchaseUnit !== 'each'
+}
 
 // Base "buy" units offered when creating a new dictionary ingredient (recipe units like tsp
 // convert into these where a conversion exists).
@@ -119,24 +125,46 @@ export function ShopPage() {
               Your bindings ({bindings.length})
             </summary>
             <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
-              {bindings.map((b) => (
-                <li key={b.name} className="flex items-center justify-between gap-3 px-3 py-1.5">
-                  <span className="min-w-0 text-stone-600">
-                    {b.name}{' '}
-                    <span className="text-stone-400">
-                      → {dict?.find((d) => d.id === b.ingredientId)?.name ?? b.ingredientId}
+              {bindings.map((b) => {
+                const def = dict?.find((d) => d.id === b.ingredientId)
+                return (
+                  <li key={b.name} className="flex items-center justify-between gap-3 px-3 py-1.5">
+                    <span className="min-w-0 text-stone-600">
+                      {b.name} <span className="text-stone-400">→ {def?.name ?? b.ingredientId}</span>
                     </span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => void unbind(b.name)}
-                    className="shrink-0 rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
-                    title="Unbind — back to verbatim"
-                  >
-                    Unbind
-                  </button>
-                </li>
-              ))}
+                    <div className="flex shrink-0 items-center gap-2">
+                      {def && needsDensity(def.purchaseUnit) && (
+                        <select
+                          value={def.densityGPerMl ?? ''}
+                          onChange={(e) =>
+                            void setIngredientDensity(
+                              def.id,
+                              e.target.value ? Number(e.target.value) : undefined,
+                            )
+                          }
+                          title="Density — lets tbsp/tsp convert to the buy unit"
+                          className="rounded-md border border-stone-300 bg-white px-1.5 py-0.5 text-xs text-stone-600 dark:bg-stone-100"
+                        >
+                          <option value="">no spoon conversion</option>
+                          {DENSITY_PRESETS.map((p) => (
+                            <option key={p.label} value={p.gPerMl}>
+                              {p.label}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => void unbind(b.name)}
+                        className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
+                        title="Unbind — back to verbatim"
+                      >
+                        Unbind
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           </details>
         )}
@@ -348,6 +376,7 @@ function BindPanel({
   const [creating, setCreating] = useState(false)
   const [aisle, setAisle] = useState('Pantry')
   const [unit, setUnit] = useState('g')
+  const [density, setDensity] = useState('') // '' = none, else g/ml as string
   const candidates = useMemo(() => matchIngredient(query, dict, 6), [query, dict])
 
   async function bindTo(id: string) {
@@ -359,6 +388,7 @@ function BindPanel({
       name: query.trim() || name,
       aisle,
       purchaseUnit: unit,
+      densityGPerMl: needsDensity(unit) && density ? Number(density) : undefined,
     })
     await setBinding(name, def.id)
     onDone()
@@ -431,6 +461,23 @@ function BindPanel({
               ))}
             </select>
           </label>
+          {needsDensity(unit) && (
+            <label className="text-xs text-stone-500" title="Lets tbsp/tsp amounts convert to the buy unit">
+              Density
+              <select
+                value={density}
+                onChange={(e) => setDensity(e.target.value)}
+                className="mt-0.5 block rounded-md border border-stone-300 bg-white px-2 py-1 text-sm dark:bg-stone-100"
+              >
+                <option value="">— (don't convert spoons)</option>
+                {DENSITY_PRESETS.map((p) => (
+                  <option key={p.label} value={p.gPerMl}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <button
             type="button"
             onClick={() => void create()}

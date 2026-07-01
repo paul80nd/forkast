@@ -42,6 +42,15 @@ Feature: Shopping list
     When I build the shopping list
     Then the list has an aisle "Pantry"
 
+  Scenario: A density lets a spoon-measured spice convert to grams
+    Given a recipe "r1" using "2 tbsp garam masala"
+    And recipes "r1" are on the plan for 2
+    And I create an ingredient "garam masala" in aisle "Pantry" bought in "g"
+    And I bind "garam masala" to that new ingredient
+    And I set the density of that ingredient to "0.5"
+    When I build the shopping list
+    Then the list contains "15 g garam masala"
+
   Scenario: A merged line records how many recipes it combines
     Given a recipe "r1" using "2 tbsp soy sauce"
     And a recipe "r2" using "1 tbsp soy sauce"
