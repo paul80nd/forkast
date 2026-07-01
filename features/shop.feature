@@ -42,6 +42,15 @@ Feature: Shopping list
     When I build the shopping list
     Then the list has an aisle "Pantry"
 
+  Scenario: A binding summary shows the recipe count and merged amounts
+    Given a recipe "r1" using "3 tsp soy sauce"
+    And a recipe "r2" using "1 tbsp soy sauce"
+    And recipes "r1, r2" are on the plan for 2
+    And I bind "soy sauce" to "soy-sauce"
+    When I read the binding usage
+    Then the binding "soy sauce" merges 2 recipes
+    And the binding "soy sauce" breaks down as "3 tsp + 1 tbsp"
+
   Scenario: Ticking an item off persists
     Given a recipe "r1" with "1 lime" bound to "lime"
     And recipes "r1" are on the plan for 2

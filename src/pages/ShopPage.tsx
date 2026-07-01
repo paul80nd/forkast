@@ -5,6 +5,7 @@ import { db } from '../db/db'
 import { CURRENT_PLAN_ID } from '../lib/plan'
 import {
   getPlanShoppingList,
+  getBindingUsage,
   toggleChecked,
   clearChecked,
   addExtra,
@@ -28,6 +29,7 @@ export function ShopPage() {
   const list = useLiveQuery(() => getPlanShoppingList(), [])
   const dict = useLiveQuery(() => db.dictionary.toArray(), [])
   const bindings = useLiveQuery(() => db.bindings.toArray(), [])
+  const usage = useLiveQuery(() => getBindingUsage(), [])
   const [extraText, setExtraText] = useState('')
 
   const portions = plan?.portions ?? 2
@@ -118,24 +120,45 @@ export function ShopPage() {
               Your bindings ({bindings.length})
             </summary>
             <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
-              {bindings.map((b) => (
-                <li key={b.name} className="flex items-center justify-between gap-3 px-3 py-1.5">
-                  <span className="text-stone-600">
-                    {b.name}{' '}
-                    <span className="text-stone-400">
-                      → {dict?.find((d) => d.id === b.ingredientId)?.name ?? b.ingredientId}
+              {bindings.map((b) => {
+                const u = usage?.get(b.name)
+                return (
+                  <li key={b.name} className="flex items-center justify-between gap-3 px-3 py-1.5">
+                    <span className="min-w-0 text-stone-600">
+                      {b.name}{' '}
+                      <span className="text-stone-400">
+                        → {dict?.find((d) => d.id === b.ingredientId)?.name ?? b.ingredientId}
+                      </span>
                     </span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => void unbind(b.name)}
-                    className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
-                    title="Unbind — back to verbatim"
-                  >
-                    Unbind
-                  </button>
-                </li>
-              ))}
+                    <div className="flex shrink-0 items-center gap-3">
+                      {u && u.recipeCount > 0 ? (
+                        <span className="text-right text-xs text-stone-500">
+                          {u.total && <span className="font-medium text-stone-600">{u.total}</span>}
+                          {u.breakdown && (
+                            <span className="text-stone-400">
+                              {u.total ? ' · ' : ''}
+                              {u.breakdown}
+                            </span>
+                          )}
+                          <span className="text-stone-400">
+                            {' '}· {u.recipeCount} {u.recipeCount === 1 ? 'recipe' : 'recipes'}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-xs text-stone-300">not in this week</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => void unbind(b.name)}
+                        className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
+                        title="Unbind — back to verbatim"
+                      >
+                        Unbind
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           </details>
         )}
