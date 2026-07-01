@@ -5,7 +5,6 @@ import { CURRENT_PLAN_ID } from '../../src/lib/plan'
 import { addToPlan, setPortions } from '../../src/app/plan'
 import {
   getPlanShoppingList,
-  getBindingUsage,
   toggleChecked,
   addExtra,
   removeExtra,
@@ -13,7 +12,7 @@ import {
   createIngredient,
 } from '../../src/app/shopping'
 import { makeRecipe } from '../../test/factories'
-import type { BindingUsage, ShoppingList } from '../../src/lib/shopping'
+import type { ShoppingList } from '../../src/lib/shopping'
 import type { Ingredient } from '../../src/schema/recipe'
 import type { IngredientDef } from '../../src/data/ingredients'
 
@@ -46,7 +45,6 @@ function labels(list: ShoppingList): string[] {
 describeFeature(feature, ({ Background, Scenario }) => {
   let list: ShoppingList
   let created: IngredientDef
-  let usageMap: Map<string, BindingUsage>
 
   Background(({ Given }) => {
     Given('a clean collection', async () => {
@@ -98,14 +96,9 @@ describeFeature(feature, ({ Background, Scenario }) => {
   const hasAisle = (_: unknown, aisle: string) => {
     expect(list.aisles.some((a) => a.aisle === aisle)).toBe(true)
   }
-  const readUsage = async () => {
-    usageMap = await getBindingUsage()
-  }
-  const mergesRecipes = (_: unknown, name: string, n: number) => {
-    expect(usageMap.get(name.trim().toLowerCase())?.recipeCount).toBe(n)
-  }
-  const breaksDown = (_: unknown, name: string, breakdown: string) => {
-    expect(usageMap.get(name.trim().toLowerCase())?.breakdown).toBe(breakdown)
+  const lineCombines = (_: unknown, label: string, n: number) => {
+    const line = list.aisles.flatMap((a) => a.lines).find((l) => l.label === label)
+    expect(line?.recipeCount).toBe(n)
   }
 
   Scenario('Ingredients merge across the planned recipes', ({ Given, And, When, Then }) => {
@@ -149,14 +142,13 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('the list has an aisle {string}', hasAisle)
   })
 
-  Scenario('A binding summary shows the recipe count and merged amounts', ({ Given, And, When, Then }) => {
+  Scenario('A merged line records how many recipes it combines', ({ Given, And, When, Then }) => {
     Given('a recipe {string} using {string}', usingRecipe)
     And('a recipe {string} using {string}', usingRecipe)
     And('recipes {string} are on the plan for {int}', onPlan)
     And('I bind {string} to {string}', bind)
-    When('I read the binding usage', readUsage)
-    Then('the binding {string} merges {int} recipes', mergesRecipes)
-    And('the binding {string} breaks down as {string}', breaksDown)
+    When('I build the shopping list', build)
+    Then('the line {string} combines {int} recipes', lineCombines)
   })
 
   Scenario('Ticking an item off persists', ({ Given, And, When, Then }) => {

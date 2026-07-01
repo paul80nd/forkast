@@ -1,12 +1,6 @@
 import { db } from '../db/db'
 import { CURRENT_PLAN_ID } from '../lib/plan'
-import {
-  buildShoppingList,
-  bindingUsage,
-  normalizeName,
-  type BindingUsage,
-  type ShoppingList,
-} from '../lib/shopping'
+import { buildShoppingList, normalizeName, type ShoppingList } from '../lib/shopping'
 import { INGREDIENTS_BY_ID, type IngredientDef } from '../data/ingredients'
 import type { Recipe } from '../schema/recipe'
 import type { ShoppingState } from '../schema/userData'
@@ -46,24 +40,6 @@ export async function getPlanShoppingList(planId: string = CURRENT_PLAN_ID): Pro
   ])
   const bindings = new Map(bindingRows.map((b) => [normalizeName(b.name), b.ingredientId]))
   return buildShoppingList(recipes, portions, dict, bindings)
-}
-
-/**
- * Per-binding usage across the plan (keyed by normalised name): how many recipes use it and
- * the recipe-unit amounts it merges. Powers the "Your bindings" summary on the Shop page.
- */
-export async function getBindingUsage(
-  planId: string = CURRENT_PLAN_ID,
-): Promise<Map<string, BindingUsage>> {
-  const [{ recipes, portions, dict }, bindingRows] = await Promise.all([
-    loadPlanContext(planId),
-    db.bindings.toArray(),
-  ])
-  const out = new Map<string, BindingUsage>()
-  for (const b of bindingRows) {
-    out.set(normalizeName(b.name), bindingUsage(recipes, portions, b.name, dict.get(b.ingredientId)))
-  }
-  return out
 }
 
 // --- Lazy ingredient binding (at shopping time) ---

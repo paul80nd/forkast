@@ -16,6 +16,8 @@ export interface ShopLine {
   aisle: string
   /** Normalised ingredient name for the lazy-bind flow (present on unmatched lines). */
   bindName?: string
+  /** How many planned recipes contribute to this line — for spot-checking a merge. */
+  recipeCount?: number
 }
 
 const EMPTY_BINDINGS: ReadonlyMap<string, string> = new Map()
@@ -43,6 +45,8 @@ interface Acc {
   contributions: Map<string, number>
   /** Recipe-unit quantities that had no natural conversion to the buy unit. */
   leftovers: Map<string, number>
+  /** Ids of the recipes that contributed to this ingredient. */
+  recipeIds: Set<string>
 }
 
 /**
@@ -62,7 +66,10 @@ export function buildShoppingList(
   bindings: ReadonlyMap<string, string> = EMPTY_BINDINGS,
 ): ShoppingList {
   const matched = new Map<string, Acc>()
-  const unmatchedMap = new Map<string, { qty: number; unitId: string; name: string }>()
+  const unmatchedMap = new Map<
+    string,
+    { qty: number; unitId: string; name: string; recipeIds: Set<string> }
+  >()
   const unquantified = new Set<string>()
   const basics = new Set<string>()
 
@@ -82,8 +89,9 @@ export function buildShoppingList(
           continue
         }
         const k = `${line.name}|${unitId}`
-        const cur = unmatchedMap.get(k) ?? { qty: 0, unitId, name: line.name }
+        const cur = unmatchedMap.get(k) ?? { qty: 0, unitId, name: line.name, recipeIds: new Set() }
         cur.qty += scaled
+        cur.recipeIds.add(r.id)
         unmatchedMap.set(k, cur)
         continue
       }
@@ -101,9 +109,11 @@ export function buildShoppingList(
           converted: false,
           contributions: new Map(),
           leftovers: new Map(),
+          recipeIds: new Set(),
         }
         matched.set(def.id, acc)
       }
+      acc.recipeIds.add(r.id)
       const c = convert(scaled, unitId, def.purchaseUnit, def.densityGPerMl)
       if (c != null) {
         acc.targetQty += c
@@ -123,13 +133,15 @@ export function buildShoppingList(
   }
 
   for (const acc of matched.values()) {
+    const recipeCount = acc.recipeIds.size
     if (acc.converted) {
       const line = formatLine(acc.def, acc.targetQty, acc.def.purchaseUnit)
       line.detail = buildDetail(acc.contributions, acc.def.purchaseUnit)
+      line.recipeCount = recipeCount
       push(acc.def.aisle, line)
     }
     for (const [unitId, qty] of acc.leftovers) {
-      push(acc.def.aisle, formatLine(acc.def, qty, unitId))
+      push(acc.def.aisle, { ...formatLine(acc.def, qty, unitId), recipeCount })
     }
   }
 
@@ -147,68 +159,17 @@ export function buildShoppingList(
       const q = formatQty(u.qty, unit.dimension)
       const label =
         unit.dimension === 'count' ? `${q} ${u.name}` : `${q} ${unit.label} ${u.name}`
-      return { key: `x|${u.name}|${u.unitId}`, label, aisle: 'Other', bindName: normalizeName(u.name) }
+      return {
+        key: `x|${u.name}|${u.unitId}`,
+        label,
+        aisle: 'Other',
+        bindName: normalizeName(u.name),
+        recipeCount: u.recipeIds.size,
+      }
     })
     .sort((a, b) => a.label.localeCompare(b.label))
 
   return { aisles, unmatched, unquantified: [...unquantified], basics: [...basics].sort() }
-}
-
-export interface BindingUsage {
-  /** How many planned recipes contribute a line of this ingredient name. */
-  recipeCount: number
-  /** Recipe-unit breakdown of what's being merged, e.g. "3 tsp + 1 tbsp". */
-  breakdown: string
-  /** Merged total in the purchase unit, when the amounts convert, e.g. "30 g". */
-  total?: string
-}
-
-/**
- * Summarise what a name binding merges across the plan: how many recipes use it and the
- * recipe-unit amounts that combine (scaled to `portions`). `def` gives the purchase-unit
- * total where the amounts convert. Pure — the Dexie assembly is in src/app/shopping.ts.
- */
-export function bindingUsage(
-  recipes: Recipe[],
-  portions: number,
-  name: string,
-  def: IngredientDef | undefined,
-): BindingUsage {
-  const target = normalizeName(name)
-  const perUnit = new Map<string, number>()
-  const recipeIds = new Set<string>()
-  let convertedTotal = 0
-  let anyConverted = false
-
-  for (const r of recipes) {
-    const factor = portions / (r.serves || 2)
-    let used = false
-    for (const line of r.ingredients) {
-      if (normalizeName(line.name) !== target) continue
-      used = true
-      if (line.qty == null) continue
-      const unitId = line.unit ?? 'each'
-      const scaled = line.qty * factor
-      perUnit.set(unitId, (perUnit.get(unitId) ?? 0) + scaled)
-      if (def) {
-        const c = convert(scaled, unitId, def.purchaseUnit, def.densityGPerMl)
-        if (c != null) {
-          convertedTotal += c
-          anyConverted = true
-        }
-      }
-    }
-    if (used) recipeIds.add(r.id)
-  }
-
-  const breakdown = [...perUnit.entries()]
-    .map(([unitId, qty]) => formatAmount(qty, unitId))
-    .join(' + ')
-  return {
-    recipeCount: recipeIds.size,
-    breakdown,
-    total: def && anyConverted ? formatAmount(convertedTotal, def.purchaseUnit) : undefined,
-  }
 }
 
 function formatLine(def: IngredientDef, qty: number, unitId: string): ShopLine {
