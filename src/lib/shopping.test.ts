@@ -102,6 +102,18 @@ describe('buildShoppingList', () => {
     expect(list.basics).toEqual(['olive oil', 'salt'])
   })
 
+  it('does not pluralise a measured-by-weight name (kept in the recipe unit)', () => {
+    // garam masala is bought in grams; a tbsp amount has no density to convert, so it stays
+    // "1 tbsp garam masala" — not "garam masalas".
+    const dict = new Map([
+      ['garam-masala', { id: 'garam-masala', name: 'garam masala', aisle: 'Pantry', purchaseUnit: 'g' }],
+    ])
+    const a = recipe('a', [
+      { rawLabel: '1 tbsp garam masala', name: 'garam masala', qty: 1, unit: 'tbsp', ingredientId: 'garam-masala' },
+    ])
+    expect(labels(buildShoppingList([a], 2, dict))).toContain('1 tbsp garam masala')
+  })
+
   it('records how many recipes contribute to a merged line', () => {
     const a = recipe('a', [{ rawLabel: '2 tbsp soy sauce', name: 'soy sauce', qty: 2, unit: 'tbsp', ingredientId: 'soy-sauce' }])
     const b = recipe('b', [{ rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp', ingredientId: 'soy-sauce' }])

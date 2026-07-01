@@ -174,8 +174,9 @@ export function buildShoppingList(
 
 function formatLine(def: IngredientDef, qty: number, unitId: string): ShopLine {
   const unit = getUnit(unitId)
-  const name =
-    unit.dimension === 'count' ? (qty <= 1 ? def.name : pluralOf(def)) : pluralOf(def)
+  // Only countable things pluralise ("2 limes"); measured-by-weight/volume names are
+  // uncountable in this position ("1 tbsp garam masala", "45 ml soy sauce").
+  const name = unit.dimension === 'count' && qty > 1 ? pluralOf(def) : def.name
   return { key: `${def.id}|${unitId}`, label: `${formatAmount(qty, unitId)} ${name}`.trim(), aisle: def.aisle }
 }
 
