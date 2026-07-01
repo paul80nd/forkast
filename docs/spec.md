@@ -119,7 +119,8 @@ Conceptual; the exact record shapes are the TS types in `src/schema/userData.ts`
 | `plans`         | `{ id, portions, recipeIds[] }` — MVP is a single current week                                                                          |
 | `shopping`      | per-plan `{ checked[], extras[] }` — tick-off state + manual extras; the list itself is derived                                         |
 | `settings`      | key/value rows (e.g. `householdSize`, `dataSource`)                                                                                     |
-| `dictionary`    | the ingredient dictionary — seeded from the bundled default, then grown by **lazy binding at shopping time**; rides along in the export |
+| `dictionary`    | the ingredient dictionary — seeded from the bundled default, then grown by **lazy binding at shopping time**; rides along in the export; see [`shop-spec.md`](shop-spec.md) |
+| `bindings`      | lazy shopping-time `name → ingredientId` bindings — keyed on ingredient name (not source id); see [`shop-spec.md`](shop-spec.md)         |
 | `variantGroups` | recipe groups (variants/duplicates) — see [`groups-spec.md`](groups-spec.md)                                                             |
 
 ### Rating semantics (the household's sticky-note system, digitised)
@@ -143,7 +144,8 @@ Conceptual; the exact record shapes are the TS types in `src/schema/userData.ts`
    recently" hint so variety is eyeballable.
 5. **Shopping list** — parse + **merge** ingredients across the plan, **scale**
    to portions, group by aisle, list `basics` separately as "assumed in
-   cupboard", tick off, add manual extras.
+   cupboard", tick off, add manual extras, and **bind ingredients to the
+   dictionary at shopping time** so they merge. See [`shop-spec.md`](shop-spec.md).
 6. **Mark as cooked** (date) — builds history from day one.
 7. **Export / Import** user data (backup/restore).
 
