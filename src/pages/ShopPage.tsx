@@ -92,32 +92,36 @@ export function ShopPage() {
       </div>
 
       <div className="mt-4 space-y-6">
-        {list.aisles.map((group) => (
-          <div key={group.aisle}>
-            <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
-              {group.aisle}
-            </h2>
-            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
-              {group.lines.map((line) => (
-                <CheckRow
-                  key={line.key}
-                  label={line.label}
-                  detail={line.detail}
-                  recipeCount={line.recipeCount}
-                  checked={checked.has(line.key)}
-                  onToggle={() => toggleChecked(line.key)}
-                />
-              ))}
-            </ul>
-          </div>
-        ))}
+        {/* Aisle buy-list: on wide screens the cards flow into two columns so the
+            horizontal space is used instead of one tall single column. */}
+        <div className="lg:columns-2 lg:gap-6">
+          {list.aisles.map((group) => (
+            <div key={group.aisle} className="mb-6 break-inside-avoid last:mb-0">
+              <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+                {group.aisle}
+              </h2>
+              <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
+                {group.lines.map((line) => (
+                  <CheckRow
+                    key={line.key}
+                    label={line.label}
+                    detail={line.detail}
+                    recipeCount={line.recipeCount}
+                    checked={checked.has(line.key)}
+                    onToggle={() => toggleChecked(line.key)}
+                  />
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
 
         {list.unmatched.length > 0 && (
           <div>
             <h2 className="text-xs font-semibold tracking-wide text-amber-600 uppercase">
               Check these <span className="font-normal normal-case text-amber-500">· bind to merge across recipes</span>
             </h2>
-            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-amber-200 bg-amber-50">
+            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-amber-200 bg-amber-50 lg:columns-2 lg:gap-6">
               {list.unmatched.map((line) => (
                 <UnmatchedRow
                   key={line.key}
@@ -287,7 +291,7 @@ function UnmatchedRow({
 }) {
   const [open, setOpen] = useState(false)
   return (
-    <li className="px-3 py-2">
+    <li className="px-3 py-2 break-inside-avoid">
       <div className="flex items-center gap-3">
         <label className="flex flex-1 cursor-pointer items-center gap-3 select-none">
           <input
