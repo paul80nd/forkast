@@ -54,11 +54,19 @@ export async function unbind(name: string): Promise<void> {
   await db.bindings.delete(normalizeName(name))
 }
 
-/** Set (or clear) a dictionary ingredient's density, so spoon amounts convert to its buy unit. */
-export async function setIngredientDensity(id: string, gPerMl: number | undefined): Promise<void> {
+/** Patch a dictionary ingredient in place (aisle, purchase unit, density, …). */
+export async function updateIngredient(
+  id: string,
+  patch: Partial<Omit<IngredientDef, 'id'>>,
+): Promise<void> {
   const def = await db.dictionary.get(id)
   if (!def) return
-  await db.dictionary.put({ ...def, densityGPerMl: gPerMl })
+  await db.dictionary.put({ ...def, ...patch })
+}
+
+/** Set (or clear) a dictionary ingredient's density, so spoon amounts convert to its buy unit. */
+export async function setIngredientDensity(id: string, gPerMl: number | undefined): Promise<void> {
+  await updateIngredient(id, { densityGPerMl: gPerMl })
 }
 
 /** URL/id-safe slug from a name, e.g. "Chicken Thighs" → "chicken-thighs". */
