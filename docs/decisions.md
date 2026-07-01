@@ -8,6 +8,20 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-07-01 — Lazy ingredient binding keys on ingredient *name*, not source id
+
+Shopping-time binding maps an ingredient to a dictionary entry so it merges across the plan.
+The binding is keyed on the **normalised ingredient name**, not the finer-grained source id
+(`sourceRef`), even though the schema carries `sourceRef` as "a stable id so one match reuses
+across recipes". *Why:* on the real catalogue every line has a `sourceRef`, but a single name
+(e.g. "white basmati rice") spans **up to ~10 distinct source ids** (207 names span >1), while
+each source id maps to exactly one name. Binding by source id would force the user to bind the
+same ingredient many times to merge it; binding by name merges it in one action and matches the
+level the shopping list already groups on. Bindings live in a `bindings` table (name →
+ingredientId) resolved at list-build time — recipes are **not** mutated, so bindings survive a
+re-import and ride along in the backup. The dictionary moved from a static-only list into a
+seeded, growable `dictionary` table (grows via create-at-shopping-time).
+
 ## 2026-06-30 — Assisted planner: greedy weighted fill, group-aware, propose-then-accept
 
 The "suggest a varied week" suggester (designed in [`plan-suggest-spec.md`](plan-suggest-spec.md))

@@ -2,6 +2,19 @@
 // (see src/app/backup.ts). Kept separate from the read-only Recipe reference data.
 
 import type { Recipe } from './recipe'
+import type { IngredientDef } from '../data/ingredients'
+
+/**
+ * A lazy shopping-time binding: an ingredient *name* (as written on recipe lines) resolved
+ * to a canonical dictionary entry. Keyed by name — not the finer-grained source id — because
+ * that is the level the shopping list merges on (one name may span many source ids). One
+ * binding therefore merges every line of that name across the plan.
+ */
+export interface Binding {
+  /** Normalised ingredient name (see `normalizeName` in src/lib/shopping.ts). */
+  name: string
+  ingredientId: string
+}
 
 /** Household sticky-note semantics: 5 favourite · 4 nice · 3 variety-only · 1-2 bin. */
 export type Stars = 1 | 2 | 3 | 4 | 5
@@ -91,7 +104,7 @@ export const DEFAULT_SETTINGS: Settings = {
  * (there are no tombstones). Open restores by replacing all data wholesale.
  */
 export interface BackupSnapshot {
-  version: 2
+  version: 3
   exportedAt: string
   recipes: Recipe[]
   userData: UserRecipeData[]
@@ -99,6 +112,10 @@ export interface BackupSnapshot {
   plans: WeekPlan[]
   shopping: ShoppingState[]
   variantGroups: VariantGroup[]
+  /** The ingredient dictionary — seeded default plus any user-created entries. */
+  dictionary: IngredientDef[]
+  /** Lazy shopping-time name→ingredient bindings. */
+  bindings: Binding[]
   /** Raw key/value settings rows (dataSource, demoVersion, householdSize, …). */
   settings: SettingRow[]
 }

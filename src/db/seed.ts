@@ -1,5 +1,6 @@
 import { db } from './db'
 import { resolveAsset } from '../lib/assets'
+import { INGREDIENTS } from '../data/ingredients'
 import type { RecipeDataset } from '../schema/recipe'
 
 // Bump when the bundled demo dataset changes so demo users auto-refresh.
@@ -32,4 +33,15 @@ export async function seedDemoIfEmpty(): Promise<void> {
   if (source === 'user') return
   const version = (await db.settings.get('demoVersion'))?.value
   if (version !== DEMO_VERSION) await importDemo()
+}
+
+/**
+ * Seed the ingredient dictionary with the built-in defaults on first run. The dictionary is
+ * generic knowledge (no provider data) and grows in-app via lazy binding, so seed only when
+ * empty — never clobber a grown or restored dictionary.
+ */
+export async function seedDictionaryIfEmpty(): Promise<void> {
+  if ((await db.dictionary.count()) === 0) {
+    await db.dictionary.bulkPut(INGREDIENTS)
+  }
 }

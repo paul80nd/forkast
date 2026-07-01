@@ -4,7 +4,7 @@ import type { BackupSnapshot } from '../schema/userData'
 
 function makeSnapshot(over: Partial<BackupSnapshot> = {}): BackupSnapshot {
   return {
-    version: 2,
+    version: 3,
     exportedAt: '2026-06-29T12:00:00.000Z',
     recipes: [
       {
@@ -28,6 +28,8 @@ function makeSnapshot(over: Partial<BackupSnapshot> = {}): BackupSnapshot {
     plans: [{ id: 'current', portions: 2, recipeIds: ['r1'] }],
     shopping: [{ id: 'current', checked: [], extras: [] }],
     variantGroups: [],
+    dictionary: [{ id: 'lime', name: 'lime', plural: 'limes', aisle: 'Produce', purchaseUnit: 'each' }],
+    bindings: [{ name: 'lime', ingredientId: 'lime' }],
     settings: [{ key: 'dataSource', value: 'user' }],
     ...over,
   }
@@ -59,13 +61,16 @@ describe('parseBackup', () => {
     expect(() => parseBackup('{ not json')).toThrow(/JSON/)
   })
 
-  it('defaults missing optional tables to empty arrays', () => {
+  it('accepts a legacy v2 file, defaulting the dictionary + bindings to empty', () => {
     const { snapshot } = parseBackup({ version: 2, recipes: [] })
+    expect(snapshot.version).toBe(3)
     expect(snapshot.userData).toEqual([])
     expect(snapshot.cooked).toEqual([])
     expect(snapshot.plans).toEqual([])
     expect(snapshot.shopping).toEqual([])
     expect(snapshot.variantGroups).toEqual([])
+    expect(snapshot.dictionary).toEqual([])
+    expect(snapshot.bindings).toEqual([])
     expect(snapshot.settings).toEqual([])
   })
 
