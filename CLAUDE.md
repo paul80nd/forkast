@@ -19,6 +19,8 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
 - [`docs/spec.md`](docs/spec.md) — whole-app design, persistence, data model, MVP scope.
 - Per-feature specs (live in `docs/`):
   - [`docs/curate-spec.md`](docs/curate-spec.md) — Curate (★ rating + triage).
+  - [`docs/shop-spec.md`](docs/shop-spec.md) — Shop (merged list + lazy ingredient binding at
+    shopping time: dictionary, name bindings, match, density).
   - [`docs/plan-suggest-spec.md`](docs/plan-suggest-spec.md) — assisted "suggest a varied week"
     (design only, not built).
   - [`docs/refine-spec.md`](docs/refine-spec.md) — Refine umbrella (the tidying section +
