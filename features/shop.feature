@@ -23,7 +23,24 @@ Feature: Shopping list
     Given a recipe "r1" with unbound "mystery herb"
     And recipes "r1" are on the plan for 2
     When I build the shopping list
-    Then the unmatched items contain "1 g mystery herb"
+    Then the unmatched items contain "1 mystery herb"
+
+  Scenario: Binding an unbound ingredient makes it merge
+    Given a recipe "r1" with unbound "lime"
+    And a recipe "r2" with unbound "lime"
+    And recipes "r1, r2" are on the plan for 2
+    And I bind "lime" to "lime"
+    When I build the shopping list
+    Then the list contains "2 limes"
+    And the unmatched items do not contain "lime"
+
+  Scenario: Creating a new ingredient and binding to it merges the lines
+    Given a recipe "r1" with unbound "gochujang"
+    And recipes "r1" are on the plan for 2
+    And I create an ingredient "gochujang" in aisle "Pantry" bought in "g"
+    And I bind "gochujang" to that new ingredient
+    When I build the shopping list
+    Then the list has an aisle "Pantry"
 
   Scenario: Ticking an item off persists
     Given a recipe "r1" with "1 lime" bound to "lime"

@@ -8,10 +8,13 @@ import {
   toggleChecked,
   addExtra,
   removeExtra,
+  setBinding,
+  createIngredient,
 } from '../../src/app/shopping'
 import { makeRecipe } from '../../test/factories'
 import type { ShoppingList } from '../../src/lib/shopping'
 import type { Ingredient } from '../../src/schema/recipe'
+import type { IngredientDef } from '../../src/data/ingredients'
 
 const feature = await loadFeature('features/shop.feature')
 
@@ -31,10 +34,17 @@ function labels(list: ShoppingList): string[] {
 
 describeFeature(feature, ({ Background, Scenario }) => {
   let list: ShoppingList
+  let created: IngredientDef
 
   Background(({ Given }) => {
     Given('a clean collection', async () => {
-      await Promise.all([db.recipes.clear(), db.plans.clear(), db.shopping.clear()])
+      await Promise.all([
+        db.recipes.clear(),
+        db.plans.clear(),
+        db.shopping.clear(),
+        db.dictionary.clear(),
+        db.bindings.clear(),
+      ])
     })
   })
 
@@ -44,7 +54,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     await db.recipes.put(makeRecipe({ id, ingredients: [ing] }))
   }
   const unboundRecipe = async (_: unknown, id: string, name: string) => {
-    const ing: Ingredient = { rawLabel: `1 g ${name}`, name, qty: 1, unit: 'g' }
+    const ing: Ingredient = { rawLabel: `1 ${name}`, name, qty: 1 }
     await db.recipes.put(makeRecipe({ id, ingredients: [ing] }))
   }
   const onPlan = async (_: unknown, list: string, portions: number) => {
@@ -59,6 +69,17 @@ describeFeature(feature, ({ Background, Scenario }) => {
   }
   const unmatchedContains = (_: unknown, label: string) => {
     expect(list.unmatched.map((l) => l.label)).toContain(label)
+  }
+  const unmatchedNotContains = (_: unknown, sub: string) => {
+    expect(list.unmatched.some((l) => l.label.includes(sub))).toBe(false)
+  }
+  const bind = async (_: unknown, name: string, ingId: string) => setBinding(name, ingId)
+  const createIng = async (_: unknown, name: string, aisle: string, unit: string) => {
+    created = await createIngredient({ name, aisle, purchaseUnit: unit })
+  }
+  const bindToNew = async (_: unknown, name: string) => setBinding(name, created.id)
+  const hasAisle = (_: unknown, aisle: string) => {
+    expect(list.aisles.some((a) => a.aisle === aisle)).toBe(true)
   }
 
   Scenario('Ingredients merge across the planned recipes', ({ Given, And, When, Then }) => {
@@ -81,6 +102,25 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('recipes {string} are on the plan for {int}', onPlan)
     When('I build the shopping list', build)
     Then('the unmatched items contain {string}', unmatchedContains)
+  })
+
+  Scenario('Binding an unbound ingredient makes it merge', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} with unbound {string}', unboundRecipe)
+    And('a recipe {string} with unbound {string}', unboundRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    And('I bind {string} to {string}', bind)
+    When('I build the shopping list', build)
+    Then('the list contains {string}', contains)
+    And('the unmatched items do not contain {string}', unmatchedNotContains)
+  })
+
+  Scenario('Creating a new ingredient and binding to it merges the lines', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} with unbound {string}', unboundRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    And('I create an ingredient {string} in aisle {string} bought in {string}', createIng)
+    And('I bind {string} to that new ingredient', bindToNew)
+    When('I build the shopping list', build)
+    Then('the list has an aisle {string}', hasAisle)
   })
 
   Scenario('Ticking an item off persists', ({ Given, And, When, Then }) => {
