@@ -5,7 +5,6 @@ import { db } from '../db/db'
 import { CURRENT_PLAN_ID } from '../lib/plan'
 import {
   getPlanShoppingList,
-  getBindingUsage,
   toggleChecked,
   clearChecked,
   addExtra,
@@ -29,7 +28,6 @@ export function ShopPage() {
   const list = useLiveQuery(() => getPlanShoppingList(), [])
   const dict = useLiveQuery(() => db.dictionary.toArray(), [])
   const bindings = useLiveQuery(() => db.bindings.toArray(), [])
-  const usage = useLiveQuery(() => getBindingUsage(), [])
   const [extraText, setExtraText] = useState('')
 
   const portions = plan?.portions ?? 2
@@ -88,6 +86,7 @@ export function ShopPage() {
                   key={line.key}
                   label={line.label}
                   detail={line.detail}
+                  recipeCount={line.recipeCount}
                   checked={checked.has(line.key)}
                   onToggle={() => toggleChecked(line.key)}
                 />
@@ -120,45 +119,24 @@ export function ShopPage() {
               Your bindings ({bindings.length})
             </summary>
             <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
-              {bindings.map((b) => {
-                const u = usage?.get(b.name)
-                return (
-                  <li key={b.name} className="flex items-center justify-between gap-3 px-3 py-1.5">
-                    <span className="min-w-0 text-stone-600">
-                      {b.name}{' '}
-                      <span className="text-stone-400">
-                        → {dict?.find((d) => d.id === b.ingredientId)?.name ?? b.ingredientId}
-                      </span>
+              {bindings.map((b) => (
+                <li key={b.name} className="flex items-center justify-between gap-3 px-3 py-1.5">
+                  <span className="min-w-0 text-stone-600">
+                    {b.name}{' '}
+                    <span className="text-stone-400">
+                      → {dict?.find((d) => d.id === b.ingredientId)?.name ?? b.ingredientId}
                     </span>
-                    <div className="flex shrink-0 items-center gap-3">
-                      {u && u.recipeCount > 0 ? (
-                        <span className="text-right text-xs text-stone-500">
-                          {u.total && <span className="font-medium text-stone-600">{u.total}</span>}
-                          {u.breakdown && (
-                            <span className="text-stone-400">
-                              {u.total ? ' · ' : ''}
-                              {u.breakdown}
-                            </span>
-                          )}
-                          <span className="text-stone-400">
-                            {' '}· {u.recipeCount} {u.recipeCount === 1 ? 'recipe' : 'recipes'}
-                          </span>
-                        </span>
-                      ) : (
-                        <span className="text-xs text-stone-300">not in this week</span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => void unbind(b.name)}
-                        className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
-                        title="Unbind — back to verbatim"
-                      >
-                        Unbind
-                      </button>
-                    </div>
-                  </li>
-                )
-              })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void unbind(b.name)}
+                    className="shrink-0 rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
+                    title="Unbind — back to verbatim"
+                  >
+                    Unbind
+                  </button>
+                </li>
+              ))}
             </ul>
           </details>
         )}
@@ -238,9 +216,19 @@ export function ShopPage() {
   )
 }
 
+// Compose the merge subline: recipe-unit breakdown and/or "from N recipes" (only when a line
+// actually combines 2+ recipes) — so you can spot-check the amounts against the recipes.
+function mergeSubline(detail?: string, recipeCount?: number): string | undefined {
+  const parts: string[] = []
+  if (detail) parts.push(detail)
+  if (recipeCount && recipeCount > 1) parts.push(`from ${recipeCount} recipes`)
+  return parts.length ? parts.join(' · ') : undefined
+}
+
 function CheckRow({
   label,
   detail,
+  recipeCount,
   checked,
   onToggle,
   onRemove,
@@ -248,11 +236,13 @@ function CheckRow({
 }: {
   label: string
   detail?: string
+  recipeCount?: number
   checked: boolean
   onToggle: () => void
   onRemove?: () => void
   muted?: boolean
 }) {
+  const subline = mergeSubline(detail, recipeCount)
   return (
     <li className="flex items-center gap-3 px-3 py-2">
       <label className="flex flex-1 cursor-pointer items-center gap-3 select-none">
@@ -270,9 +260,9 @@ function CheckRow({
           >
             {label}
           </span>
-          {detail && (
+          {subline && (
             <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-400'}`}>
-              {detail}
+              {subline}
             </span>
           )}
         </span>
@@ -313,8 +303,15 @@ function UnmatchedRow({
             onChange={() => toggleChecked(line.key)}
             className="size-4 accent-orange-500"
           />
-          <span className={checked ? 'text-stone-400 line-through' : 'text-stone-800'}>
-            {line.label}
+          <span className="min-w-0">
+            <span className={checked ? 'text-stone-400 line-through' : 'text-stone-800'}>
+              {line.label}
+            </span>
+            {line.recipeCount != null && line.recipeCount > 1 && (
+              <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-400'}`}>
+                from {line.recipeCount} recipes
+              </span>
+            )}
           </span>
         </label>
         {line.bindName && (

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildShoppingList, bindingUsage } from './shopping'
-import { INGREDIENTS_BY_ID } from '../data/ingredients'
+import { buildShoppingList } from './shopping'
 import type { Recipe, Ingredient } from '../schema/recipe'
 
 function recipe(id: string, ingredients: Ingredient[], extra?: Partial<Recipe>): Recipe {
@@ -102,38 +101,13 @@ describe('buildShoppingList', () => {
     expect(list.aisles.map((g) => g.aisle)).toEqual(['Produce', 'Meat & Fish'])
     expect(list.basics).toEqual(['olive oil', 'salt'])
   })
-})
 
-describe('bindingUsage', () => {
-  const soySauce = INGREDIENTS_BY_ID.get('soy-sauce')
-
-  it('counts the recipes using an ingredient name and breaks down the amounts', () => {
-    const a = recipe('a', [{ rawLabel: '3 tsp soy sauce', name: 'soy sauce', qty: 3, unit: 'tsp' }])
-    const b = recipe('b', [{ rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp' }])
-    const usage = bindingUsage([a, b], 2, 'Soy Sauce', soySauce)
-    expect(usage.recipeCount).toBe(2)
-    expect(usage.breakdown).toBe('3 tsp + 1 tbsp')
-    // 3 tsp (15 ml) + 1 tbsp (15 ml) = 30 ml, soy sauce is bought in ml
-    expect(usage.total).toBe('30 ml')
-  })
-
-  it('matches names case/space-insensitively and scales to portions', () => {
-    const a = recipe('a', [{ rawLabel: '2 tbsp soy sauce', name: 'Soy Sauce', qty: 2, unit: 'tbsp' }])
-    const usage = bindingUsage([a], 4, 'soy sauce', soySauce) // serves 2 -> factor 2
-    expect(usage.recipeCount).toBe(1)
-    expect(usage.breakdown).toBe('4 tbsp')
-  })
-
-  it('omits the total when the amounts do not convert to the purchase unit', () => {
-    // curry powder is bought in grams with no density -> tsp cannot convert
-    const a = recipe('a', [{ rawLabel: '2 tsp curry powder', name: 'curry powder', qty: 2, unit: 'tsp' }])
-    const usage = bindingUsage([a], 2, 'curry powder', INGREDIENTS_BY_ID.get('curry-powder'))
-    expect(usage.breakdown).toBe('2 tsp')
-    expect(usage.total).toBeUndefined()
-  })
-
-  it('reports zero for an ingredient no planned recipe uses', () => {
-    const a = recipe('a', [{ rawLabel: '1 lime', name: 'lime', qty: 1 }])
-    expect(bindingUsage([a], 2, 'soy sauce', soySauce).recipeCount).toBe(0)
+  it('records how many recipes contribute to a merged line', () => {
+    const a = recipe('a', [{ rawLabel: '2 tbsp soy sauce', name: 'soy sauce', qty: 2, unit: 'tbsp', ingredientId: 'soy-sauce' }])
+    const b = recipe('b', [{ rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp', ingredientId: 'soy-sauce' }])
+    const line = findLine(buildShoppingList([a, b], 2), '45 ml soy sauce')
+    expect(line?.recipeCount).toBe(2)
+    // ...and keeps the recipe-unit breakdown for spot-checking against the recipes.
+    expect(line?.detail).toBe('3 tbsp')
   })
 })
