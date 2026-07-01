@@ -30,6 +30,8 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
     [`refine-cleanup-spec.md`](docs/refine-cleanup-spec.md).
   - [`docs/groups-spec.md`](docs/groups-spec.md) — Recipe Groups *data feature* (the
     `variantGroups` model + "see also"; the Refine UI that edits it is in refine-groups-spec).
+  - [`docs/variants-spec.md`](docs/variants-spec.md) — **draft** — one dish, many swaps: import-seeded
+    `variantGroupKey`/lead, one card per dish in Browse, choose the swap at plan time (parallel to Groups).
 - [`docs/decisions.md`](docs/decisions.md) — the cross-cutting decision trail ("how we got
   here"). Add an entry when you make an architectural call.
 - `features/*.feature` (+ `features/steps/`) — behaviour, run as tests.
