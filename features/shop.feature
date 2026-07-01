@@ -68,6 +68,13 @@ Feature: Shopping list
     When I build the shopping list
     Then the line "soy sauce · 45 ml" combines 2 recipes
 
+  Scenario: A stale plan id doesn't count as a meal
+    Given a recipe "r1" with "1 lime" bound to "lime"
+    And recipes "r1, ghost" are on the plan for 2
+    When I build the shopping list
+    Then the list has 1 meals
+    And the list contains "lime · × 1"
+
   Scenario: Ticking an item off persists
     Given a recipe "r1" with "1 lime" bound to "lime"
     And recipes "r1" are on the plan for 2

@@ -45,11 +45,14 @@ export function ShopPage() {
   const [extraText, setExtraText] = useState('')
 
   const portions = plan?.portions ?? 2
-  const plannedCount = plan?.recipeIds?.length ?? 0
 
   if (plan === undefined || list === undefined) return <p className="text-stone-500">Loading…</p>
 
-  if (plannedCount === 0) {
+  // Meals = recipes actually on the list; a plan can hold stale ids (e.g. recipes deleted by a
+  // re-import) that no longer resolve, so count what the list is built from, not the raw ids.
+  const mealCount = list.mealCount
+
+  if (mealCount === 0) {
     return (
       <section>
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
@@ -74,7 +77,7 @@ export function ShopPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
         <div className="flex items-center gap-3 text-sm text-stone-500">
           <span>
-            {itemCount} items · {plannedCount} meals · for {portions}
+            {itemCount} items · {mealCount} meals · for {portions}
           </span>
           {checked.size > 0 && (
             <button
