@@ -26,7 +26,11 @@ For each ingredient line:
 - **Merge + convert**: sum a resolved ingredient in its **purchase unit** where the recipe unit
   converts to it (free within a dimension; volume↔mass needs a **density** — see below); where
   it doesn't convert, keep the recipe-unit amount as its own line.
-- Lines are grouped by **aisle** (`AISLE_ORDER`, unknown aisles fall to the end).
+- Lines are grouped by **aisle** (`AISLE_ORDER`, unknown aisles fall to the end) and sorted
+  **alphabetically by name** within each aisle.
+
+Each line reads **name-first** so it scans and sorts by ingredient: `dried chilli flakes · 11 g`,
+`spring onions · × 2` (count uses `× N`; weight/volume uses the amount + unit).
 
 Alongside the aisle groups the list carries: **`unmatched`** (verbatim, un-merged — the bind
 targets), **`unquantified`** (no parseable quantity, e.g. "to taste"), and **`basics`**

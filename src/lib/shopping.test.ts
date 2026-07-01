@@ -37,7 +37,7 @@ describe('buildShoppingList', () => {
   it('merges the same ingredient across recipes (count)', () => {
     const a = recipe('a', [{ rawLabel: '1 lime', name: 'lime', qty: 1, ingredientId: 'lime' }])
     const b = recipe('b', [{ rawLabel: '1 lime', name: 'lime', qty: 1, ingredientId: 'lime' }])
-    expect(labels(buildShoppingList([a, b], 2))).toContain('2 limes')
+    expect(labels(buildShoppingList([a, b], 2))).toContain('limes · × 2')
   })
 
   it('converts recipe units to the purchase unit and sums (tbsp -> ml)', () => {
@@ -45,20 +45,20 @@ describe('buildShoppingList', () => {
     const b = recipe('b', [{ rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp', ingredientId: 'soy-sauce' }])
     // (2 + 1) tbsp = 45 ml
     const list = buildShoppingList([a, b], 2)
-    expect(labels(list)).toContain('45 ml soy sauce')
+    expect(labels(list)).toContain('soy sauce · 45 ml')
     // ...and the breakdown shows what it's made of, grouped by recipe unit.
-    expect(findLine(list, '45 ml soy sauce')?.detail).toBe('3 tbsp')
+    expect(findLine(list, 'soy sauce · 45 ml')?.detail).toBe('3 tbsp')
   })
 
   it('omits the detail when it would just restate the line', () => {
     const a = recipe('a', [{ rawLabel: '800g chickpeas', name: 'chickpeas', qty: 800, unit: 'g', ingredientId: 'chickpeas' }])
-    expect(findLine(buildShoppingList([a], 2), '800 g chickpeas')?.detail).toBeUndefined()
+    expect(findLine(buildShoppingList([a], 2), 'chickpeas · 800 g')?.detail).toBeUndefined()
   })
 
   it('keeps the recipe unit when there is no natural conversion (tsp -> g)', () => {
     const a = recipe('a', [{ rawLabel: '2 tsp curry powder', name: 'curry powder', qty: 2, unit: 'tsp', ingredientId: 'curry-powder' }])
     // curry powder is bought in grams, no density -> stays in tsp
-    expect(labels(buildShoppingList([a], 2))).toContain('2 tsp curry powder')
+    expect(labels(buildShoppingList([a], 2))).toContain('curry powder · 2 tsp')
   })
 
   it('scales quantities to the chosen portions', () => {
@@ -67,13 +67,13 @@ describe('buildShoppingList', () => {
       { rawLabel: '800g chickpeas', name: 'chickpeas', qty: 800, unit: 'g', ingredientId: 'chickpeas' },
     ])
     const list = labels(buildShoppingList([a], 4)) // serves 2 -> factor 2
-    expect(list).toContain('4 garlic cloves')
-    expect(list).toContain('1600 g chickpeas')
+    expect(list).toContain('garlic cloves · × 4')
+    expect(list).toContain('chickpeas · 1600 g')
   })
 
   it('uses the singular name for a single countable item', () => {
     const a = recipe('a', [{ rawLabel: '1 carrot', name: 'carrot', qty: 1, ingredientId: 'carrot' }])
-    expect(labels(buildShoppingList([a], 2))).toContain('1 carrot')
+    expect(labels(buildShoppingList([a], 2))).toContain('carrot · × 1')
   })
 
   it('rounds countable quantities up (you buy whole things)', () => {
@@ -81,13 +81,13 @@ describe('buildShoppingList', () => {
     const a = recipe('a', [{ rawLabel: '1 carrot', name: 'carrot', qty: 1, ingredientId: 'carrot' }], {
       serves: 2,
     })
-    expect(labels(buildShoppingList([a], 3))).toContain('2 carrots')
+    expect(labels(buildShoppingList([a], 3))).toContain('carrots · × 2')
   })
 
   it('lists unmatched ingredients verbatim rather than dropping them', () => {
     const a = recipe('a', [{ rawLabel: '1 sprig mystery herb', name: 'mystery herb', qty: 1, unit: 'g' }])
     const list = buildShoppingList([a], 2)
-    expect(list.unmatched.map((l) => l.label)).toContain('1 g mystery herb')
+    expect(list.unmatched.map((l) => l.label)).toContain('mystery herb · 1 g')
   })
 
   it('groups lines by aisle and dedupes store-cupboard basics', () => {
@@ -111,7 +111,7 @@ describe('buildShoppingList', () => {
     const a = recipe('a', [
       { rawLabel: '1 tbsp garam masala', name: 'garam masala', qty: 1, unit: 'tbsp', ingredientId: 'garam-masala' },
     ])
-    expect(labels(buildShoppingList([a], 2, dict))).toContain('1 tbsp garam masala')
+    expect(labels(buildShoppingList([a], 2, dict))).toContain('garam masala · 1 tbsp')
   })
 
   it('converts a spoon amount to the buy unit when a density is set, keeping the original in detail', () => {
@@ -123,14 +123,14 @@ describe('buildShoppingList', () => {
     ])
     const list = buildShoppingList([a], 2, dict)
     // 1 tbsp = 15 ml × 0.5 g/ml = 7.5 g
-    expect(labels(list)).toContain('7.5 g garam masala')
-    expect(findLine(list, '7.5 g garam masala')?.detail).toBe('1 tbsp')
+    expect(labels(list)).toContain('garam masala · 7.5 g')
+    expect(findLine(list, 'garam masala · 7.5 g')?.detail).toBe('1 tbsp')
   })
 
   it('records how many recipes contribute to a merged line', () => {
     const a = recipe('a', [{ rawLabel: '2 tbsp soy sauce', name: 'soy sauce', qty: 2, unit: 'tbsp', ingredientId: 'soy-sauce' }])
     const b = recipe('b', [{ rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp', ingredientId: 'soy-sauce' }])
-    const line = findLine(buildShoppingList([a, b], 2), '45 ml soy sauce')
+    const line = findLine(buildShoppingList([a, b], 2), 'soy sauce · 45 ml')
     expect(line?.recipeCount).toBe(2)
     // ...and keeps the recipe-unit breakdown for spot-checking against the recipes.
     expect(line?.detail).toBe('3 tbsp')
