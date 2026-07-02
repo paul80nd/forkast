@@ -140,18 +140,24 @@ describe('parseRecipeDataset', () => {
         mainProtein: 'beef',
         sourceUrl: 'https://example.test/r/beef-noodles',
         recipeCode: 'R1196',
+        variantGroupKey: 'abc123',
+        variantGroupLead: true,
         nutrition,
       }),
     ]).recipes[0]
     expect(withOpt.mainProtein).toBe('beef')
     expect(withOpt.sourceUrl).toBe('https://example.test/r/beef-noodles')
     expect(withOpt.recipeCode).toBe('R1196')
+    expect(withOpt.variantGroupKey).toBe('abc123')
+    expect(withOpt.variantGroupLead).toBe(true)
     expect(withOpt.nutrition).toEqual(nutrition)
 
     const withoutOpt = parseRecipeDataset([raw({ mainProtein: undefined })]).recipes[0]
     expect('mainProtein' in withoutOpt).toBe(false)
     expect('sourceUrl' in withoutOpt).toBe(false)
     expect('recipeCode' in withoutOpt).toBe(false)
+    expect('variantGroupKey' in withoutOpt).toBe(false)
+    expect('variantGroupLead' in withoutOpt).toBe(false)
     expect('nutrition' in withoutOpt).toBe(false)
   })
 })

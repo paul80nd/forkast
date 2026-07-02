@@ -99,6 +99,8 @@ no separate review pass** — the SPA owns ingredient identity, lazily.
 | `image` | local filename under `/images` |
 | `sourceUrl` | provenance (private datasets only) |
 | `recipeCode?` | printed recipe-card code if the source exposes one (e.g. `R1196`); best-effort, set at import only when confidently attributable |
+| `variantGroupKey?` | shared opaque key marking recipes as variants of one dish (protein/carb/side swap); derivation is a private import concern — see [`variants-spec.md`](variants-spec.md) |
+| `variantGroupLead?` | `true` on one member per key — the import's best-guess origin the app leads with (user-overridable) |
 | `cuisine` | the single browse facet (from source); `tags[]` carries derived diet/effort labels |
 | `allergens[]` | from source, for reference/display |
 | `prepTime` | prep+cook minutes for the recipe's base `serves` |

@@ -99,6 +99,9 @@ function normaliseRecipe(raw: unknown, index: number): Recipe | string {
   if (sourceUrl) recipe.sourceUrl = sourceUrl
   const recipeCode = asString(raw.recipeCode)
   if (recipeCode) recipe.recipeCode = recipeCode
+  const variantGroupKey = asString(raw.variantGroupKey)
+  if (variantGroupKey) recipe.variantGroupKey = variantGroupKey
+  if (raw.variantGroupLead === true) recipe.variantGroupLead = true
   const mainProtein = asString(raw.mainProtein)
   if (mainProtein) recipe.mainProtein = mainProtein
   if (isObject(raw.nutrition)) {

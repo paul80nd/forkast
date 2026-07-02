@@ -57,6 +57,13 @@ export interface Recipe {
   /** Printed recipe-card code, if the source exposes one (e.g. "R1196"). Optional and
    *  best-effort — set at import only when confidently attributable to this recipe. */
   recipeCode?: string
+  /** Non-empty when this recipe is one of several variants of the same dish (a protein /
+   *  carb / side swap). Recipes sharing a key are the same dish; how a provider derives the
+   *  key is a private import concern. Absent on standalone recipes. */
+  variantGroupKey?: string
+  /** True on exactly one member of a variant group — the origin the app leads with and
+   *  pre-selects. An import-provided best guess; a user override is separate user data. */
+  variantGroupLead?: boolean
 
   /** The single browse facet, e.g. "Italian" — typically the source's cuisine label. */
   cuisine: string
