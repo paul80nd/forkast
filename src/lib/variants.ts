@@ -1,4 +1,5 @@
 import type { Recipe } from '../schema/recipe'
+import type { VariantOverride } from '../schema/userData'
 
 /** One dish: a lead card plus the variants that swap into it (protein / carb / side). */
 export interface Dish {
@@ -10,33 +11,72 @@ export interface Dish {
   variants: Recipe[]
 }
 
+const leadFirst = (members: Recipe[], lead: Recipe): Recipe[] => [
+  lead,
+  ...members.filter((m) => m.id !== lead.id),
+]
+
 /**
- * Collapse a recipe list to one entry per dish. Recipes sharing a `variantGroupKey` fold
- * into a single {@link Dish} led by the member flagged `variantGroupLead` (falling back to
- * the first member when the lead isn't present). Recipes without a key are standalone
- * dishes. Input order is preserved by each dish's first appearance, so a pre-sorted list
- * stays sorted.
+ * Resolve a recipe list into dishes, honouring user variant overrides on top of the
+ * import-seeded grouping. A recipe named by an override joins that override's dish (led by
+ * its `leadId`), leaving its import group. Every other recipe groups by `variantGroupKey`
+ * (led by the `variantGroupLead` member), and a keyless recipe is its own dish. Input order
+ * is preserved by each dish's first appearance, so a pre-sorted list stays sorted.
  */
-export function collapseVariants(recipes: Recipe[]): Dish[] {
-  const groups = new Map<string, Recipe[]>()
-  const order: string[] = []
-  for (const r of recipes) {
-    // Standalone recipes get a unique key so they never merge with each other.
-    const key = r.variantGroupKey ?? `@${r.id}`
-    if (!groups.has(key)) {
-      groups.set(key, [])
-      order.push(key)
-    }
-    groups.get(key)!.push(r)
+export function resolveDishes(recipes: Recipe[], overrides: VariantOverride[]): Dish[] {
+  const byId = new Map(recipes.map((r) => [r.id, r]))
+  const overrideOf = new Map<string, VariantOverride>()
+  for (const o of overrides) {
+    for (const id of o.recipeIds) if (byId.has(id)) overrideOf.set(id, o)
   }
 
-  return order.map((key) => {
-    const members = groups.get(key)!
-    const leadIdx = members.findIndex((m) => m.variantGroupLead)
-    if (leadIdx <= 0) return { lead: members[0], variants: members }
-    const lead = members[leadIdx]
-    return { lead, variants: [lead, ...members.filter((_, i) => i !== leadIdx)] }
-  })
+  // Bucket the un-overridden recipes by import key in one pass (keeps resolution O(n)).
+  const unpinnedByKey = new Map<string, Recipe[]>()
+  for (const r of recipes) {
+    if (overrideOf.has(r.id) || !r.variantGroupKey) continue
+    if (!unpinnedByKey.has(r.variantGroupKey)) unpinnedByKey.set(r.variantGroupKey, [])
+    unpinnedByKey.get(r.variantGroupKey)!.push(r)
+  }
+
+  const dishes: Dish[] = []
+  const emitted = new Set<string>()
+  for (const r of recipes) {
+    const o = overrideOf.get(r.id)
+    if (o) {
+      if (emitted.has(`o:${o.id}`)) continue
+      emitted.add(`o:${o.id}`)
+      const members = o.recipeIds
+        .map((id) => byId.get(id))
+        .filter((m): m is Recipe => m != null)
+      if (!members.length) continue
+      const lead = members.find((m) => m.id === o.leadId) ?? members[0]
+      dishes.push({ lead, variants: leadFirst(members, lead) })
+    } else if (r.variantGroupKey) {
+      if (emitted.has(`k:${r.variantGroupKey}`)) continue
+      emitted.add(`k:${r.variantGroupKey}`)
+      const members = unpinnedByKey.get(r.variantGroupKey)!
+      const lead = members.find((m) => m.variantGroupLead) ?? members[0]
+      dishes.push({ lead, variants: leadFirst(members, lead) })
+    } else {
+      dishes.push({ lead: r, variants: [r] })
+    }
+  }
+  return dishes
+}
+
+/**
+ * Collapse a recipe list to one entry per dish by the import-seeded grouping only (no user
+ * overrides). Thin wrapper over {@link resolveDishes}; used where overrides don't apply.
+ */
+export function collapseVariants(recipes: Recipe[]): Dish[] {
+  return resolveDishes(recipes, [])
+}
+
+/** Map each recipe id to the number of variants in its dish — for a "N versions" badge. */
+export function dishSizeByRecipe(dishes: Dish[]): Map<string, number> {
+  const sizes = new Map<string, number>()
+  for (const d of dishes) for (const v of d.variants) sizes.set(v.id, d.variants.length)
+  return sizes
 }
 
 /** Total number of variants per `variantGroupKey` across a full recipe set — for a

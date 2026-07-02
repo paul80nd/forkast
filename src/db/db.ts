@@ -8,6 +8,7 @@ import type {
   SettingRow,
   ShoppingState,
   VariantGroup,
+  VariantOverride,
   Binding,
 } from '../schema/userData'
 
@@ -21,6 +22,7 @@ export class ForkastDB extends Dexie {
   settings!: Table<SettingRow, string>
   shopping!: Table<ShoppingState, string>
   variantGroups!: Table<VariantGroup, string>
+  variantOverrides!: Table<VariantOverride, string>
   dictionary!: Table<IngredientDef, string>
   bindings!: Table<Binding, string>
 
@@ -41,6 +43,8 @@ export class ForkastDB extends Dexie {
     this.version(4).stores({ dictionary: 'id, aisle', bindings: 'name' })
     // v5: index variantGroupKey so a recipe's variant siblings look up directly.
     this.version(5).stores({ recipes: 'id, cuisine, mainProtein, variantGroupKey' })
+    // v6: user variant overrides (edits layered over the import-seeded grouping).
+    this.version(6).stores({ variantOverrides: 'id' })
   }
 }
 

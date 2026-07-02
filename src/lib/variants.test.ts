@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { collapseVariants, variantCounts, variantLabel, ingredientDelta } from './variants'
+import {
+  collapseVariants,
+  resolveDishes,
+  dishSizeByRecipe,
+  variantCounts,
+  variantLabel,
+  ingredientDelta,
+} from './variants'
 import type { Recipe } from '../schema/recipe'
+import type { VariantOverride } from '../schema/userData'
 
 function recipe(over: Partial<Recipe> & { id: string }): Recipe {
   return {
@@ -64,6 +72,77 @@ describe('collapseVariants', () => {
     ]
     const dishes = collapseVariants(list)
     expect(dishes.map((d) => d.lead.id)).toEqual(['x', 'white', 'y'])
+  })
+})
+
+describe('resolveDishes (with user overrides)', () => {
+  const override = (id: string, recipeIds: string[], leadId: string): VariantOverride => ({
+    id,
+    recipeIds,
+    leadId,
+  })
+
+  it('with no overrides matches the import-seeded grouping', () => {
+    const list = [
+      recipe({ id: 'white', variantGroupKey: 'k', variantGroupLead: true }),
+      recipe({ id: 'brown', variantGroupKey: 'k' }),
+    ]
+    expect(resolveDishes(list, [])).toEqual(collapseVariants(list))
+  })
+
+  it('merges recipes from different import keys into one overridden dish', () => {
+    const list = [
+      recipe({ id: 'a', variantGroupKey: 'k1', variantGroupLead: true }),
+      recipe({ id: 'b', variantGroupKey: 'k2', variantGroupLead: true }),
+    ]
+    const dishes = resolveDishes(list, [override('o1', ['a', 'b'], 'b')])
+    expect(dishes).toHaveLength(1)
+    expect(dishes[0].lead.id).toBe('b')
+    expect(dishes[0].variants.map((v) => v.id)).toEqual(['b', 'a'])
+  })
+
+  it('re-leads an import group via an override without changing members', () => {
+    const list = [
+      recipe({ id: 'white', variantGroupKey: 'k', variantGroupLead: true }),
+      recipe({ id: 'brown', variantGroupKey: 'k' }),
+    ]
+    const dishes = resolveDishes(list, [override('o1', ['white', 'brown'], 'brown')])
+    expect(dishes).toHaveLength(1)
+    expect(dishes[0].lead.id).toBe('brown')
+  })
+
+  it('detaches a recipe with a single-member override, leaving the rest grouped', () => {
+    const list = [
+      recipe({ id: 'white', variantGroupKey: 'k', variantGroupLead: true }),
+      recipe({ id: 'brown', variantGroupKey: 'k' }),
+      recipe({ id: 'cauli', variantGroupKey: 'k' }),
+    ]
+    const dishes = resolveDishes(list, [override('o1', ['cauli'], 'cauli')])
+    // cauli stands alone; white+brown remain a dish led by the flagged lead.
+    const standalone = dishes.find((d) => d.lead.id === 'cauli')
+    const rest = dishes.find((d) => d.lead.id === 'white')
+    expect(standalone?.variants.map((v) => v.id)).toEqual(['cauli'])
+    expect(rest?.variants.map((v) => v.id)).toEqual(['white', 'brown'])
+  })
+
+  it('ignores override members that are not in the recipe list', () => {
+    const list = [recipe({ id: 'a', variantGroupKey: 'k', variantGroupLead: true })]
+    const dishes = resolveDishes(list, [override('o1', ['a', 'ghost'], 'a')])
+    expect(dishes[0].variants.map((v) => v.id)).toEqual(['a'])
+  })
+})
+
+describe('dishSizeByRecipe', () => {
+  it('maps every recipe id to its dish size', () => {
+    const list = [
+      recipe({ id: 'white', variantGroupKey: 'k', variantGroupLead: true }),
+      recipe({ id: 'brown', variantGroupKey: 'k' }),
+      recipe({ id: 'solo' }),
+    ]
+    const sizes = dishSizeByRecipe(collapseVariants(list))
+    expect(sizes.get('white')).toBe(2)
+    expect(sizes.get('brown')).toBe(2)
+    expect(sizes.get('solo')).toBe(1)
   })
 })
 

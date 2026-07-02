@@ -69,6 +69,23 @@ export interface VariantGroup {
   members: { recipeId: string; label: string }[]
 }
 
+/**
+ * A user's variant edit — an authoritative override of the import-seeded grouping
+ * (`Recipe.variantGroupKey`/`variantGroupLead`). User data: precious, exported with the
+ * backup, survives re-import. A recipe belongs to at most one override; its members leave
+ * their import group and form this dish, led by `leadId`. A single-member override detaches
+ * a recipe from its import group ("this isn't a variant"). Variant labels are derived from
+ * title diffs at display time, so none are stored here.
+ */
+export interface VariantOverride {
+  /** Stable override id. */
+  id: string
+  /** The recipes that form this dish (1 = a detach; 2+ = a confirmed/merged group). */
+  recipeIds: string[]
+  /** Which member leads (the default shown/planned). Must be one of `recipeIds`. */
+  leadId: string
+}
+
 /** Simple key/value settings row. */
 export interface SettingRow {
   key: string
