@@ -30,3 +30,15 @@ Feature: Plan a week of meals
     When I mark recipe "r1" as cooked
     Then the cooked history holds 1 entry for "r1"
     And the plan does not contain "r1"
+
+  Scenario: Swapping a planned meal for a variant keeps its slot position
+    Given I have added recipe "r1" to the plan
+    And I have added recipe "r2" to the plan
+    When I swap planned recipe "r1" for "r1b"
+    Then the plan is exactly "r1b, r2"
+
+  Scenario: Swapping to an already-planned recipe is a no-op
+    Given I have added recipe "r1" to the plan
+    And I have added recipe "r2" to the plan
+    When I swap planned recipe "r1" for "r2"
+    Then the plan is exactly "r1, r2"

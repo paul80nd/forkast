@@ -37,6 +37,21 @@ export async function removeFromPlan(recipeId: string): Promise<void> {
   })
 }
 
+/**
+ * Swap a planned meal for one of its variants, keeping its slot position. Used by the
+ * Plan-page version picker. No-op when the recipe isn't planned, the target is identical,
+ * or the target is already on the plan (so a swap never creates a duplicate).
+ */
+export async function swapPlanRecipe(fromId: string, toId: string): Promise<void> {
+  if (fromId === toId) return
+  const plan = await getOrCreatePlan()
+  const i = plan.recipeIds.indexOf(fromId)
+  if (i === -1 || plan.recipeIds.includes(toId)) return
+  const recipeIds = [...plan.recipeIds]
+  recipeIds[i] = toId
+  await db.plans.put({ ...plan, recipeIds })
+}
+
 export async function setPortions(portions: number): Promise<void> {
   const plan = await getOrCreatePlan()
   await db.plans.put({ ...plan, portions })

@@ -2,7 +2,7 @@ import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
 import { CURRENT_PLAN_ID } from '../../src/lib/plan'
-import { addToPlan, removeFromPlan, setPortions, markCooked } from '../../src/app/plan'
+import { addToPlan, removeFromPlan, setPortions, markCooked, swapPlanRecipe } from '../../src/app/plan'
 
 const feature = await loadFeature('features/plan-week.feature')
 
@@ -77,6 +77,38 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     And('the plan does not contain {string}', async (_, id: string) => {
       expect((await plan())?.recipeIds ?? []).not.toContain(id)
+    })
+  })
+
+  Scenario('Swapping a planned meal for a variant keeps its slot position', ({ Given, And, When, Then }) => {
+    Given('I have added recipe {string} to the plan', async (_, id: string) => {
+      await addToPlan(id)
+    })
+    And('I have added recipe {string} to the plan', async (_, id: string) => {
+      await addToPlan(id)
+    })
+    When('I swap planned recipe {string} for {string}', async (_, from: string, to: string) => {
+      await swapPlanRecipe(from, to)
+    })
+    Then('the plan is exactly {string}', async (_, csv: string) => {
+      const expected = csv.split(',').map((s) => s.trim())
+      expect((await plan())?.recipeIds ?? []).toEqual(expected)
+    })
+  })
+
+  Scenario('Swapping to an already-planned recipe is a no-op', ({ Given, And, When, Then }) => {
+    Given('I have added recipe {string} to the plan', async (_, id: string) => {
+      await addToPlan(id)
+    })
+    And('I have added recipe {string} to the plan', async (_, id: string) => {
+      await addToPlan(id)
+    })
+    When('I swap planned recipe {string} for {string}', async (_, from: string, to: string) => {
+      await swapPlanRecipe(from, to)
+    })
+    Then('the plan is exactly {string}', async (_, csv: string) => {
+      const expected = csv.split(',').map((s) => s.trim())
+      expect((await plan())?.recipeIds ?? []).toEqual(expected)
     })
   })
 })

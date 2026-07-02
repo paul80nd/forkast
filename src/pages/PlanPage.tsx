@@ -4,8 +4,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
-import { addToPlan, addRecipesToPlan, removeFromPlan, setPortions, markCooked } from '../app/plan'
+import { addToPlan, addRecipesToPlan, removeFromPlan, setPortions, markCooked, swapPlanRecipe } from '../app/plan'
 import { suggestWeekPlan } from '../app/suggest'
+import { collapseVariants, variantLabel } from '../lib/variants'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
 import type { Suggestion } from '../lib/suggest'
@@ -79,6 +80,20 @@ export function PlanPage() {
     for (const g of groups ?? []) for (const mem of g.members) m.set(mem.recipeId, g)
     return m
   }, [groups])
+
+  // variantGroupKey → the dish's variants (lead first), for the planned-meal version picker.
+  const siblingsByKey = useMemo(() => {
+    const byKey = new Map<string, Recipe[]>()
+    for (const r of recipes ?? []) {
+      if (!r.variantGroupKey) continue
+      byKey.set(r.variantGroupKey, [...(byKey.get(r.variantGroupKey) ?? []), r])
+    }
+    // Order each group lead-first so "Original" leads the chips.
+    for (const [k, list] of byKey) byKey.set(k, collapseVariants(list)[0]?.variants ?? list)
+    return byKey
+  }, [recipes])
+  // Which planned row has its version picker expanded.
+  const [versionsOpenId, setVersionsOpenId] = useState<string | null>(null)
 
   const plannedIds = plan?.recipeIds ?? []
   const portions = plan?.portions ?? 2
@@ -363,11 +378,16 @@ export function PlanPage() {
           <ul className="mt-4 space-y-2">
             {planned.map((r) => {
               const rec = recency(lastCookedById.get(r.id))
+              const siblings = r.variantGroupKey ? siblingsByKey.get(r.variantGroupKey) ?? [] : []
+              const hasVersions = siblings.length > 1
+              const lead = siblings[0] ?? r
+              const versionsOpen = versionsOpenId === r.id
               return (
                 <li
                   key={r.id}
-                  className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-2.5"
+                  className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-2.5"
                 >
+                  <div className="flex items-center gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <img
                       src={resolveAsset(r.image)}
@@ -394,6 +414,21 @@ export function PlanPage() {
                       </div>
                     </div>
                   </div>
+                  {hasVersions && (
+                    <button
+                      type="button"
+                      onClick={() => setVersionsOpenId(versionsOpen ? null : r.id)}
+                      aria-expanded={versionsOpen}
+                      className={`rounded-md px-2.5 py-1 text-sm font-medium ${
+                        versionsOpen
+                          ? 'bg-orange-500 text-white hover:bg-orange-600'
+                          : 'text-orange-600 hover:bg-orange-50'
+                      }`}
+                      title="Swap this dish for another version"
+                    >
+                      ⇄ {siblings.length}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => markCooked(r.id)}
@@ -410,6 +445,35 @@ export function PlanPage() {
                   >
                     ✕
                   </button>
+                  </div>
+                  {hasVersions && versionsOpen && (
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-stone-100 pt-2">
+                      <span className="mr-1 text-xs font-medium tracking-wide text-stone-400 uppercase">
+                        Version
+                      </span>
+                      {siblings.map((m) => {
+                        const isCurrent = m.id === r.id
+                        return (
+                          <button
+                            key={m.id}
+                            type="button"
+                            disabled={isCurrent}
+                            onClick={() => {
+                              void swapPlanRecipe(r.id, m.id)
+                              setVersionsOpenId(null)
+                            }}
+                            className={`rounded-full border px-2.5 py-1 text-sm transition ${
+                              isCurrent
+                                ? 'border-orange-500 bg-orange-500 text-white'
+                                : 'border-stone-200 bg-white dark:bg-stone-100 text-stone-700 hover:border-orange-300 hover:text-orange-700'
+                            }`}
+                          >
+                            {m.id === lead.id ? 'Original' : variantLabel(m.title, lead.title)}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </li>
               )
             })}
