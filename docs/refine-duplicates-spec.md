@@ -8,7 +8,7 @@ different slug — and delete all but one. Part of the Refine section
 
 ## Same scorer, tighter preset
 
-Duplicates is a second use of the *same* similarity scorer the [Group tab](refine-groups-spec.md)
+Duplicates is a second use of the *same* similarity scorer the [Variants tab](variants-spec.md)
 uses — under a **tighter preset**, `DUPLICATE_OPTS` in `src/lib/similarity.ts`: high title
 **and** ingredient overlap plus a high cluster-score floor.
 

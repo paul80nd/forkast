@@ -113,7 +113,7 @@ inline editing. Wiring only; the underlying clears are covered by `features/cura
 
 ### Group-aware rating — built 2026-06-30
 Near-identical variants shouldn't be triaged independently, so Curate can fan a rating across a
-group (see [Refine → Group](refine-groups-spec.md)). An **"Apply rating to variants"** checkbox
+dish (see [Refine → Variants](variants-spec.md)). An **"Apply rating to variants"** checkbox
 sits to the right of the focus filters, **on by default** and persisted (`curate.applyToVariants`).
 
 When the triaged card is one of a variant group, a sky **"1 of N variants"** panel appears under

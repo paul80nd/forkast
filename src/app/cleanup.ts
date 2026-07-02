@@ -1,5 +1,5 @@
 // Application layer: the single path for deleting a recipe. Delete is real and total (no
-// tombstones — see docs/groups-spec.md): the durable backup is the export, and re-importing
+// tombstones — see docs/refine-spec.md): the durable backup is the export, and re-importing
 // a deleted recipe brings it back as a clean slate. So deleting a recipe also purges its
 // associated user data — there's no point "hearing of it again".
 

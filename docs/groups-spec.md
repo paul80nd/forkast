@@ -1,5 +1,10 @@
 # Recipe groups (variants) — feature spec
 
+> **SUPERSEDED (2026-07-02) — this feature has been removed.** The manual `variantGroups`
+> table and its "see also" surfacing are replaced by the import-seeded **variants** feature
+> (`variantGroupKey`/`variantGroupLead`) plus a user-override layer — see
+> [`variants-spec.md`](variants-spec.md). Kept only as a historical design record.
+
 The **data feature** behind grouping closely-related recipes so the app can surface
 alternatives and, later, keep automatic suggestions varied. This spec owns the *model* and
 the surfaces that *read* it (the recipe page's "see also", and the future planner). The

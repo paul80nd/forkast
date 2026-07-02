@@ -7,7 +7,7 @@
 
 This is **living documentation**: it describes the app as it actually is and *why* it's
 shaped that way. The cross-cutting decision trail lives in [`decisions.md`](decisions.md);
-per-feature specs (e.g. [`groups-spec.md`](groups-spec.md)) cover features in depth; the
+per-feature specs (e.g. [`variants-spec.md`](variants-spec.md)) cover features in depth; the
 Gherkin `features/` are the executable behaviour. Keep all four honest — if the code and a
 doc disagree, fix the doc in the same change.
 
@@ -124,7 +124,7 @@ Conceptual; the exact record shapes are the TS types in `src/schema/userData.ts`
 | `settings`      | key/value rows (e.g. `householdSize`, `dataSource`)                                                                                     |
 | `dictionary`    | the ingredient dictionary — seeded from the bundled default, then grown by **lazy binding at shopping time**; rides along in the export; see [`shop-spec.md`](shop-spec.md) |
 | `bindings`      | lazy shopping-time `name → ingredientId` bindings — keyed on ingredient name (not source id); see [`shop-spec.md`](shop-spec.md)         |
-| `variantGroups` | recipe groups (variants/duplicates) — see [`groups-spec.md`](groups-spec.md)                                                             |
+| `variantOverrides` | user edits to the import-seeded variant grouping (`{ recipeIds, leadId }`), layered over `variantGroupKey`/`variantGroupLead`; survives re-import — see [`variants-spec.md`](variants-spec.md) |
 
 ### Rating semantics (the household's sticky-note system, digitised)
 

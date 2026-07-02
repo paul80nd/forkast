@@ -1,5 +1,9 @@
 # Refine → Group — feature spec
 
+> **SUPERSEDED (2026-07-02).** The Refine **Group** tab is now **Refine → Variants**, which
+> curates the import-seeded variant grouping via a user-override layer instead of the manual
+> `variantGroups` table — see [`variants-spec.md`](variants-spec.md). Kept as a historical record.
+
 The **Group** tab of Refine: the UI for linking closely-related recipes into a variant set.
 Part of the Refine section ([`refine-spec.md`](refine-spec.md)); reads and writes the Recipe
 Groups data model documented in [`groups-spec.md`](groups-spec.md) — this spec is about the

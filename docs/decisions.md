@@ -2,11 +2,26 @@
 
 Cross-cutting design decisions and the reasoning behind them — the "how we got here" the
 specs themselves don't carry. **Newest first.** Feature-local decisions live in their own
-feature spec (e.g. [`groups-spec.md`](groups-spec.md)); private rationale (the household's
+feature spec (e.g. [`variants-spec.md`](variants-spec.md)); private rationale (the household's
 curation rules) stays in `HANDOVER.local.md`. Keep this **firewall-clean — no provider
 names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
+
+## 2026-07-02 — Variants supersede the manual Recipe Groups feature
+
+The import-seeded **variants** feature (`variantGroupKey`/`variantGroupLead`) plus a user
+**override** layer replaces the manual `variantGroups` "see also" feature, which has been
+removed. *Why:* the import already groups the bulk of the catalogue automatically and
+precisely, so hand-linking every dish was redundant; keeping two parallel grouping mechanisms
+was confusing and doubled the plumbing (Browse, the suggester, curation and the plan swap each
+had to know both). One mechanism is simpler and strictly more capable. *Model:* import seeds
+the grouping; `VariantOverride { recipeIds, leadId }` (user data — backed up, re-import-safe)
+layers on top — override wins, one dish per recipe, a single-member override detaches. Resolved
+by pure `resolveDishes(recipes, overrides)`; edited in **Refine → Variants** (suggest via the
+same text-match scorer the old Group tab used, create, re-lead, remove, revert). *Superseded:*
+the `variantGroups` table, `src/app/groups.ts`, and "see also" on the recipe page (the
+detail-page Versions selector replaces it). See [`variants-spec.md`](variants-spec.md).
 
 ## 2026-07-01 — Lazy ingredient binding keys on ingredient *name*, not source id
 

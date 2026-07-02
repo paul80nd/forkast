@@ -14,18 +14,18 @@ Provider-neutral by design (honours the privacy firewall — see `CLAUDE.md`).
 
 Refine splits into three tabs, each its own spec:
 
-1. **Group** — link closely-related recipes (protein/carb swaps) into a variant set so the
-   app can surface alternatives and keep future suggestions varied.
-   See [`refine-groups-spec.md`](refine-groups-spec.md).
+1. **Variants** — curate the "one dish, many swaps" grouping: confirm suggested merges the
+   image-hash missed, create a variant set by hand, and re-lead / split / dissolve any dish.
+   See [`variants-spec.md`](variants-spec.md). (This replaced the old **Group** tab.)
 2. **Duplicates** — find and delete genuine near-duplicates (the *same* dish under a
    different slug). See [`refine-duplicates-spec.md`](refine-duplicates-spec.md).
 3. **Clean up** — bulk-delete the recipes you've rated ★1–2 ("bin it").
    See [`refine-cleanup-spec.md`](refine-cleanup-spec.md).
 
-The **data model** that grouping reads and writes — the `variantGroups` store, its
-invariants, and how groups surface on the recipe page and (later) in Plan — lives in
-[`groups-spec.md`](groups-spec.md). Refine is the page that *edits* that model; the model
-is a cross-cutting data feature in its own right.
+The **data model** the Variants tab reads and writes — the import-seeded `variantGroupKey`/
+`variantGroupLead` plus the `variantOverrides` user layer, and how dishes surface in Browse,
+on the recipe page and in Plan — lives in [`variants-spec.md`](variants-spec.md). Refine is the
+page that *edits* that model.
 
 ## Shared principles
 

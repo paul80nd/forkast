@@ -23,15 +23,17 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
     shopping time: dictionary, name bindings, match, density).
   - [`docs/plan-suggest-spec.md`](docs/plan-suggest-spec.md) — assisted "suggest a varied week"
     (design only, not built).
+  - [`docs/variants-spec.md`](docs/variants-spec.md) — **Variants** (built): one dish, many swaps —
+    import-seeded `variantGroupKey`/lead + a user-**override** layer; one card per dish in Browse,
+    the swap selector on the recipe page, the swap chosen at plan time, curated in **Refine → Variants**.
+    **Supersedes the old manual Recipe Groups feature** (now removed).
   - [`docs/refine-spec.md`](docs/refine-spec.md) — Refine umbrella (the tidying section +
-    shared principles + the import/deletion model), linking its three job specs:
-    [`refine-groups-spec.md`](docs/refine-groups-spec.md),
+    shared principles + the import/deletion model), linking its job specs:
     [`refine-duplicates-spec.md`](docs/refine-duplicates-spec.md),
-    [`refine-cleanup-spec.md`](docs/refine-cleanup-spec.md).
-  - [`docs/groups-spec.md`](docs/groups-spec.md) — Recipe Groups *data feature* (the
-    `variantGroups` model + "see also"; the Refine UI that edits it is in refine-groups-spec).
-  - [`docs/variants-spec.md`](docs/variants-spec.md) — **draft** — one dish, many swaps: import-seeded
-    `variantGroupKey`/lead, one card per dish in Browse, choose the swap at plan time (parallel to Groups).
+    [`refine-cleanup-spec.md`](docs/refine-cleanup-spec.md). (The former **Group** job is now the
+    Variants tab — see variants-spec.)
+  - [`docs/groups-spec.md`](docs/groups-spec.md) / [`docs/refine-groups-spec.md`](docs/refine-groups-spec.md)
+    — **superseded/removed** (historical records only; replaced by variants-spec).
 - [`docs/decisions.md`](docs/decisions.md) — the cross-cutting decision trail ("how we got
   here"). Add an entry when you make an architectural call.
 - `features/*.feature` (+ `features/steps/`) — behaviour, run as tests.

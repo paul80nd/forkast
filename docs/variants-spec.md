@@ -1,9 +1,11 @@
-# Variants — one dish, many swaps (DRAFT — design only, not built)
+# Variants — one dish, many swaps (BUILT)
 
-> **Status: draft.** Captures the design agreed so far; open questions at the foot are to be
-> resolved before building. Developed **in parallel** with Recipe Groups
-> ([`groups-spec.md`](groups-spec.md)) for now — variants may later sit alongside groups or
-> supersede them; that call comes after we've built and lived with it.
+> **Status: built, and it *supersedes* the manual Recipe Groups feature** (which has been
+> removed). The "groups vs variants" open question is resolved: variants are the single
+> mechanism. Import seeds the grouping from a provider signal (`variantGroupKey`/
+> `variantGroupLead`); the user curates it in **Refine → Variants**, with edits stored as a
+> re-import-safe **override** layer. `groups-spec.md` / `refine-groups-spec.md` are retained
+> only as historical design records.
 
 ## The problem
 
@@ -88,34 +90,31 @@ Because variants stay separate full recipes, planning needs **no new schema**:
   recipes + the shared key; deltas are derived, never persisted.
 - **Mechanism stays private.** Only the generic `variantGroupKey` / `variantGroupLead` cross the
   boundary into `recipes.json`; how they're computed is a private import concern.
-- **Build in parallel with Groups.** Don't touch `variantGroups` / `groups-spec.md` yet.
 
-## Open questions (resolve before building)
+## As built
 
-- **Groups vs variants.** Does `variantGroupKey` seed the existing `variantGroups`, or is this a
-  wholly separate mechanism? (Parallel for now; decide after review — possible that variants
-  *replace* the manual groups feature.)
-- **Lead-override storage + UI.** Where does a user's "make this the lead" / "split this out" /
-  "these two are actually the same" live, and how does it merge with the import-provided defaults
-  on re-import? (Likely mirrors the groups edit model.)
-- **Rating & rotation** — at the **dish** level (rate the lead, applies to the group, à la the
-  existing group-aware rating) or per variant? Leaning dish-level.
-- **Search** — when a hidden variant matches a query (e.g. "cauliflower rice"), surface the
-  variant directly, or the lead with the variant pre-selected?
-- **Counts / stats** — Browse and "readiness" views should probably count **dishes** (leads), not
-  every variant; confirm.
-- **Recall gap.** A shared key only catches variants the provider can actually link; one whose
-  source signal happens to differ (different key, or none) is missed. Keep the fuzzy
-  title/ingredient suggester as a secondary net, or fold both into one "is this a variant of…?"
-  review step.
-- **A "default swap" that isn't the lead.** Is per-week choice enough, or does a user want to set
-  a *standing* preference (always brown rice) for a dish?
+- **Effective grouping = import signal + user overrides.** Import seeds `variantGroupKey`/
+  `variantGroupLead` on each `Recipe`. A `VariantOverride` user-data table (`{ recipeIds, leadId }`)
+  layers on top: a recipe named by an override joins that override's dish (led by `leadId`),
+  leaving its import group; everyone else groups by `variantGroupKey`. A single-member override
+  **detaches** a recipe ("this isn't a variant"). Overrides are precious user data — they ride the
+  backup and survive re-import. Pure resolution: `resolveDishes(recipes, overrides)` in
+  `src/lib/variants.ts`; app seam `src/app/variants.ts` (`dishForRecipe`, `setVariantOverride`,
+  `removeFromOverride`, `setOverrideLead`, `dissolveOverride`).
+- **Refine → Variants** (replaces the old Group tab) is where the user curates: *suggest* merges the
+  image-hash missed (text-match, kept only if a cluster spans >1 effective dish) → confirm + pick
+  lead; *create* by hand; and an *all-dishes* list with re-lead / remove-member / revert-to-auto.
+- **Resolved open questions:** *groups vs variants* → variants win, groups removed. *Lead-override
+  storage/UI* → the override table + Refine → Variants (mirrors the old edit model). *Rating* →
+  dish-level (Curate's group-aware rating fans onto the effective dish's unrated variants).
+  *Recall gap* → the text-match suggester is the secondary net, folded into Refine → Variants.
+- **Still open:** *search* (a hidden variant matching a query surfaces the variant directly today,
+  not the lead-with-preselect); *counts/stats* for a readiness view; a *standing "default swap"*
+  that isn't the lead (only per-week choice exists).
 
 ## Related
 
-- [`groups-spec.md`](groups-spec.md) — the existing Recipe Groups data feature (symmetric
-  "see also"); this variant model is its more opinionated, import-seeded cousin.
-- [`refine-groups-spec.md`](refine-groups-spec.md) — the Refine UI + Compare diff we'd reuse for
-  the swap selector.
+- [`groups-spec.md`](groups-spec.md) / [`refine-groups-spec.md`](refine-groups-spec.md) —
+  **superseded** by this feature; kept as historical design records only.
 - [`plan-suggest-spec.md`](plan-suggest-spec.md) — the suggester already collapses to one member
   per group; variants slot straight in.
