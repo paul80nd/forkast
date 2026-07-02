@@ -8,12 +8,15 @@ export function RecipeCard({
   stars,
   selected = false,
   onToggleSelect,
+  variantCount,
 }: {
   recipe: Recipe
   stars?: Stars
   selected?: boolean
   /** When provided, a selection tickbox is shown (for bulk actions in Browse). */
   onToggleSelect?: () => void
+  /** Total versions of this dish; when > 1, a "swaps" badge marks the card as a lead. */
+  variantCount?: number
 }) {
   return (
     <div
@@ -32,6 +35,11 @@ export function RecipeCard({
           {stars && (
             <span className="absolute top-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-amber-600 shadow-sm">
               {'★'.repeat(stars)}
+            </span>
+          )}
+          {variantCount !== undefined && variantCount > 1 && (
+            <span className="absolute bottom-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-orange-600 shadow-sm">
+              ⇄ {variantCount} versions
             </span>
           )}
         </div>

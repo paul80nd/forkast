@@ -4,6 +4,7 @@ import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { deleteRecipes } from '../app/cleanup'
+import { collapseVariants, variantCounts } from '../lib/variants'
 import type { Stars } from '../schema/userData'
 
 type SortKey = 'rating' | 'time' | 'name'
@@ -18,6 +19,8 @@ export function BrowsePage() {
   const [maxTime, setMaxTime] = usePersistentState('browse.maxTime', 0) // 0 = any
   const [rating, setRating] = usePersistentState<RatingFilter>('browse.rating', 'all')
   const [sort, setSort] = usePersistentState<SortKey>('browse.sort', 'rating')
+  // Collapse each dish's variants to one lead card (default on — the point of the feature).
+  const [groupVariants, setGroupVariants] = usePersistentState('browse.groupVariants', true)
 
   // Multi-select for bulk delete (ephemeral — cleared on leaving Browse).
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -54,6 +57,10 @@ export function BrowsePage() {
     [recipes],
   )
 
+  // Full-catalogue variant counts, so a collapsed card's badge reflects the whole dish
+  // even when the list is filtered down to one matching variant.
+  const counts = useMemo(() => variantCounts(recipes ?? []), [recipes])
+
   const filtered = useMemo(() => {
     let list = recipes ?? []
     const q = query.trim().toLowerCase()
@@ -76,14 +83,19 @@ export function BrowsePage() {
         return s !== undefined && s >= 3 // 3plus
       })
     }
+    return list
+  }, [recipes, query, cuisine, maxTime, rating, starsById])
 
+  // Collapse variants to one lead card per dish (when on), then sort the cards on show.
+  const cards = useMemo(() => {
+    const list = groupVariants ? collapseVariants(filtered).map((d) => d.lead) : filtered
     return [...list].sort((a, b) => {
       if (sort === 'name') return a.title.localeCompare(b.title)
       if (sort === 'time') return a.prepTime - b.prepTime
       // Top rated = our own ★; unrated (0) sort last.
       return (starsById.get(b.id) ?? 0) - (starsById.get(a.id) ?? 0)
     })
-  }, [recipes, query, cuisine, maxTime, rating, starsById, sort])
+  }, [filtered, groupVariants, sort, starsById])
 
   // Render incrementally — show a page of cards, load more as the user scrolls.
   const PAGE = 50
@@ -94,7 +106,7 @@ export function BrowsePage() {
   useEffect(() => {
     setVisible(PAGE)
     setSelected(new Set())
-  }, [query, cuisine, maxTime, rating, sort])
+  }, [query, cuisine, maxTime, rating, sort, groupVariants])
 
   // Grow the visible count when the bottom sentinel scrolls into view.
   useEffect(() => {
@@ -108,7 +120,7 @@ export function BrowsePage() {
     )
     obs.observe(el)
     return () => obs.disconnect()
-  }, [filtered.length, visible])
+  }, [cards.length, visible])
 
   if (recipes === undefined) {
     return <p className="text-stone-500">Loading recipes…</p>
@@ -122,7 +134,7 @@ export function BrowsePage() {
       <div className="flex items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Browse</h1>
         <span className="text-sm text-stone-500">
-          {filtered.length} of {recipes.length} recipes
+          {cards.length} {groupVariants ? 'dishes' : 'recipes'} of {recipes.length}
         </span>
       </div>
 
@@ -176,6 +188,15 @@ export function BrowsePage() {
           <option value="time">Quickest</option>
           <option value="name">A–Z</option>
         </select>
+        <label className="flex cursor-pointer items-center gap-1.5 text-sm text-stone-600 select-none">
+          <input
+            type="checkbox"
+            checked={groupVariants}
+            onChange={(e) => setGroupVariants(e.target.checked)}
+            className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+          />
+          Group variants
+        </label>
       </div>
 
       {selected.size > 0 && (
@@ -200,24 +221,27 @@ export function BrowsePage() {
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {cards.length === 0 ? (
         <p className="mt-10 text-center text-stone-500">
           No recipes match those filters.
         </p>
       ) : (
         <>
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.slice(0, visible).map((r) => (
+            {cards.slice(0, visible).map((r) => (
               <RecipeCard
                 key={r.id}
                 recipe={r}
                 stars={starsById.get(r.id)}
                 selected={selected.has(r.id)}
                 onToggleSelect={() => toggleSelect(r.id)}
+                variantCount={
+                  groupVariants && r.variantGroupKey ? counts.get(r.variantGroupKey) : undefined
+                }
               />
             ))}
           </div>
-          {visible < filtered.length && (
+          {visible < cards.length && (
             <div ref={sentinelRef} className="mt-6 text-center text-sm text-stone-400">
               Loading more…
             </div>
