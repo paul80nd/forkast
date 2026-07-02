@@ -6,7 +6,8 @@ import { resolveAsset } from '../lib/assets'
 import { RotationRating, StarRating } from './RatingScale'
 import { clearCuration, setRotation, setStars } from '../app/curation'
 import { seeAlsoFor } from '../app/groups'
-import { collapseVariants, ingredientDelta, variantLabel } from '../lib/variants'
+import { dishForRecipe } from '../app/variants'
+import { ingredientDelta, variantLabel } from '../lib/variants'
 import type { Recipe } from '../schema/recipe'
 
 // The shared recipe body — image + facts + editable ★/◆ rating panel + nutrition on the left,
@@ -24,16 +25,10 @@ export function RecipeDetail({
   recipe: Recipe
   headerActions?: (shown: Recipe) => ReactNode
 }) {
-  // The anchor's variant siblings (itself when standalone), ordered lead-first.
-  const siblings = useLiveQuery(
-    () =>
-      anchor.variantGroupKey
-        ? db.recipes.where('variantGroupKey').equals(anchor.variantGroupKey).toArray()
-        : Promise.resolve([anchor]),
-    [anchor.id, anchor.variantGroupKey],
-  )
-  const members = collapseVariants(siblings ?? [anchor])[0]?.variants ?? [anchor]
-  const lead = members[0]
+  // The anchor's effective dish (import grouping + user overrides), ordered lead-first.
+  const dish = useLiveQuery(() => dishForRecipe(anchor.id), [anchor.id])
+  const members = dish?.variants ?? [anchor]
+  const lead = dish?.lead ?? anchor
 
   // Which variant is on show — defaults to the one navigated to; reset when the page changes.
   const [shownId, setShownId] = useState(anchor.id)

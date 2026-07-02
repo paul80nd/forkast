@@ -6,7 +6,7 @@ import { resolveAsset } from '../lib/assets'
 import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
 import { addToPlan, addRecipesToPlan, removeFromPlan, setPortions, markCooked, swapPlanRecipe } from '../app/plan'
 import { suggestWeekPlan } from '../app/suggest'
-import { collapseVariants, variantLabel } from '../lib/variants'
+import { resolveDishes, variantLabel } from '../lib/variants'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
 import type { Suggestion } from '../lib/suggest'
@@ -39,6 +39,7 @@ export function PlanPage() {
   const plan = useLiveQuery(() => db.plans.get(CURRENT_PLAN_ID), [])
   const cooked = useLiveQuery(() => db.cooked.toArray(), [])
   const groups = useLiveQuery(() => db.variantGroups.toArray(), [])
+  const overrides = useLiveQuery(() => db.variantOverrides.toArray(), [])
   const [pickerQuery, setPickerQuery] = useState('')
   // The recipe shown in the pop-up detail view (opened from a suggested or planned row); null = closed.
   const [modalRecipe, setModalRecipe] = useState<Recipe | null>(null)
@@ -81,17 +82,15 @@ export function PlanPage() {
     return m
   }, [groups])
 
-  // variantGroupKey → the dish's variants (lead first), for the planned-meal version picker.
-  const siblingsByKey = useMemo(() => {
-    const byKey = new Map<string, Recipe[]>()
-    for (const r of recipes ?? []) {
-      if (!r.variantGroupKey) continue
-      byKey.set(r.variantGroupKey, [...(byKey.get(r.variantGroupKey) ?? []), r])
+  // recipe id → its dish's variants (lead first), for the planned-meal version picker.
+  // Effective grouping = import variants overlaid with user overrides.
+  const dishByRecipe = useMemo(() => {
+    const byRecipe = new Map<string, Recipe[]>()
+    for (const d of resolveDishes(recipes ?? [], overrides ?? [])) {
+      for (const v of d.variants) byRecipe.set(v.id, d.variants)
     }
-    // Order each group lead-first so "Original" leads the chips.
-    for (const [k, list] of byKey) byKey.set(k, collapseVariants(list)[0]?.variants ?? list)
-    return byKey
-  }, [recipes])
+    return byRecipe
+  }, [recipes, overrides])
   // Which planned row has its version picker expanded.
   const [versionsOpenId, setVersionsOpenId] = useState<string | null>(null)
 
@@ -378,7 +377,7 @@ export function PlanPage() {
           <ul className="mt-4 space-y-2">
             {planned.map((r) => {
               const rec = recency(lastCookedById.get(r.id))
-              const siblings = r.variantGroupKey ? siblingsByKey.get(r.variantGroupKey) ?? [] : []
+              const siblings = dishByRecipe.get(r.id) ?? [r]
               const hasVersions = siblings.length > 1
               const lead = siblings[0] ?? r
               const versionsOpen = versionsOpenId === r.id

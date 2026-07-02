@@ -4,7 +4,7 @@ import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { deleteRecipes } from '../app/cleanup'
-import { collapseVariants, variantCounts } from '../lib/variants'
+import { resolveDishes, dishSizeByRecipe } from '../lib/variants'
 import type { Stars } from '../schema/userData'
 
 type SortKey = 'rating' | 'time' | 'name'
@@ -13,6 +13,7 @@ type RatingFilter = 'all' | 'unrated' | '5' | '4plus' | '3plus'
 export function BrowsePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
   const userData = useLiveQuery(() => db.userData.toArray(), [])
+  const overrides = useLiveQuery(() => db.variantOverrides.toArray(), [])
   // Persisted so the browse view remembers its filters across navigation and reloads.
   const [query, setQuery] = usePersistentState('browse.query', '')
   const [cuisine, setCuisine] = usePersistentState('browse.cuisine', 'all')
@@ -57,9 +58,12 @@ export function BrowsePage() {
     [recipes],
   )
 
-  // Full-catalogue variant counts, so a collapsed card's badge reflects the whole dish
-  // even when the list is filtered down to one matching variant.
-  const counts = useMemo(() => variantCounts(recipes ?? []), [recipes])
+  // Effective dishes over the whole catalogue (import grouping + user overrides), so a
+  // collapsed card's badge reflects the whole dish even when the list is filtered down.
+  const dishSize = useMemo(
+    () => dishSizeByRecipe(resolveDishes(recipes ?? [], overrides ?? [])),
+    [recipes, overrides],
+  )
 
   const filtered = useMemo(() => {
     let list = recipes ?? []
@@ -88,14 +92,16 @@ export function BrowsePage() {
 
   // Collapse variants to one lead card per dish (when on), then sort the cards on show.
   const cards = useMemo(() => {
-    const list = groupVariants ? collapseVariants(filtered).map((d) => d.lead) : filtered
+    const list = groupVariants
+      ? resolveDishes(filtered, overrides ?? []).map((d) => d.lead)
+      : filtered
     return [...list].sort((a, b) => {
       if (sort === 'name') return a.title.localeCompare(b.title)
       if (sort === 'time') return a.prepTime - b.prepTime
       // Top rated = our own ★; unrated (0) sort last.
       return (starsById.get(b.id) ?? 0) - (starsById.get(a.id) ?? 0)
     })
-  }, [filtered, groupVariants, sort, starsById])
+  }, [filtered, groupVariants, overrides, sort, starsById])
 
   // Render incrementally — show a page of cards, load more as the user scrolls.
   const PAGE = 50
@@ -235,9 +241,7 @@ export function BrowsePage() {
                 stars={starsById.get(r.id)}
                 selected={selected.has(r.id)}
                 onToggleSelect={() => toggleSelect(r.id)}
-                variantCount={
-                  groupVariants && r.variantGroupKey ? counts.get(r.variantGroupKey) : undefined
-                }
+                variantCount={groupVariants ? dishSize.get(r.id) : undefined}
               />
             ))}
           </div>

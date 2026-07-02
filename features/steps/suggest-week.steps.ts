@@ -4,7 +4,7 @@ import { db } from '../../src/db/db'
 import { CURRENT_PLAN_ID, todayISO } from '../../src/lib/plan'
 import { addToPlan, addRecipesToPlan } from '../../src/app/plan'
 import { setStars } from '../../src/app/curation'
-import { createGroup } from '../../src/app/groups'
+import { setVariantOverride } from '../../src/app/variants'
 import { suggestWeekPlan } from '../../src/app/suggest'
 import { makeRecipe } from '../../test/factories'
 import type { Stars } from '../../src/schema/userData'
@@ -28,6 +28,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
         db.userData.clear(),
         db.cooked.clear(),
         db.variantGroups.clear(),
+        db.variantOverrides.clear(),
         db.plans.clear(),
       ])
       suggestions = []
@@ -42,7 +43,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
     }
   }
   const groupStep = async (_: unknown, list: string) => {
-    await createGroup(ids(list).map((id) => ({ recipeId: id, label: id })))
+    // A variant dish, expressed as a user override (the grouping the suggester now honours).
+    await setVariantOverride(ids(list), ids(list)[0])
   }
   const suggestStep = async (_: unknown, count: number) => {
     suggestions = await suggestWeekPlan({ count, seed: SEED })

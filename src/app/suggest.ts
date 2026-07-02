@@ -11,6 +11,7 @@ import {
   type Suggestion,
   type SuggestConfig,
 } from '../lib/suggest'
+import { resolveDishes } from '../lib/variants'
 import type { Recipe } from '../schema/recipe'
 
 // Household no-go allergens — also excluded upstream when the dataset is built; this is the
@@ -52,11 +53,11 @@ export async function suggestWeekPlan({
   exclude = [],
   includeUnrated = false,
 }: SuggestWeekParams): Promise<Suggestion[]> {
-  const [recipes, userData, cooked, groups, plan] = await Promise.all([
+  const [recipes, userData, cooked, overrides, plan] = await Promise.all([
     db.recipes.toArray(),
     db.userData.toArray(),
     db.cooked.toArray(),
-    db.variantGroups.toArray(),
+    db.variantOverrides.toArray(),
     db.plans.get(CURRENT_PLAN_ID),
   ])
 
@@ -78,8 +79,14 @@ export async function suggestWeekPlan({
     return d ? daysSince(d) : undefined
   }
 
+  // Effective variety groups: the import-seeded dishes overlaid with user overrides. Only
+  // multi-variant dishes get an id (a singleton doesn't constrain variety); the id is the
+  // dish's lead. So the suggester offers each dish once and blocks its siblings, as before.
   const groupByRecipe = new Map<string, string>()
-  for (const g of groups) for (const m of g.members) groupByRecipe.set(m.recipeId, g.id)
+  for (const d of resolveDishes(recipes, overrides)) {
+    if (d.variants.length < 2) continue
+    for (const v of d.variants) groupByRecipe.set(v.id, d.lead.id)
+  }
 
   const recipeById = new Map(recipes.map((r) => [r.id, r]))
   const plannedIds = new Set(plan?.recipeIds ?? [])
