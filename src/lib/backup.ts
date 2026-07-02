@@ -11,6 +11,7 @@ import type {
   ShoppingState,
   UserRecipeData,
   VariantGroup,
+  VariantOverride,
   WeekPlan,
 } from '../schema/userData'
 import type { IngredientDef } from '../data/ingredients'
@@ -48,10 +49,11 @@ export function parseBackup(input: unknown): BackupParseResult {
   }
 
   if (!isObject(data)) throw new Error('backup is not an object')
-  // v2 predates the ingredient dictionary + bindings; accept it and default those to empty
-  // (the startup reseed repopulates the dictionary).
-  if (data.version !== 2 && data.version !== 3) {
-    throw new Error(`unsupported backup version ${String(data.version)} (expected 2 or 3)`)
+  // Older versions predate later tables (v2: dictionary/bindings; v3: variant overrides);
+  // accept them and default the missing tables to empty (the startup reseed repopulates the
+  // dictionary).
+  if (data.version !== 2 && data.version !== 3 && data.version !== 4) {
+    throw new Error(`unsupported backup version ${String(data.version)} (expected 2, 3 or 4)`)
   }
   if (!Array.isArray(data.recipes)) {
     throw new Error('backup has no recipes array — is this a Forkast backup file?')
@@ -68,7 +70,7 @@ export function parseBackup(input: unknown): BackupParseResult {
   )
 
   const snapshot: BackupSnapshot = {
-    version: 3,
+    version: 4,
     exportedAt: typeof data.exportedAt === 'string' ? data.exportedAt : '',
     recipes,
     userData: asArray<UserRecipeData>(data.userData),
@@ -76,6 +78,7 @@ export function parseBackup(input: unknown): BackupParseResult {
     plans: asArray<WeekPlan>(data.plans),
     shopping: asArray<ShoppingState>(data.shopping),
     variantGroups: asArray<VariantGroup>(data.variantGroups),
+    variantOverrides: asArray<VariantOverride>(data.variantOverrides),
     dictionary: asArray<IngredientDef>(data.dictionary),
     bindings: asArray<Binding>(data.bindings),
     settings,

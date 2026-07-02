@@ -16,36 +16,48 @@ import type { BackupSnapshot } from '../schema/userData'
 export async function exportBackup(
   exportedAt: string = new Date().toISOString(),
 ): Promise<BackupSnapshot> {
-  const [recipes, userData, cooked, plans, shopping, variantGroups, dictionary, bindings, settings] =
-    await db.transaction(
-      'r',
-      [
-        db.recipes,
-        db.userData,
-        db.cooked,
-        db.plans,
-        db.shopping,
-        db.variantGroups,
-        db.dictionary,
-        db.bindings,
-        db.settings,
-      ],
-      () =>
-        Promise.all([
-          db.recipes.toArray(),
-          db.userData.toArray(),
-          db.cooked.toArray(),
-          db.plans.toArray(),
-          db.shopping.toArray(),
-          db.variantGroups.toArray(),
-          db.dictionary.toArray(),
-          db.bindings.toArray(),
-          db.settings.toArray(),
-        ]),
-    )
+  const [
+    recipes,
+    userData,
+    cooked,
+    plans,
+    shopping,
+    variantGroups,
+    variantOverrides,
+    dictionary,
+    bindings,
+    settings,
+  ] = await db.transaction(
+    'r',
+    [
+      db.recipes,
+      db.userData,
+      db.cooked,
+      db.plans,
+      db.shopping,
+      db.variantGroups,
+      db.variantOverrides,
+      db.dictionary,
+      db.bindings,
+      db.settings,
+    ],
+    () =>
+      Promise.all([
+        db.recipes.toArray(),
+        db.userData.toArray(),
+        db.cooked.toArray(),
+        db.plans.toArray(),
+        db.shopping.toArray(),
+        db.variantGroups.toArray(),
+        db.variantOverrides.toArray(),
+        db.dictionary.toArray(),
+        db.bindings.toArray(),
+        db.settings.toArray(),
+      ]),
+  )
 
   return {
-    version: 3,
+    version: 4,
     exportedAt,
     recipes,
     userData,
@@ -53,6 +65,7 @@ export async function exportBackup(
     plans,
     shopping,
     variantGroups,
+    variantOverrides,
     dictionary,
     bindings,
     settings,
@@ -83,6 +96,7 @@ export async function importBackup(input: unknown): Promise<RestoreResult> {
       db.plans,
       db.shopping,
       db.variantGroups,
+      db.variantOverrides,
       db.dictionary,
       db.bindings,
       db.settings,
@@ -95,6 +109,7 @@ export async function importBackup(input: unknown): Promise<RestoreResult> {
         db.plans.clear(),
         db.shopping.clear(),
         db.variantGroups.clear(),
+        db.variantOverrides.clear(),
         db.dictionary.clear(),
         db.bindings.clear(),
         db.settings.clear(),
@@ -106,6 +121,7 @@ export async function importBackup(input: unknown): Promise<RestoreResult> {
         db.plans.bulkPut(snapshot.plans),
         db.shopping.bulkPut(snapshot.shopping),
         db.variantGroups.bulkPut(snapshot.variantGroups),
+        db.variantOverrides.bulkPut(snapshot.variantOverrides),
         db.dictionary.bulkPut(snapshot.dictionary),
         db.bindings.bulkPut(snapshot.bindings),
         db.settings.bulkPut(snapshot.settings),

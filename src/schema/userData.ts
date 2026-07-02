@@ -121,7 +121,7 @@ export const DEFAULT_SETTINGS: Settings = {
  * (there are no tombstones). Open restores by replacing all data wholesale.
  */
 export interface BackupSnapshot {
-  version: 3
+  version: 4
   exportedAt: string
   recipes: Recipe[]
   userData: UserRecipeData[]
@@ -129,6 +129,8 @@ export interface BackupSnapshot {
   plans: WeekPlan[]
   shopping: ShoppingState[]
   variantGroups: VariantGroup[]
+  /** User variant edits layered over the import-seeded grouping. */
+  variantOverrides: VariantOverride[]
   /** The ingredient dictionary — seeded default plus any user-created entries. */
   dictionary: IngredientDef[]
   /** Lazy shopping-time name→ingredient bindings. */
