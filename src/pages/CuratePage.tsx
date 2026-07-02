@@ -8,12 +8,13 @@ import { RotationRating, StarRating } from '../components/RatingScale'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
-import type { Rotation, Stars, VariantGroup } from '../schema/userData'
+import type { Rotation, Stars } from '../schema/userData'
+import { resolveDishes, variantLabel } from '../lib/variants'
 
 export function CuratePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
   const userData = useLiveQuery(() => db.userData.toArray(), [])
-  const groups = useLiveQuery(() => db.variantGroups.toArray(), [])
+  const overrides = useLiveQuery(() => db.variantOverrides.toArray(), [])
   // Filters scope Curate's whole working set — both the triage backlog and the rated
   // overview — so you can focus on one cuisine/protein at a time. Persisted (separately
   // from Browse) so the focus survives navigation and reload.
@@ -50,13 +51,16 @@ export function CuratePage() {
     [recipes],
   )
 
-  // Reverse index recipeId → its variant group, so the triage card can offer to rate the
-  // whole group at once (near-identical variants shouldn't be triaged independently).
-  const groupByRecipe = useMemo(() => {
-    const m = new Map<string, VariantGroup>()
-    for (const g of groups ?? []) for (const mem of g.members) m.set(mem.recipeId, g)
+  // recipe id → its dish's variants (lead first), so the triage card can offer to rate the
+  // whole dish at once (near-identical variants shouldn't be triaged independently). Effective
+  // grouping = import variants overlaid with user overrides.
+  const dishByRecipe = useMemo(() => {
+    const m = new Map<string, Recipe[]>()
+    for (const d of resolveDishes(recipes ?? [], overrides ?? [])) {
+      for (const v of d.variants) m.set(v.id, d.variants)
+    }
     return m
-  }, [groups])
+  }, [recipes, overrides])
 
   const inFilter = useMemo(() => {
     return (r: Recipe) =>
@@ -107,7 +111,8 @@ export function CuratePage() {
   const current = currentId ? byId.get(currentId) : undefined
   const currentStars = currentId ? starsById.get(currentId) : undefined
   const currentRotation = currentId ? rotationById.get(currentId) : undefined
-  const currentGroup = currentId ? groupByRecipe.get(currentId) : undefined
+  const currentVariants = currentId ? dishByRecipe.get(currentId) : undefined
+  const isGrouped = (currentVariants?.length ?? 0) > 1
 
   const advance = () => setIndex((i) => Math.min(i + 1, queue.length))
   const back = () => setIndex((i) => Math.max(i - 1, 0))
@@ -115,7 +120,7 @@ export function CuratePage() {
   // When the toggle is on, fan the current card's finalised rating out to its unrated variants
   // and drop those (ahead of here) from the queue so they aren't triaged again. No-op otherwise.
   async function cascadeToVariants() {
-    if (!applyToVariants || !currentGroup || !currentId) return
+    if (!applyToVariants || !isGrouped || !currentId) return
     const written = await applyRatingToGroup(currentId)
     if (written.length) {
       const siblings = new Set(written)
@@ -308,11 +313,11 @@ export function CuratePage() {
               {/* Group-aware rating: this card is one of a variant set. With the toggle on, the
                   rating fans out to the unrated variants (which then leave the queue); off, it's
                   just a heads-up with a one-click way to opt in for this session onward. */}
-              {currentGroup && (
+              {isGrouped && currentVariants && (
                 <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">
-                      1 of {currentGroup.members.length} variants
+                      1 of {currentVariants.length} variants
                     </span>
                     {applyToVariants ? (
                       <span className="shrink-0 text-xs">rating also rates the unrated ones ↓</span>
@@ -327,20 +332,19 @@ export function CuratePage() {
                     )}
                   </div>
                   <ul className="mt-1.5 space-y-0.5 text-xs">
-                    {currentGroup.members
-                      .filter((m) => m.recipeId !== currentId)
-                      .map((m) => {
-                        const s = starsById.get(m.recipeId)
+                    {currentVariants
+                      .filter((v) => v.id !== currentId)
+                      .map((v) => {
+                        const s = starsById.get(v.id)
+                        const label = variantLabel(v.title, currentVariants[0].title)
                         return (
-                          <li key={m.recipeId} className="flex items-center gap-1.5">
-                            {m.label && (
+                          <li key={v.id} className="flex items-center gap-1.5">
+                            {label && label !== v.title && (
                               <span className="shrink-0 rounded bg-sky-100 px-1 font-medium">
-                                {m.label}
+                                {label}
                               </span>
                             )}
-                            <span className="truncate">
-                              {byId.get(m.recipeId)?.title ?? m.recipeId}
-                            </span>
+                            <span className="truncate">{v.title}</span>
                             {s ? (
                               <span className="shrink-0 text-amber-600">
                                 {'★'.repeat(s)}

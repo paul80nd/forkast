@@ -5,7 +5,7 @@ import { importRecipeDataset } from '../../src/app/dataset'
 import { exportBackup, importBackup } from '../../src/app/backup'
 import { setStars } from '../../src/app/curation'
 import { addToPlan } from '../../src/app/plan'
-import { createGroup } from '../../src/app/groups'
+import { setVariantOverride } from '../../src/app/variants'
 import { deleteRecipe } from '../../src/app/cleanup'
 import { makeRecipes } from '../../test/factories'
 import type { BackupSnapshot } from '../../src/schema/userData'
@@ -20,7 +20,7 @@ async function resetStore(): Promise<void> {
     db.cooked.clear(),
     db.plans.clear(),
     db.shopping.clear(),
-    db.variantGroups.clear(),
+    db.variantOverrides.clear(),
     db.dictionary.clear(),
     db.bindings.clear(),
     db.settings.clear(),
@@ -39,7 +39,7 @@ function dataOf(s: BackupSnapshot) {
     cooked: byKey(s.cooked),
     plans: byKey(s.plans),
     shopping: byKey(s.shopping),
-    variantGroups: byKey(s.variantGroups),
+    variantOverrides: byKey(s.variantOverrides),
     dictionary: byKey(s.dictionary),
     bindings: byKey(s.bindings),
     settings: byKey(s.settings),
@@ -61,10 +61,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     await importRecipeDataset({ version: 1, recipes: makeRecipes(3) })
     await setStars('r1', 5)
     await addToPlan('r2')
-    await createGroup([
-      { recipeId: 'r1', label: 'A' },
-      { recipeId: 'r3', label: 'B' },
-    ])
+    await setVariantOverride(['r1', 'r3'], 'r1')
     // A user-created dictionary entry + a lazy binding, so the snapshot carries both.
     await db.dictionary.put({ id: 'salt', name: 'salt', aisle: 'Pantry', purchaseUnit: 'g' })
     await db.bindings.put({ name: 'salt', ingredientId: 'salt' })

@@ -4,12 +4,11 @@
 // associated user data — there's no point "hearing of it again".
 
 import { db } from '../db/db'
-import { detachRecipeFromGroups } from './groups'
 
 /**
  * Delete recipes and everything tied to them, atomically:
  * - the recipe records,
- * - their variant-group membership (dissolving any group left under two members),
+ * - their place in any variant override (dissolving one left under two members),
  * - their curation (stars/notes/tags in `userData`) and `cooked` history,
  * - their place in any plan's `recipeIds`.
  *
@@ -22,16 +21,22 @@ export async function deleteRecipes(recipeIds: string[]): Promise<void> {
   await db.transaction(
     'rw',
     db.recipes,
-    db.variantGroups,
+    db.variantOverrides,
     db.userData,
     db.cooked,
     db.plans,
     async () => {
       for (const id of recipeIds) {
         await db.recipes.delete(id)
-        await detachRecipeFromGroups(id)
         await db.userData.delete(id)
         await db.cooked.where('recipeId').equals(id).delete()
+      }
+      // Drop the deleted recipes from any variant override they're named in.
+      for (const o of await db.variantOverrides.toArray()) {
+        const kept = o.recipeIds.filter((rid) => !ids.has(rid))
+        if (kept.length === o.recipeIds.length) continue
+        if (kept.length < 2) await db.variantOverrides.delete(o.id)
+        else await db.variantOverrides.put({ ...o, recipeIds: kept, leadId: kept.includes(o.leadId) ? o.leadId : kept[0] })
       }
       // Drop the deleted recipes from any plan they're sitting in.
       for (const plan of await db.plans.toArray()) {

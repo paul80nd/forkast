@@ -7,7 +7,6 @@ import type {
   WeekPlan,
   SettingRow,
   ShoppingState,
-  VariantGroup,
   VariantOverride,
   Binding,
 } from '../schema/userData'
@@ -21,7 +20,6 @@ export class ForkastDB extends Dexie {
   plans!: Table<WeekPlan, string>
   settings!: Table<SettingRow, string>
   shopping!: Table<ShoppingState, string>
-  variantGroups!: Table<VariantGroup, string>
   variantOverrides!: Table<VariantOverride, string>
   dictionary!: Table<IngredientDef, string>
   bindings!: Table<Binding, string>
@@ -37,7 +35,7 @@ export class ForkastDB extends Dexie {
     })
     // v2: shopping-list tick-off + manual extras.
     this.version(2).stores({ shopping: 'id' })
-    // v3: recipe variant groups (membership lookup is in-memory; see src/app/groups.ts).
+    // v3: the (retired) manual variantGroups table — kept in the migration history; dropped at v7.
     this.version(3).stores({ variantGroups: 'id' })
     // v4: ingredient dictionary (seeded, growable) + lazy shopping-time name bindings.
     this.version(4).stores({ dictionary: 'id, aisle', bindings: 'name' })
@@ -45,6 +43,8 @@ export class ForkastDB extends Dexie {
     this.version(5).stores({ recipes: 'id, cuisine, mainProtein, variantGroupKey' })
     // v6: user variant overrides (edits layered over the import-seeded grouping).
     this.version(6).stores({ variantOverrides: 'id' })
+    // v7: drop the retired manual variantGroups table (superseded by variant overrides).
+    this.version(7).stores({ variantGroups: null })
   }
 }
 

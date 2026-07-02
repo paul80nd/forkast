@@ -79,17 +79,6 @@ export function dishSizeByRecipe(dishes: Dish[]): Map<string, number> {
   return sizes
 }
 
-/** Total number of variants per `variantGroupKey` across a full recipe set — for a
- *  "N versions" badge that reflects the whole dish even when the list is filtered. */
-export function variantCounts(recipes: Recipe[]): Map<string, number> {
-  const counts = new Map<string, number>()
-  for (const r of recipes) {
-    if (!r.variantGroupKey) continue
-    counts.set(r.variantGroupKey, (counts.get(r.variantGroupKey) ?? 0) + 1)
-  }
-  return counts
-}
-
 /** A short chip label for a variant: the words in its title that the lead's title lacks
  *  (the swap — "Brown Rice", "Chicken Breast"). Falls back to the full title when nothing
  *  distinguishes it (e.g. the lead itself, or a same-title variant). */

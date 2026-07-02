@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 import { db } from '../../src/db/db'
 import { suggestDuplicateCandidates } from '../../src/app/duplicates'
 import { deleteRecipes } from '../../src/app/cleanup'
-import { createGroup } from '../../src/app/groups'
+import { setVariantOverride } from '../../src/app/variants'
 import { setStars } from '../../src/app/curation'
 import { chooseKeeper } from '../../src/lib/duplicates'
 import { makeRecipe } from '../../test/factories'
@@ -15,7 +15,7 @@ const feature = await loadFeature('features/duplicates.feature')
 async function resetStore(): Promise<void> {
   await Promise.all([
     db.recipes.clear(),
-    db.variantGroups.clear(),
+    db.variantOverrides.clear(),
     db.userData.clear(),
   ])
 }
@@ -86,10 +86,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
       await db.recipes.bulkPut([dupe('d1'), dupe('d2')])
     })
     And('the pair are linked in a variant group', async () => {
-      await createGroup([
-        { recipeId: 'd1', label: 'A' },
-        { recipeId: 'd2', label: 'B' },
-      ])
+      await setVariantOverride(['d1', 'd2'], 'd1')
     })
     When('I scan for duplicates', async () => {
       clusters = await suggestDuplicateCandidates()

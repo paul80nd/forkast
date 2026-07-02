@@ -3,7 +3,6 @@ import {
   collapseVariants,
   resolveDishes,
   dishSizeByRecipe,
-  variantCounts,
   variantLabel,
   ingredientDelta,
 } from './variants'
@@ -171,19 +170,5 @@ describe('ingredientDelta', () => {
     const a = recipe({ id: 'a', ingredients: [ing('chicken')] })
     const b = recipe({ id: 'b', ingredients: [ing('Chicken')] })
     expect(ingredientDelta(a, b)).toEqual({ added: [], removed: [] })
-  })
-})
-
-describe('variantCounts', () => {
-  it('counts members per key and ignores keyless recipes', () => {
-    const counts = variantCounts([
-      recipe({ id: 'a' }),
-      recipe({ id: 'b', variantGroupKey: 'k' }),
-      recipe({ id: 'c', variantGroupKey: 'k' }),
-      recipe({ id: 'd', variantGroupKey: 'j' }),
-    ])
-    expect(counts.get('k')).toBe(2)
-    expect(counts.get('j')).toBe(1)
-    expect(counts.size).toBe(2)
   })
 })

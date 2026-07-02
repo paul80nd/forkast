@@ -1,11 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { RotationRating, StarRating } from './RatingScale'
 import { clearCuration, setRotation, setStars } from '../app/curation'
-import { seeAlsoFor } from '../app/groups'
 import { dishForRecipe } from '../app/variants'
 import { ingredientDelta, variantLabel } from '../lib/variants'
 import type { Recipe } from '../schema/recipe'
@@ -38,7 +36,6 @@ export function RecipeDetail({
 
   const stars = useLiveQuery(async () => (await db.userData.get(recipe.id))?.stars, [recipe.id])
   const rotation = useLiveQuery(async () => (await db.userData.get(recipe.id))?.rotation, [recipe.id])
-  const seeAlso = useLiveQuery(() => seeAlsoFor(recipe.id), [recipe.id])
 
   const delta = recipe.id === lead.id ? null : ingredientDelta(lead, recipe)
 
@@ -218,31 +215,6 @@ export function RecipeDetail({
           </div>
         )}
 
-        {seeAlso && seeAlso.length > 0 && (
-          <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
-            <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
-              See also{' '}
-              <span className="font-normal normal-case text-stone-400">— variants of this dish</span>
-            </h2>
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {seeAlso.map((s) => (
-                <li key={s.recipeId}>
-                  <Link
-                    to={`/recipe/${s.recipeId}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white dark:bg-stone-100 px-2.5 py-1 text-sm text-stone-700 transition hover:border-orange-300 hover:text-orange-700"
-                  >
-                    {s.label && (
-                      <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500">
-                        {s.label}
-                      </span>
-                    )}
-                    {s.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-500 uppercase">
           Ingredients

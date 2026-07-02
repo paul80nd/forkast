@@ -27,7 +27,6 @@ describeFeature(feature, ({ Background, Scenario }) => {
         db.recipes.clear(),
         db.userData.clear(),
         db.cooked.clear(),
-        db.variantGroups.clear(),
         db.variantOverrides.clear(),
         db.plans.clear(),
       ])

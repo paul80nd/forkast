@@ -2,7 +2,7 @@
 // UI and the feature tests both call; the pure vocabulary lives in src/lib/curation.ts.
 
 import { db } from '../db/db'
-import { groupForRecipe } from './groups'
+import { dishForRecipe } from './variants'
 import type { Rotation, Stars } from '../schema/userData'
 
 /** True when the row carries curation other than `stars` — so clearing stars keeps the row. */
@@ -67,21 +67,21 @@ export async function clearCuration(recipeId: string): Promise<void> {
 }
 
 /**
- * Copy one recipe's rating (stars *and* rotation) onto the **unrated** members of its variant
- * group — so near-identical variants aren't triaged independently (Curate's group-aware
- * rating). A sibling that already carries a star rating is left untouched (your earlier verdict
- * wins); notes/tags on a written sibling are preserved. A no-op (returns `[]`) if the recipe
- * isn't grouped or carries no star rating itself. Returns the sibling ids actually written, for
- * the caller to prune from its triage queue.
+ * Copy one recipe's rating (stars *and* rotation) onto the **unrated** variants of its dish —
+ * so near-identical variants aren't triaged independently (Curate's group-aware rating). A
+ * variant that already carries a star rating is left untouched (your earlier verdict wins);
+ * notes/tags on a written sibling are preserved. A no-op (returns `[]`) if the recipe is a
+ * standalone dish or carries no star rating itself. Returns the sibling ids actually written,
+ * for the caller to prune from its triage queue.
  */
 export async function applyRatingToGroup(recipeId: string): Promise<string[]> {
-  const [group, source] = await Promise.all([
-    groupForRecipe(recipeId),
+  const [dish, source] = await Promise.all([
+    dishForRecipe(recipeId),
     db.userData.get(recipeId),
   ])
-  if (!group || !source?.stars) return []
+  if (!dish || dish.variants.length < 2 || !source?.stars) return []
   const { stars, rotation } = source
-  const siblingIds = group.members.map((m) => m.recipeId).filter((id) => id !== recipeId)
+  const siblingIds = dish.variants.map((v) => v.id).filter((id) => id !== recipeId)
   const written: string[] = []
   await db.transaction('rw', db.userData, async () => {
     for (const id of siblingIds) {

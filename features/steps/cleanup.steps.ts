@@ -1,7 +1,7 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
-import { createGroup, groupForRecipe } from '../../src/app/groups'
+import { setVariantOverride, getOverrides } from '../../src/app/variants'
 import { deleteRecipes } from '../../src/app/cleanup'
 import { setStars } from '../../src/app/curation'
 import { CURRENT_PLAN_ID } from '../../src/lib/plan'
@@ -22,7 +22,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
   Background(({ Given }) => {
     Given('the app starts with no recipes', async () => {
       await db.recipes.clear()
-      await db.variantGroups.clear()
+      await db.variantOverrides.clear()
       await db.userData.clear()
       await db.cooked.clear()
       await db.plans.clear()
@@ -47,16 +47,16 @@ describeFeature(feature, ({ Background, Scenario }) => {
       await db.recipes.bulkPut(ids(list).map((id) => makeRecipe({ id })))
     })
     And('I have grouped recipes {string}', async (_, list: string) => {
-      await createGroup(ids(list).map((id) => ({ recipeId: id, label: id })))
+      await setVariantOverride(ids(list), ids(list)[0])
     })
     When('I delete recipes {string}', async (_, list: string) => {
       await deleteRecipes(ids(list))
     })
     Then('recipe {string} is in no group', async (_, id: string) => {
-      expect(await groupForRecipe(id)).toBeUndefined()
+      expect((await getOverrides()).some((o) => o.recipeIds.includes(id))).toBe(false)
     })
     And('there are no groups', async () => {
-      expect(await db.variantGroups.count()).toBe(0)
+      expect(await db.variantOverrides.count()).toBe(0)
     })
   })
 

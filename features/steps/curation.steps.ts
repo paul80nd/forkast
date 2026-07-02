@@ -2,7 +2,8 @@ import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
 import { applyRatingToGroup, clearCuration, setRotation, setStars } from '../../src/app/curation'
-import { createGroup } from '../../src/app/groups'
+import { setVariantOverride } from '../../src/app/variants'
+import { makeRecipe } from '../../test/factories'
 import type { Rotation, Stars } from '../../src/schema/userData'
 
 const feature = await loadFeature('features/curation.feature')
@@ -15,7 +16,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
   Background(({ Given }) => {
     Given('no recipes have been rated', async () => {
       await db.userData.clear()
-      await db.variantGroups.clear()
+      await db.variantOverrides.clear()
+      await db.recipes.clear()
       expect(await db.userData.count()).toBe(0)
     })
   })
@@ -162,7 +164,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
     'Applying a rating across a variant group rates the unrated siblings',
     ({ Given, And, When, Then }) => {
       Given('recipes {string} are a variant group', async (_, list: string) => {
-        await createGroup(ids(list).map((id) => ({ recipeId: id, label: id })))
+        await db.recipes.bulkPut(ids(list).map((id) => makeRecipe({ id })))
+        await setVariantOverride(ids(list), ids(list)[0])
       })
       And('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
         await setStars(id, n as Stars)
@@ -189,7 +192,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
     'Applying a rating across a group never overwrites an already-rated variant',
     ({ Given, And, When, Then }) => {
       Given('recipes {string} are a variant group', async (_, list: string) => {
-        await createGroup(ids(list).map((id) => ({ recipeId: id, label: id })))
+        await db.recipes.bulkPut(ids(list).map((id) => makeRecipe({ id })))
+        await setVariantOverride(ids(list), ids(list)[0])
       })
       And('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
         await setStars(id, n as Stars)

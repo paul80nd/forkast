@@ -27,7 +27,6 @@ function makeSnapshot(over: Partial<BackupSnapshot> = {}): BackupSnapshot {
     cooked: [{ id: 1, recipeId: 'r1', date: '2026-06-01' }],
     plans: [{ id: 'current', portions: 2, recipeIds: ['r1'] }],
     shopping: [{ id: 'current', checked: [], extras: [] }],
-    variantGroups: [],
     variantOverrides: [],
     dictionary: [{ id: 'lime', name: 'lime', plural: 'limes', aisle: 'Produce', purchaseUnit: 'each' }],
     bindings: [{ name: 'lime', ingredientId: 'lime' }],
@@ -69,7 +68,6 @@ describe('parseBackup', () => {
     expect(snapshot.cooked).toEqual([])
     expect(snapshot.plans).toEqual([])
     expect(snapshot.shopping).toEqual([])
-    expect(snapshot.variantGroups).toEqual([])
     expect(snapshot.variantOverrides).toEqual([])
     expect(snapshot.dictionary).toEqual([])
     expect(snapshot.bindings).toEqual([])

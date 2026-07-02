@@ -10,7 +10,6 @@ import type {
   SettingRow,
   ShoppingState,
   UserRecipeData,
-  VariantGroup,
   VariantOverride,
   WeekPlan,
 } from '../schema/userData'
@@ -77,7 +76,6 @@ export function parseBackup(input: unknown): BackupParseResult {
     cooked: asArray<CookedEntry>(data.cooked),
     plans: asArray<WeekPlan>(data.plans),
     shopping: asArray<ShoppingState>(data.shopping),
-    variantGroups: asArray<VariantGroup>(data.variantGroups),
     variantOverrides: asArray<VariantOverride>(data.variantOverrides),
     dictionary: asArray<IngredientDef>(data.dictionary),
     bindings: asArray<Binding>(data.bindings),

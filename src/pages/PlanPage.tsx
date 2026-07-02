@@ -11,7 +11,7 @@ import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
 import type { Suggestion } from '../lib/suggest'
 import type { Recipe } from '../schema/recipe'
-import type { Stars, VariantGroup } from '../schema/userData'
+import type { Stars } from '../schema/userData'
 
 /** A shortlist slot under review — a suggested recipe plus its lock state. */
 interface Slot extends Suggestion {
@@ -38,7 +38,6 @@ export function PlanPage() {
   const userData = useLiveQuery(() => db.userData.toArray(), [])
   const plan = useLiveQuery(() => db.plans.get(CURRENT_PLAN_ID), [])
   const cooked = useLiveQuery(() => db.cooked.toArray(), [])
-  const groups = useLiveQuery(() => db.variantGroups.toArray(), [])
   const overrides = useLiveQuery(() => db.variantOverrides.toArray(), [])
   const [pickerQuery, setPickerQuery] = useState('')
   // The recipe shown in the pop-up detail view (opened from a suggested or planned row); null = closed.
@@ -74,13 +73,6 @@ export function PlanPage() {
     }
     return m
   }, [cooked])
-
-  // recipeId → its variant group, for the "swap variant" action on a suggested slot.
-  const groupByRecipe = useMemo(() => {
-    const m = new Map<string, VariantGroup>()
-    for (const g of groups ?? []) for (const mem of g.members) m.set(mem.recipeId, g)
-    return m
-  }, [groups])
 
   // recipe id → its dish's variants (lead first), for the planned-meal version picker.
   // Effective grouping = import variants overlaid with user overrides.
@@ -338,8 +330,7 @@ export function PlanPage() {
             {shortlist.map((slot, i) => {
               const r = byId.get(slot.id)
               if (!r) return null
-              const group = groupByRecipe.get(slot.id)
-              const siblings = group?.members.filter((m) => m.recipeId !== slot.id) ?? []
+              const siblings = (dishByRecipe.get(slot.id) ?? []).filter((v) => v.id !== slot.id)
               return (
                 <SuggestionSlot
                   key={slot.id}
@@ -348,7 +339,6 @@ export function PlanPage() {
                   unrated={!starsById.has(slot.id)}
                   lastCooked={lastCookedById.get(slot.id)}
                   siblings={siblings}
-                  byId={byId}
                   onOpen={() => setModalRecipe(r)}
                   onLock={() => toggleLock(i)}
                   onReroll={() => reroll(i)}
@@ -531,7 +521,6 @@ function SuggestionSlot({
   unrated,
   lastCooked,
   siblings,
-  byId,
   onOpen,
   onLock,
   onReroll,
@@ -542,8 +531,7 @@ function SuggestionSlot({
   slot: Slot
   unrated: boolean
   lastCooked: string | undefined
-  siblings: VariantGroup['members']
-  byId: Map<string, Recipe>
+  siblings: Recipe[]
   onOpen: () => void
   onLock: () => void
   onReroll: () => void
@@ -596,8 +584,8 @@ function SuggestionSlot({
           >
             <option value="">Swap variant…</option>
             {siblings.map((m) => (
-              <option key={m.recipeId} value={m.recipeId}>
-                {m.label || byId.get(m.recipeId)?.title || m.recipeId}
+              <option key={m.id} value={m.id}>
+                {variantLabel(m.title, recipe.title) || m.title}
               </option>
             ))}
           </select>
