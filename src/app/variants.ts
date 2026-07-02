@@ -3,6 +3,8 @@
 // feature tests call. Pure resolution lives in src/lib/variants.ts.
 
 import { db } from '../db/db'
+import { resolveDishes } from '../lib/variants'
+import { suggestGroups, type CandidateCluster } from '../lib/similarity'
 import type { Recipe } from '../schema/recipe'
 import type { VariantOverride } from '../schema/userData'
 import type { Dish } from '../lib/variants'
@@ -11,6 +13,30 @@ const newId = () => crypto.randomUUID()
 
 export function getOverrides(): Promise<VariantOverride[]> {
   return db.variantOverrides.toArray()
+}
+
+/**
+ * Suggest variant merges the image-hash missed: text-similar clusters (same title/ingredient
+ * scorer as the old group suggester) filtered to those spanning more than one *effective*
+ * dish — so confirming one actually merges recipes that aren't already grouped together.
+ */
+export async function suggestVariantMerges(): Promise<CandidateCluster[]> {
+  const [recipes, overrides] = await Promise.all([
+    db.recipes.toArray(),
+    db.variantOverrides.toArray(),
+  ])
+  const dishOf = new Map<string, string>()
+  for (const d of resolveDishes(recipes, overrides)) {
+    for (const v of d.variants) dishOf.set(v.id, d.lead.id)
+  }
+  const input = recipes.map((r) => ({
+    id: r.id,
+    title: r.title,
+    ingredientNames: r.ingredients.map((i) => i.name),
+  }))
+  return suggestGroups(input).filter(
+    (c) => new Set(c.recipeIds.map((id) => dishOf.get(id) ?? id)).size > 1,
+  )
 }
 
 /**
