@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { collapseVariants, variantCounts } from './variants'
+import { collapseVariants, variantCounts, variantLabel, ingredientDelta } from './variants'
 import type { Recipe } from '../schema/recipe'
 
 function recipe(over: Partial<Recipe> & { id: string }): Recipe {
@@ -18,6 +18,10 @@ function recipe(over: Partial<Recipe> & { id: string }): Recipe {
     serves: 2,
     ...over,
   }
+}
+
+function ing(name: string): Recipe['ingredients'][number] {
+  return { rawLabel: name, name }
 }
 
 describe('collapseVariants', () => {
@@ -60,6 +64,34 @@ describe('collapseVariants', () => {
     ]
     const dishes = collapseVariants(list)
     expect(dishes.map((d) => d.lead.id)).toEqual(['x', 'white', 'y'])
+  })
+})
+
+describe('variantLabel', () => {
+  it('returns the words the variant adds over the lead (the swap)', () => {
+    expect(variantLabel('Chicken Tikka Masala With Brown Rice', 'Chicken Tikka Masala With Rice'))
+      .toBe('Brown')
+    expect(variantLabel('Cheesy Black Bean Enchiladas & A Chicken Breast', 'Cheesy Black Bean Enchiladas'))
+      .toBe('Chicken Breast')
+  })
+
+  it('falls back to the full title when nothing distinguishes it', () => {
+    expect(variantLabel('Chicken Tikka Masala With Rice', 'Chicken Tikka Masala With Rice'))
+      .toBe('Chicken Tikka Masala With Rice')
+  })
+})
+
+describe('ingredientDelta', () => {
+  it('reports names added and removed between two recipes', () => {
+    const lead = recipe({ id: 'lead', ingredients: [ing('white rice'), ing('chicken')] })
+    const variant = recipe({ id: 'v', ingredients: [ing('brown rice'), ing('chicken')] })
+    expect(ingredientDelta(lead, variant)).toEqual({ added: ['brown rice'], removed: ['white rice'] })
+  })
+
+  it('is empty when the ingredient names match', () => {
+    const a = recipe({ id: 'a', ingredients: [ing('chicken')] })
+    const b = recipe({ id: 'b', ingredients: [ing('Chicken')] })
+    expect(ingredientDelta(a, b)).toEqual({ added: [], removed: [] })
   })
 })
 

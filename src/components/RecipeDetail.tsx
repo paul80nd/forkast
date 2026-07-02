@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
@@ -6,23 +6,46 @@ import { resolveAsset } from '../lib/assets'
 import { RotationRating, StarRating } from './RatingScale'
 import { clearCuration, setRotation, setStars } from '../app/curation'
 import { seeAlsoFor } from '../app/groups'
+import { collapseVariants, ingredientDelta, variantLabel } from '../lib/variants'
 import type { Recipe } from '../schema/recipe'
 
 // The shared recipe body — image + facts + editable ★/◆ rating panel + nutrition on the left,
 // title/description/ingredients/method on the right. Used by the full RecipePage and the Plan-page
 // modal, so both share one formatting (single source of truth). The rating panel is self-contained
-// via the curation app layer; page-specific actions (add-to-week, delete) are injected as
-// `headerActions` beside the title.
+// via the curation app layer; page-specific actions (add-to-week, delete) are injected via
+// `headerActions`, called with the currently-shown variant so those actions target the chosen swap.
+//
+// When the recipe is one of a variant group, a version selector lets the reader swap the shown
+// recipe in place (protein/carb/side swaps) and see the ingredient diff versus the lead.
 export function RecipeDetail({
-  recipe,
+  recipe: anchor,
   headerActions,
 }: {
   recipe: Recipe
-  headerActions?: ReactNode
+  headerActions?: (shown: Recipe) => ReactNode
 }) {
+  // The anchor's variant siblings (itself when standalone), ordered lead-first.
+  const siblings = useLiveQuery(
+    () =>
+      anchor.variantGroupKey
+        ? db.recipes.where('variantGroupKey').equals(anchor.variantGroupKey).toArray()
+        : Promise.resolve([anchor]),
+    [anchor.id, anchor.variantGroupKey],
+  )
+  const members = collapseVariants(siblings ?? [anchor])[0]?.variants ?? [anchor]
+  const lead = members[0]
+
+  // Which variant is on show — defaults to the one navigated to; reset when the page changes.
+  const [shownId, setShownId] = useState(anchor.id)
+  useEffect(() => setShownId(anchor.id), [anchor.id])
+  // The whole body below renders this `recipe` — the shown variant, not necessarily the anchor.
+  const recipe = members.find((m) => m.id === shownId) ?? anchor
+
   const stars = useLiveQuery(async () => (await db.userData.get(recipe.id))?.stars, [recipe.id])
   const rotation = useLiveQuery(async () => (await db.userData.get(recipe.id))?.rotation, [recipe.id])
   const seeAlso = useLiveQuery(() => seeAlsoFor(recipe.id), [recipe.id])
+
+  const delta = recipe.id === lead.id ? null : ingredientDelta(lead, recipe)
 
   return (
     <div className="grid gap-6 md:grid-cols-[2fr_3fr]">
@@ -136,7 +159,7 @@ export function RecipeDetail({
       <div>
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{recipe.title}</h1>
-          {headerActions}
+          {headerActions?.(recipe)}
         </div>
         <p className="mt-2 text-stone-600">{recipe.description}</p>
 
@@ -149,6 +172,55 @@ export function RecipeDetail({
           >
             View original ↗
           </a>
+        )}
+
+        {members.length > 1 && (
+          <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50 p-3">
+            <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+              Versions{' '}
+              <span className="font-normal normal-case text-stone-400">
+                — {members.length} swaps of this dish
+              </span>
+            </h2>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {members.map((m) => {
+                const isShown = m.id === recipe.id
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setShownId(m.id)}
+                    className={`rounded-full border px-2.5 py-1 text-sm transition ${
+                      isShown
+                        ? 'border-orange-500 bg-orange-500 text-white'
+                        : 'border-stone-200 bg-white dark:bg-stone-100 text-stone-700 hover:border-orange-300 hover:text-orange-700'
+                    }`}
+                  >
+                    {m.id === lead.id ? 'Original' : variantLabel(m.title, lead.title)}
+                  </button>
+                )
+              })}
+            </div>
+            {delta && (delta.added.length > 0 || delta.removed.length > 0) ? (
+              <p className="mt-2 text-sm">
+                <span className="font-medium text-stone-600">Swap vs original: </span>
+                {delta.removed.map((n) => (
+                  <span key={`-${n}`} className="mr-2 whitespace-nowrap text-rose-600">
+                    − {n}
+                  </span>
+                ))}
+                {delta.added.map((n) => (
+                  <span key={`+${n}`} className="mr-2 whitespace-nowrap text-emerald-700">
+                    + {n}
+                  </span>
+                ))}
+              </p>
+            ) : delta ? (
+              <p className="mt-2 text-sm text-stone-500">
+                Same ingredients as the original — differs in amounts or method.
+              </p>
+            ) : null}
+          </div>
         )}
 
         {seeAlso && seeAlso.length > 0 && (

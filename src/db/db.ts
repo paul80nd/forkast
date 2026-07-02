@@ -39,6 +39,8 @@ export class ForkastDB extends Dexie {
     this.version(3).stores({ variantGroups: 'id' })
     // v4: ingredient dictionary (seeded, growable) + lazy shopping-time name bindings.
     this.version(4).stores({ dictionary: 'id, aisle', bindings: 'name' })
+    // v5: index variantGroupKey so a recipe's variant siblings look up directly.
+    this.version(5).stores({ recipes: 'id, cuisine, mainProtein, variantGroupKey' })
   }
 }
 

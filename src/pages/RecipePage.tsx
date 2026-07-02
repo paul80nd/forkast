@@ -13,9 +13,10 @@ export function RecipePage() {
   const [menuOpen, setMenuOpen] = useState(false)
   // undefined = loading, null = not found
   const recipe = useLiveQuery(async () => (await db.recipes.get(id)) ?? null, [id])
-  const inPlan = useLiveQuery(
-    async () => ((await db.plans.get(CURRENT_PLAN_ID))?.recipeIds ?? []).includes(id),
-    [id],
+  // The plan's recipe ids — membership is checked per shown variant (a swap may differ).
+  const planIds = useLiveQuery(
+    async () => (await db.plans.get(CURRENT_PLAN_ID))?.recipeIds ?? [],
+    [],
   )
 
   if (recipe === undefined) {
@@ -42,13 +43,16 @@ export function RecipePage() {
       <div className="mt-3">
         <RecipeDetail
           recipe={recipe}
-          headerActions={
-            /* Split button: primary add/remove from week, with secondary actions in a menu. */
+          headerActions={(shown) => {
+            /* Split button: primary add/remove from week, with secondary actions in a menu.
+               Acts on the shown variant, so adding the chosen swap plans that recipe. */
+            const inPlan = (planIds ?? []).includes(shown.id)
+            return (
             <div className="relative flex shrink-0 items-stretch">
               {inPlan ? (
                 <button
                   type="button"
-                  onClick={() => removeFromPlan(recipe.id)}
+                  onClick={() => removeFromPlan(shown.id)}
                   className="rounded-l-md bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100"
                 >
                   ✓ In week
@@ -56,7 +60,7 @@ export function RecipePage() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => addToPlan(recipe.id)}
+                  onClick={() => addToPlan(shown.id)}
                   className="rounded-l-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600"
                 >
                   + Add to week
@@ -97,10 +101,10 @@ export function RecipePage() {
                         setMenuOpen(false)
                         if (
                           window.confirm(
-                            `Delete “${recipe.title}”?\n\nThis removes it and its ratings for good (re-import to restore).`,
+                            `Delete “${shown.title}”?\n\nThis removes it and its ratings for good (re-import to restore).`,
                           )
                         ) {
-                          await deleteRecipe(recipe.id)
+                          await deleteRecipe(shown.id)
                           navigate('/browse')
                         }
                       }}
@@ -112,7 +116,8 @@ export function RecipePage() {
                 </>
               )}
             </div>
-          }
+            )
+          }}
         />
       </div>
     </section>

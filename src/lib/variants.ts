@@ -49,3 +49,31 @@ export function variantCounts(recipes: Recipe[]): Map<string, number> {
   }
   return counts
 }
+
+/** A short chip label for a variant: the words in its title that the lead's title lacks
+ *  (the swap — "Brown Rice", "Chicken Breast"). Falls back to the full title when nothing
+ *  distinguishes it (e.g. the lead itself, or a same-title variant). */
+export function variantLabel(title: string, leadTitle: string): string {
+  const stop = new Set(['a', 'an', 'the', 'with', 'and', 'of', 'in', '&'])
+  const leadWords = new Set(leadTitle.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean))
+  const extra = title
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .filter((w) => !leadWords.has(w.toLowerCase()) && !stop.has(w.toLowerCase()))
+  return extra.join(' ') || title
+}
+
+/** Ingredient-name changes from one recipe to another (by name, case-insensitive) — the
+ *  swap made visible: what the target adds and what it drops versus the source. */
+export function ingredientDelta(
+  from: Recipe,
+  to: Recipe,
+): { added: string[]; removed: string[] } {
+  const norm = (n: string) => n.trim().toLowerCase()
+  const fromNames = new Set(from.ingredients.map((i) => norm(i.name)))
+  const toNames = new Set(to.ingredients.map((i) => norm(i.name)))
+  return {
+    added: to.ingredients.filter((i) => !fromNames.has(norm(i.name))).map((i) => i.name),
+    removed: from.ingredients.filter((i) => !toNames.has(norm(i.name))).map((i) => i.name),
+  }
+}
