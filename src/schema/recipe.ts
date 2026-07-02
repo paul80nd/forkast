@@ -54,6 +54,9 @@ export interface Recipe {
   image: string
   /** Provenance. Omitted from demo and any committed public data. */
   sourceUrl?: string
+  /** Printed recipe-card code, if the source exposes one (e.g. "R1196"). Optional and
+   *  best-effort — set at import only when confidently attributable to this recipe. */
+  recipeCode?: string
 
   /** The single browse facet, e.g. "Italian" — typically the source's cuisine label. */
   cuisine: string

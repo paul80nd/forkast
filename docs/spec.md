@@ -98,6 +98,7 @@ no separate review pass** — the SPA owns ingredient identity, lazily.
 | `title`, `description` | |
 | `image` | local filename under `/images` |
 | `sourceUrl` | provenance (private datasets only) |
+| `recipeCode?` | printed recipe-card code if the source exposes one (e.g. `R1196`); best-effort, set at import only when confidently attributable |
 | `cuisine` | the single browse facet (from source); `tags[]` carries derived diet/effort labels |
 | `allergens[]` | from source, for reference/display |
 | `prepTime` | prep+cook minutes for the recipe's base `serves` |

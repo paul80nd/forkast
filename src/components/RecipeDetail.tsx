@@ -38,6 +38,7 @@ export function RecipeDetail({
           <Fact label="Time" value={`${recipe.prepTime} min`} />
           {recipe.mainProtein && <Fact label="Main" value={recipe.mainProtein} capitalize />}
           <Fact label="Serves" value={`${recipe.serves}`} />
+          {recipe.recipeCode && <Fact label="Card" value={recipe.recipeCode} />}
         </dl>
 
         <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">

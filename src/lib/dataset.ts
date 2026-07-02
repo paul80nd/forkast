@@ -97,6 +97,8 @@ function normaliseRecipe(raw: unknown, index: number): Recipe | string {
   // Optional pass-through fields — only set when genuinely present.
   const sourceUrl = asString(raw.sourceUrl)
   if (sourceUrl) recipe.sourceUrl = sourceUrl
+  const recipeCode = asString(raw.recipeCode)
+  if (recipeCode) recipe.recipeCode = recipeCode
   const mainProtein = asString(raw.mainProtein)
   if (mainProtein) recipe.mainProtein = mainProtein
   if (isObject(raw.nutrition)) {
