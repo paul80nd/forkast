@@ -450,24 +450,64 @@ function MealRow({ r, onOpen, right }) {
   return <li style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', listStyle: 'none' }}>
     <div style={{ display: 'flex', flex: 1, minWidth: 0, alignItems: 'center', gap: 12 }}>
       <img src={r.image} alt="" style={{ width: 56, height: 56, borderRadius: 'var(--fk-radius-md)', objectFit: 'cover', flex: 'none' }} />
-      <div style={{ minWidth: 0 }}>
+      <div style={{ minWidth: 0, flex: 1 }}>
         <button type="button" onClick={onOpen} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--fk-font-body)', fontWeight: 500, fontSize: 'var(--fk-text-body)', color: 'var(--fk-text)', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', textAlign: 'left' }}>{r.title}</button>
-        <div style={{ marginTop: 2, fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)' }}>{r.cuisine} · <span style={{ textTransform: 'capitalize' }}>{r.mainProtein}</span> · ⏱ {r.prepTime} min</div>
+        <div style={{ marginTop: 2, fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.cuisine} · <span style={{ textTransform: 'capitalize' }}>{r.mainProtein}</span> · ⏱ {r.prepTime} min</div>
       </div>
     </div>
     {right}
   </li>
 }
+function VarietyTally({ cuisines, proteins }) {
+  const chip = (k, n) => <Tag key={k} tone={n > 1 ? 'warn' : 'neutral'}>{k}{n > 1 ? ' ×' + n : ''}</Tag>
+  return <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 18px' }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Eyebrow>Cuisines</Eyebrow><span style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{Object.entries(cuisines).map(([k, n]) => chip(k, n))}</span></span>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Eyebrow>Proteins</Eyebrow><span style={{ display: 'flex', flexWrap: 'wrap', gap: 6, textTransform: 'capitalize' }}>{Object.entries(proteins).map(([k, n]) => chip(k, n))}</span></span>
+  </div>
+}
 function Plan({ ratings, planIds, togglePlan, portions, setPortions, onOpen }) {
-  const [shortlist, setShortlist] = useState([])
+  const [shortlist, setShortlist] = useState([]) // [{ id, locked }]
+  const [count, setCount] = useState(3)
+  const [includeUnrated, setIncludeUnrated] = useState(true)
+  const [cookedToast, setCookedToast] = useState(null)
+  const cookedTimer = useRef(null)
+  const markCooked = (r) => { togglePlan(r.id); setCookedToast(r.title); clearTimeout(cookedTimer.current); cookedTimer.current = setTimeout(() => setCookedToast(null), 3000) }
   const planned = planIds.map((id) => byId[id])
+
+  const pool = (exclude = []) => RECIPES.filter((r) => !planIds.includes(r.id) && r.mainProtein !== 'fish' && !exclude.includes(r.id) && (includeUnrated || ratings[r.id]?.stars != null))
   const suggest = () => {
-    const pool = RECIPES.filter((r) => !planIds.includes(r.id) && r.mainProtein !== 'fish')
-    setShortlist(pool.slice(0, 4).map((r) => r.id))
+    const need = Math.max(0, count - planned.length)
+    setShortlist(pool().slice(0, need).map((r) => ({ id: r.id, locked: false })))
   }
-  const accept = () => { shortlist.forEach((id) => { if (!planIds.includes(id)) togglePlan(id) }); setShortlist([]) }
-  const cuisineTally = {}
-  planned.forEach((r) => { cuisineTally[r.cuisine] = (cuisineTally[r.cuisine] || 0) + 1 })
+  const reSuggest = () => {
+    const locked = shortlist.filter((s) => s.locked)
+    const need = Math.max(0, count - planned.length - locked.length)
+    const fresh = pool(locked.map((s) => s.id)).slice(0, need).map((r) => ({ id: r.id, locked: false }))
+    setShortlist([...locked, ...fresh])
+  }
+  const reroll = (i) => setShortlist((sl) => {
+    const repl = pool(sl.map((s) => s.id))[0]
+    return repl ? sl.map((s, idx) => (idx === i && !s.locked ? { id: repl.id, locked: false } : s)) : sl
+  })
+  const toggleLock = (i) => setShortlist((sl) => sl.map((s, idx) => (idx === i ? { ...s, locked: !s.locked } : s)))
+  const removeSlot = (i) => setShortlist((sl) => sl.filter((_, idx) => idx !== i))
+  const accept = () => { shortlist.forEach((s) => { if (!planIds.includes(s.id)) togglePlan(s.id) }); setShortlist([]) }
+
+  const tally = (xs) => { const c = {}; xs.forEach((x) => { if (x) c[x] = (c[x] || 0) + 1 }); return c }
+  const cuisineTally = tally(planned.map((r) => r.cuisine))
+  const proteinTally = tally(planned.map((r) => r.mainProtein))
+  const slCuisine = tally(shortlist.map((s) => byId[s.id].cuisine))
+  const slProtein = tally(shortlist.map((s) => byId[s.id].mainProtein))
+
+  const plannedCuisines = new Set(planned.map((r) => r.cuisine))
+  const plannedProteins = new Set(planned.map((r) => r.mainProtein))
+  const reasonsFor = (r) => {
+    const out = []
+    if (ratings[r.id]?.stars == null) out.push({ t: 'new to you', unrated: true })
+    if (!plannedCuisines.has(r.cuisine)) out.push({ t: 'new cuisine' })
+    if (r.mainProtein && !plannedProteins.has(r.mainProtein)) out.push({ t: 'new protein' })
+    return out
+  }
   const candidates = RECIPES.filter((r) => (ratings[r.id]?.stars ?? 0) >= 3 && !planIds.includes(r.id) && r.mainProtein !== 'fish')
   return (
     <div>
@@ -480,31 +520,42 @@ function Plan({ ratings, planIds, togglePlan, portions, setPortions, onOpen }) {
           </span>
         </div>
       </div>
-      <div style={{ marginTop: 16 }}><Btn variant="primary" onClick={suggest}>Suggest a varied week</Btn></div>
+      <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+        <Btn variant="primary" onClick={suggest}>Suggest a varied week</Btn>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>
+          <input type="number" min={1} max={14} value={count} onChange={(e) => setCount(Math.max(1, Math.min(14, Number(e.target.value) || 1)))}
+            style={{ width: 56, fontFamily: 'var(--fk-font-body)', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text)', background: 'var(--fk-surface-card)', padding: '6px 8px', borderRadius: 'var(--fk-radius-md)', border: '1px solid var(--fk-border-strong)', outline: 'none' }} />
+          meals a week
+        </label>
+        <Switch checked={includeUnrated} onChange={setIncludeUnrated} label="Include unrated" />
+        {planned.length > 0 && <span style={{ fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)' }}>fills the {Math.max(0, count - planned.length)} slot{count - planned.length === 1 ? '' : 's'} left after {planned.length} planned</span>}
+      </div>
 
       {shortlist.length > 0 && <div style={{ marginTop: 16 }}><Panel tone="info">
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div><div style={{ fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h2)', color: 'var(--fk-harbour-900)' }}>Suggested week</div>
             <div style={{ fontSize: 'var(--fk-text-xs)', color: 'var(--fk-info-ink)' }}>A proposal — reroll, lock, or swap any, then accept. Nothing's added yet.</div></div>
-          <div style={{ display: 'flex', gap: 6 }}><Btn variant="info" size="sm" onClick={accept}>Accept {shortlist.length} → week</Btn><Btn variant="infosoft" size="sm" onClick={suggest}>Re-suggest</Btn><Btn variant="ghost" size="sm" onClick={() => setShortlist([])}>Clear</Btn></div>
+          <div style={{ display: 'flex', gap: 6 }}><Btn variant="info" size="sm" onClick={accept}>Accept {shortlist.length} → week</Btn><Btn variant="infosoft" size="sm" onClick={reSuggest}>Re-suggest</Btn><Btn variant="ghost" size="sm" onClick={() => setShortlist([])}>Clear</Btn></div>
         </div>
+        <div style={{ marginTop: 10 }}><VarietyTally cuisines={slCuisine} proteins={slProtein} /></div>
         <ul style={{ margin: '12px 0 0', padding: 0 }}>
-          {shortlist.map((id) => { const r = byId[id]; return <li key={id} style={{ background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-lg)', marginBottom: 8, listStyle: 'none' }}>
-            <MealRow r={r} onOpen={() => onOpen(id)} right={<div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingRight: 6 }}>
-              {ratings[id]?.stars == null && <Tag tone="warn">unrated</Tag>}<Tag tone="info">variety</Tag>
-              <IconBtn label="Reroll">↻</IconBtn></div>} /></li> })}
+          {shortlist.map((s, i) => { const r = byId[s.id]; return <li key={s.id} style={{ background: 'var(--fk-surface-card)', border: '1px solid ' + (s.locked ? 'var(--fk-harbour-200)' : 'var(--fk-border)'), borderRadius: 'var(--fk-radius-lg)', marginBottom: 8, listStyle: 'none' }}>
+            <MealRow r={r} onOpen={() => onOpen(s.id)} right={<div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingRight: 6 }}>
+              {reasonsFor(r).map((x) => <Tag key={x.t} tone={x.unrated ? 'warn' : 'info'}>{x.t}</Tag>)}
+              <IconBtn label={s.locked ? 'Unlock' : 'Lock'} onClick={() => toggleLock(i)}>{s.locked ? '🔒' : '🔓'}</IconBtn>
+              <IconBtn label="Reroll" onClick={() => reroll(i)}>↻</IconBtn>
+              <IconBtn label="Remove" tone="danger" onClick={() => removeSlot(i)}>✕</IconBtn></div>} /></li> })}
         </ul>
       </Panel></div>}
 
       {planned.length === 0 ? <div style={{ marginTop: 16 }}><div style={{ background: 'var(--fk-surface-card)', border: '1px dashed var(--fk-border-strong)', borderRadius: 'var(--fk-radius-2xl)', padding: '40px 24px', textAlign: 'center', color: 'var(--fk-text-muted)' }}>Nothing planned yet — suggest a week, or add meals below.</div></div> : <>
         <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-lg)', padding: 12 }}>
-          <Eyebrow>Cuisines</Eyebrow>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{Object.entries(cuisineTally).map(([c, n]) => <Tag key={c} tone={n > 1 ? 'warn' : 'neutral'}>{c}{n > 1 ? ' ×' + n : ''}</Tag>)}</div>
+          <VarietyTally cuisines={cuisineTally} proteins={proteinTally} />
         </div>
         <ul style={{ margin: '16px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {planned.map((r) => <li key={r.id} style={{ background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-lg)', listStyle: 'none' }}>
             <MealRow r={r} onOpen={() => onOpen(r.id)} right={<div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingRight: 6 }}>
-              <Btn variant="positive" size="sm" glyph="✓" onClick={() => togglePlan(r.id)}>Cooked</Btn>
+              <Btn variant="outline" size="sm" onClick={() => markCooked(r)}>Mark cooked</Btn>
               <IconBtn label="Remove from week" tone="danger" onClick={() => togglePlan(r.id)}>✕</IconBtn></div>} /></li>)}
         </ul>
       </>}
@@ -519,6 +570,7 @@ function Plan({ ratings, planIds, togglePlan, portions, setPortions, onOpen }) {
           {candidates.length === 0 && <p style={{ fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>No more shortlisted recipes to add.</p>}
         </div>
       </div>
+      {cookedToast && <div style={{ position: 'fixed', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 60, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--fk-text)', color: 'var(--fk-surface-card)', fontFamily: 'var(--fk-font-body)', fontSize: 'var(--fk-text-sm)', padding: '10px 16px', borderRadius: 'var(--fk-radius-full)', boxShadow: 'var(--fk-shadow-lg)' }}><span aria-hidden style={{ color: 'var(--fk-brand)' }}>✓</span> Cooked · {cookedToast} logged</div>}
     </div>
   )
 }

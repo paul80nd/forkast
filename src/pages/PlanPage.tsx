@@ -449,10 +449,10 @@ export function PlanPage() {
                   <button
                     type="button"
                     onClick={() => void cookWithUndo(r, slot)}
-                    className="rounded-md bg-positive-tint px-2.5 py-1 text-sm font-medium text-positive-ink hover:bg-positive-tint"
+                    className="rounded-md border border-line-strong bg-card px-2.5 py-1 text-sm font-medium text-ink hover:bg-sunken"
                     title="Mark as cooked (stamps today, removes from week)"
                   >
-                    ✓ Cooked
+                    Mark cooked
                   </button>
                   <button
                     type="button"
