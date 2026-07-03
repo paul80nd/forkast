@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Work+Sans:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:#e9e6e0;font-family:'Work Sans',sans-serif;}
+</style>
+</helmet>
+
+<div style="padding:48px 56px 20px;font-family:'Space Grotesk',sans-serif;">
+  <div style="font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#8a857c;font-weight:600;">Forkast · Design Directions</div>
+  <div style="font-size:30px;font-weight:700;color:#1c1a17;margin-top:8px;letter-spacing:-.01em;">Pick a direction for your recipe app</div>
+  <div style="font-size:15px;color:#6b675f;margin-top:8px;max-width:640px;line-height:1.5;font-family:'Work Sans',sans-serif;">Three takes on the same recipe-browse screen for home cooks. Same content, different personality. Reference them in chat by their badge — <a href="#1a" style="color:#1c1a17;font-weight:600;">1A</a>, <a href="#1b" style="color:#1c1a17;font-weight:600;">1B</a>, <a href="#1c" style="color:#1c1a17;font-weight:600;">1C</a>.</div>
+</div>
+
+<section style="padding:20px 56px 80px;">
+<div style="display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start;">
+
+  <!-- ============ OPTION 1A — WARM EDITORIAL ============ -->
+  <div id="1a" style="width:392px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;font-family:'Space Grotesk',sans-serif;">
+      <span style="background:#C0563A;color:#fff;font-size:13px;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.04em;">1A</span>
+      <span style="font-size:18px;font-weight:600;color:#1c1a17;">Warm Editorial</span>
+    </div>
+    <div style="width:392px;background:#FBF7F0;border-radius:34px;overflow:hidden;box-shadow:0 24px 60px -20px rgba(60,40,30,.35),0 4px 12px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.05);">
+      <!-- header -->
+      <div style="padding:22px 22px 8px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:'Newsreader',serif;font-weight:600;font-size:26px;color:#2A2320;letter-spacing:-.01em;">Forkast</div>
+        <div style="display:flex;gap:14px;align-items:center;">
+          <span style="font-family:'Material Symbols Outlined';font-size:24px;color:#2A2320;font-feature-settings:'liga';">search</span>
+          <div style="width:32px;height:32px;border-radius:50%;background:repeating-linear-gradient(45deg,#e7d8cf 0 6px,#efe2d9 6px 12px);"></div>
+        </div>
+      </div>
+      <div style="padding:6px 22px 0;">
+        <div style="font-family:'Newsreader',serif;font-size:30px;line-height:1.12;color:#2A2320;letter-spacing:-.01em;">Good evening,<br><span style="font-style:italic;color:#C0563A;">what are we cooking?</span></div>
+      </div>
+      <!-- chips -->
+      <div style="display:flex;gap:8px;padding:18px 22px 4px;overflow:hidden;">
+        <span style="background:#C0563A;color:#FBF7F0;font-size:13px;font-weight:500;padding:7px 14px;border-radius:999px;">All</span>
+        <span style="background:#F0E3DC;color:#7a6a60;font-size:13px;padding:7px 14px;border-radius:999px;">Dinners</span>
+        <span style="background:#F0E3DC;color:#7a6a60;font-size:13px;padding:7px 14px;border-radius:999px;">Baking</span>
+        <span style="background:#F0E3DC;color:#7a6a60;font-size:13px;padding:7px 14px;border-radius:999px;">Quick</span>
+      </div>
+      <!-- featured -->
+      <div style="padding:16px 22px 8px;">
+        <div style="border-radius:16px;overflow:hidden;background:#FBF7F0;box-shadow:0 8px 20px -10px rgba(60,40,30,.3);">
+          <div style="height:150px;background:repeating-linear-gradient(45deg,#e6d6cc 0 12px,#ecddd3 12px 24px);position:relative;">
+            <span style="position:absolute;bottom:8px;right:10px;font-family:ui-monospace,monospace;font-size:10px;color:#a58e80;letter-spacing:.05em;">food photo</span>
+            <span style="position:absolute;top:10px;left:10px;background:rgba(251,247,240,.92);color:#C0563A;font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;">Featured</span>
+          </div>
+          <div style="padding:12px 14px 14px;background:#fff;">
+            <div style="font-family:'Newsreader',serif;font-size:19px;color:#2A2320;">Sunday Roast Chicken</div>
+            <div style="display:flex;gap:10px;margin-top:6px;font-size:12.5px;color:#8A8078;">
+              <span style="font-family:'Material Symbols Outlined';font-size:15px;font-feature-settings:'liga';">schedule</span><span style="margin-left:-6px;">1h 20m</span>
+              <span>·</span><span>Serves 4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- section head -->
+      <div style="padding:8px 22px 4px;display:flex;align-items:baseline;justify-content:space-between;">
+        <div style="font-family:'Newsreader',serif;font-size:17px;color:#2A2320;">Recently saved</div>
+        <div style="font-size:12.5px;color:#C0563A;font-weight:500;">See all</div>
+      </div>
+      <!-- grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 22px 20px;">
+        <div><div style="height:104px;border-radius:14px;background:repeating-linear-gradient(45deg,#e6d6cc 0 10px,#ecddd3 10px 20px);"></div><div style="font-family:'Newsreader',serif;font-size:15px;color:#2A2320;margin-top:8px;line-height:1.2;">Miso Butter Salmon</div><div style="font-size:12px;color:#8A8078;margin-top:3px;">25 min · Easy</div></div>
+        <div><div style="height:104px;border-radius:14px;background:repeating-linear-gradient(45deg,#e6d6cc 0 10px,#ecddd3 10px 20px);"></div><div style="font-family:'Newsreader',serif;font-size:15px;color:#2A2320;margin-top:8px;line-height:1.2;">Charred Corn Tacos</div><div style="font-size:12px;color:#8A8078;margin-top:3px;">30 min · Veg</div></div>
+        <div><div style="height:104px;border-radius:14px;background:repeating-linear-gradient(45deg,#e6d6cc 0 10px,#ecddd3 10px 20px);"></div><div style="font-family:'Newsreader',serif;font-size:15px;color:#2A2320;margin-top:8px;line-height:1.2;">Banana Walnut Loaf</div><div style="font-size:12px;color:#8A8078;margin-top:3px;">55 min · Baking</div></div>
+        <div><div style="height:104px;border-radius:14px;background:repeating-linear-gradient(45deg,#e6d6cc 0 10px,#ecddd3 10px 20px);"></div><div style="font-family:'Newsreader',serif;font-size:15px;color:#2A2320;margin-top:8px;line-height:1.2;">Green Shakshuka</div><div style="font-size:12px;color:#8A8078;margin-top:3px;">20 min · Quick</div></div>
+      </div>
+      <!-- bottom nav -->
+      <div style="display:flex;justify-content:space-around;align-items:center;padding:14px 18px 20px;border-top:1px solid #efe4dc;background:#FBF7F0;">
+        <span style="font-family:'Material Symbols Outlined';font-size:26px;color:#C0563A;font-feature-settings:'liga';">home</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:26px;color:#b3a89e;font-feature-settings:'liga';">search</span>
+        <span style="width:44px;height:44px;border-radius:14px;background:#C0563A;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:26px;font-feature-settings:'liga';box-shadow:0 6px 14px -4px rgba(192,86,58,.6);">add</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:26px;color:#b3a89e;font-feature-settings:'liga';">calendar_month</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:26px;color:#b3a89e;font-feature-settings:'liga';">bookmark</span>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-family:'Work Sans',sans-serif;font-size:13px;color:#6b675f;line-height:1.55;">
+      <div style="display:flex;gap:6px;margin-bottom:8px;"><span style="width:20px;height:20px;border-radius:5px;background:#FBF7F0;border:1px solid #ddd;"></span><span style="width:20px;height:20px;border-radius:5px;background:#2A2320;"></span><span style="width:20px;height:20px;border-radius:5px;background:#C0563A;"></span><span style="width:20px;height:20px;border-radius:5px;background:#F0E3DC;"></span></div>
+      <b style="color:#1c1a17;">Newsreader</b> serif + <b style="color:#1c1a17;">Work Sans</b>. Cream paper, terracotta accent. Cookbook warmth, photo-forward, italic flourishes.
+    </div>
+  </div>
+
+  <!-- ============ OPTION 1B — FRESH ORGANIC ============ -->
+  <div id="1b" style="width:392px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;font-family:'Space Grotesk',sans-serif;">
+      <span style="background:#4E7A46;color:#fff;font-size:13px;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.04em;">1B</span>
+      <span style="font-size:18px;font-weight:600;color:#1c1a17;">Fresh Organic</span>
+    </div>
+    <div style="width:392px;background:#F3F5EE;border-radius:34px;overflow:hidden;box-shadow:0 24px 60px -20px rgba(40,55,35,.35),0 4px 12px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.05);">
+      <div style="padding:22px 22px 8px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;color:#232A1E;letter-spacing:-.02em;">forkast</div>
+        <div style="display:flex;gap:14px;align-items:center;">
+          <span style="font-family:'Material Symbols Outlined';font-size:24px;color:#232A1E;font-feature-settings:'liga';">search</span>
+          <div style="width:32px;height:32px;border-radius:50%;background:repeating-linear-gradient(45deg,#d3ddca 0 6px,#dde6d5 6px 12px);"></div>
+        </div>
+      </div>
+      <div style="padding:6px 22px 0;">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:27px;line-height:1.15;color:#232A1E;letter-spacing:-.02em;">Fresh from<br>your kitchen 🌿</div>
+      </div>
+      <div style="display:flex;gap:8px;padding:18px 22px 4px;overflow:hidden;">
+        <span style="background:#4E7A46;color:#fff;font-size:13px;font-weight:600;padding:8px 15px;border-radius:14px;">All</span>
+        <span style="background:#E4EBDD;color:#5c6653;font-size:13px;font-weight:500;padding:8px 15px;border-radius:14px;">Dinners</span>
+        <span style="background:#E4EBDD;color:#5c6653;font-size:13px;font-weight:500;padding:8px 15px;border-radius:14px;">Baking</span>
+        <span style="background:#E4EBDD;color:#5c6653;font-size:13px;font-weight:500;padding:8px 15px;border-radius:14px;">Quick</span>
+      </div>
+      <div style="padding:16px 22px 8px;">
+        <div style="border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 10px 24px -12px rgba(40,55,35,.35);">
+          <div style="height:150px;background:repeating-linear-gradient(45deg,#d3ddca 0 12px,#dbe4d2 12px 24px);position:relative;">
+            <span style="position:absolute;bottom:8px;right:10px;font-family:ui-monospace,monospace;font-size:10px;color:#8ba07f;letter-spacing:.05em;">food photo</span>
+            <span style="position:absolute;top:10px;left:10px;background:#4E7A46;color:#fff;font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px;">Featured</span>
+          </div>
+          <div style="padding:14px 16px 16px;">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:19px;color:#232A1E;">Sunday Roast Chicken</div>
+            <div style="display:flex;gap:10px;margin-top:6px;font-size:12.5px;color:#7C8474;font-family:'Figtree',sans-serif;">
+              <span style="font-family:'Material Symbols Outlined';font-size:15px;font-feature-settings:'liga';">schedule</span><span style="margin-left:-6px;">1h 20m</span>
+              <span>·</span><span>Serves 4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:8px 22px 4px;display:flex;align-items:baseline;justify-content:space-between;font-family:'Bricolage Grotesque',sans-serif;">
+        <div style="font-weight:600;font-size:17px;color:#232A1E;">Recently saved</div>
+        <div style="font-size:12.5px;color:#4E7A46;font-weight:600;font-family:'Figtree',sans-serif;">See all</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 22px 20px;font-family:'Figtree',sans-serif;">
+        <div style="background:#fff;border-radius:18px;padding:8px 8px 12px;"><div style="height:96px;border-radius:12px;background:repeating-linear-gradient(45deg,#d3ddca 0 10px,#dbe4d2 10px 20px);"></div><div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:14.5px;color:#232A1E;margin-top:8px;line-height:1.2;padding:0 2px;">Miso Butter Salmon</div><div style="font-size:12px;color:#7C8474;margin-top:3px;padding:0 2px;">25 min · Easy</div></div>
+        <div style="background:#fff;border-radius:18px;padding:8px 8px 12px;"><div style="height:96px;border-radius:12px;background:repeating-linear-gradient(45deg,#d3ddca 0 10px,#dbe4d2 10px 20px);"></div><div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:14.5px;color:#232A1E;margin-top:8px;line-height:1.2;padding:0 2px;">Charred Corn Tacos</div><div style="font-size:12px;color:#7C8474;margin-top:3px;padding:0 2px;">30 min · Veg</div></div>
+        <div style="background:#fff;border-radius:18px;padding:8px 8px 12px;"><div style="height:96px;border-radius:12px;background:repeating-linear-gradient(45deg,#d3ddca 0 10px,#dbe4d2 10px 20px);"></div><div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:14.5px;color:#232A1E;margin-top:8px;line-height:1.2;padding:0 2px;">Banana Walnut Loaf</div><div style="font-size:12px;color:#7C8474;margin-top:3px;padding:0 2px;">55 min · Baking</div></div>
+        <div style="background:#fff;border-radius:18px;padding:8px 8px 12px;"><div style="height:96px;border-radius:12px;background:repeating-linear-gradient(45deg,#d3ddca 0 10px,#dbe4d2 10px 20px);"></div><div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:14.5px;color:#232A1E;margin-top:8px;line-height:1.2;padding:0 2px;">Green Shakshuka</div><div style="font-size:12px;color:#7C8474;margin-top:3px;padding:0 2px;">20 min · Quick</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-around;align-items:center;padding:14px 18px 20px;background:#fff;border-top:1px solid #e6ecdf;">
+        <span style="font-family:'Material Symbols Outlined';font-size:26px;color:#4E7A46;font-feature-settings:'liga';">home</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:26px;color:#b0bba6;font-feature-settings:'liga';">search</span>
+        <span style="width:46px;height:46px;border-radius:50%;background:#4E7A46;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:26px;font-feature-settings:'liga';box-shadow:0 6px 14px -4px rgba(78,122,70,.6);">add</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:26px;color:#b0bba6;font-feature-settings:'liga';">calendar_month</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:26px;color:#b0bba6;font-feature-settings:'liga';">bookmark</span>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-family:'Figtree',sans-serif;font-size:13px;color:#6b675f;line-height:1.55;">
+      <div style="display:flex;gap:6px;margin-bottom:8px;"><span style="width:20px;height:20px;border-radius:5px;background:#F3F5EE;border:1px solid #ddd;"></span><span style="width:20px;height:20px;border-radius:5px;background:#232A1E;"></span><span style="width:20px;height:20px;border-radius:5px;background:#4E7A46;"></span><span style="width:20px;height:20px;border-radius:5px;background:#E4EBDD;"></span></div>
+      <b style="color:#1c1a17;">Bricolage Grotesque</b> + <b style="color:#1c1a17;">Figtree</b>. Soft natural greens, big rounded cards, friendly & food-forward.
+    </div>
+  </div>
+
+  <!-- ============ OPTION 1C — CLEAN UTILITARIAN ============ -->
+  <div id="1c" style="width:392px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;font-family:'Space Grotesk',sans-serif;">
+      <span style="background:#1B1A17;color:#fff;font-size:13px;font-weight:700;padding:4px 10px;border-radius:4px;letter-spacing:.04em;">1C</span>
+      <span style="font-size:18px;font-weight:600;color:#1c1a17;">Clean Utilitarian</span>
+    </div>
+    <div style="width:392px;background:#F7F5F1;border-radius:34px;overflow:hidden;box-shadow:0 24px 60px -20px rgba(30,28,24,.32),0 4px 12px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.06);">
+      <div style="padding:22px 22px 10px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:#1B1A17;letter-spacing:-.01em;">Forkast</div>
+        <div style="display:flex;gap:14px;align-items:center;">
+          <span style="font-family:'Material Symbols Outlined';font-size:24px;color:#1B1A17;font-feature-settings:'liga';">search</span>
+          <div style="width:30px;height:30px;border-radius:8px;background:repeating-linear-gradient(45deg,#e2ded6 0 6px,#eae6de 6px 12px);"></div>
+        </div>
+      </div>
+      <div style="padding:2px 22px 0;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;line-height:1.2;color:#1B1A17;letter-spacing:-.01em;">Your recipes</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;color:#86827A;margin-top:3px;">128 saved · 6 planned this week</div>
+      </div>
+      <div style="display:flex;gap:8px;padding:16px 22px 4px;overflow:hidden;font-family:'IBM Plex Sans',sans-serif;">
+        <span style="background:#1B1A17;color:#fff;font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:6px;">All</span>
+        <span style="background:#fff;border:1px solid #e4e0d8;color:#57534b;font-size:12.5px;padding:6px 13px;border-radius:6px;">Dinners</span>
+        <span style="background:#fff;border:1px solid #e4e0d8;color:#57534b;font-size:12.5px;padding:6px 13px;border-radius:6px;">Baking</span>
+        <span style="background:#fff;border:1px solid #e4e0d8;color:#57534b;font-size:12.5px;padding:6px 13px;border-radius:6px;">Quick</span>
+      </div>
+      <!-- featured as list row -->
+      <div style="padding:14px 22px 6px;">
+        <div style="display:flex;gap:12px;background:#fff;border:1px solid #ece8e0;border-radius:10px;padding:10px;">
+          <div style="width:84px;height:84px;flex:none;border-radius:7px;background:repeating-linear-gradient(45deg,#e2ded6 0 10px,#eae6de 10px 20px);position:relative;"></div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:inline-block;background:#F3E7CC;color:#8a6a1f;font-size:10.5px;font-weight:600;padding:3px 7px;border-radius:4px;font-family:'IBM Plex Sans',sans-serif;">FEATURED</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:17px;color:#1B1A17;margin-top:6px;">Sunday Roast Chicken</div>
+            <div style="display:flex;gap:8px;margin-top:5px;font-size:12.5px;color:#86827A;font-family:'IBM Plex Sans',sans-serif;"><span>1h 20m</span><span>·</span><span>Serves 4</span><span>·</span><span>Easy</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:10px 22px 4px;display:flex;align-items:baseline;justify-content:space-between;font-family:'Space Grotesk',sans-serif;">
+        <div style="font-weight:600;font-size:15px;color:#1B1A17;">Recently saved</div>
+        <div style="font-size:12.5px;color:#86827A;font-weight:500;font-family:'IBM Plex Sans',sans-serif;">See all</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 22px 20px;font-family:'IBM Plex Sans',sans-serif;">
+        <div style="background:#fff;border:1px solid #ece8e0;border-radius:9px;overflow:hidden;"><div style="height:88px;background:repeating-linear-gradient(45deg,#e2ded6 0 10px,#eae6de 10px 20px);"></div><div style="padding:8px 10px 10px;"><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:#1B1A17;line-height:1.2;">Miso Butter Salmon</div><div style="font-size:11.5px;color:#86827A;margin-top:3px;">25 min · Easy</div></div></div>
+        <div style="background:#fff;border:1px solid #ece8e0;border-radius:9px;overflow:hidden;"><div style="height:88px;background:repeating-linear-gradient(45deg,#e2ded6 0 10px,#eae6de 10px 20px);"></div><div style="padding:8px 10px 10px;"><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:#1B1A17;line-height:1.2;">Charred Corn Tacos</div><div style="font-size:11.5px;color:#86827A;margin-top:3px;">30 min · Veg</div></div></div>
+        <div style="background:#fff;border:1px solid #ece8e0;border-radius:9px;overflow:hidden;"><div style="height:88px;background:repeating-linear-gradient(45deg,#e2ded6 0 10px,#eae6de 10px 20px);"></div><div style="padding:8px 10px 10px;"><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:#1B1A17;line-height:1.2;">Banana Walnut Loaf</div><div style="font-size:11.5px;color:#86827A;margin-top:3px;">55 min · Baking</div></div></div>
+        <div style="background:#fff;border:1px solid #ece8e0;border-radius:9px;overflow:hidden;"><div style="height:88px;background:repeating-linear-gradient(45deg,#e2ded6 0 10px,#eae6de 10px 20px);"></div><div style="padding:8px 10px 10px;"><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:#1B1A17;line-height:1.2;">Green Shakshuka</div><div style="font-size:11.5px;color:#86827A;margin-top:3px;">20 min · Quick</div></div></div>
+      </div>
+      <div style="display:flex;justify-content:space-around;align-items:center;padding:12px 18px 18px;background:#fff;border-top:1px solid #ece8e0;">
+        <span style="font-family:'Material Symbols Outlined';font-size:25px;color:#1B1A17;font-feature-settings:'liga';">home</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:25px;color:#b3ada3;font-feature-settings:'liga';">search</span>
+        <span style="width:40px;height:40px;border-radius:9px;background:#1B1A17;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:24px;font-feature-settings:'liga';">add</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:25px;color:#b3ada3;font-feature-settings:'liga';">calendar_month</span>
+        <span style="font-family:'Material Symbols Outlined';font-size:25px;color:#b3ada3;font-feature-settings:'liga';">bookmark</span>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#6b675f;line-height:1.55;">
+      <div style="display:flex;gap:6px;margin-bottom:8px;"><span style="width:20px;height:20px;border-radius:5px;background:#F7F5F1;border:1px solid #ddd;"></span><span style="width:20px;height:20px;border-radius:5px;background:#1B1A17;"></span><span style="width:20px;height:20px;border-radius:5px;background:#C08A2E;"></span><span style="width:20px;height:20px;border-radius:5px;background:#ece8e0;"></span></div>
+      <b style="color:#1c1a17;">Space Grotesk</b> + <b style="color:#1c1a17;">IBM Plex Sans</b>. Ink on off-white, sharp corners, compact & data-dense. Amber highlight only.
+    </div>
+  </div>
+
+</div>
+</section>
+</x-dc>
+</body>
+</html>

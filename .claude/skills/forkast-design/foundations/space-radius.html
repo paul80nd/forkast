@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x160" name="Corner radii" subtitle="Soft, rounded — the signature" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--fk-font-body);color:var(--fk-text);background:var(--fk-surface-page);-webkit-font-smoothing:antialiased;}
+  .wrap{padding:22px 26px;}
+  .row{display:flex;flex-wrap:wrap;gap:10px;}
+  .swatch{border-radius:var(--fk-radius-md);border:1px solid rgba(0,0,0,.06);height:56px;display:flex;align-items:flex-end;padding:6px 8px;font-family:var(--fk-font-mono);font-size:10px;color:rgba(255,255,255,.92);}
+  .swatch.dark-label{color:rgba(0,0,0,.55);}
+  .cap{font-size:var(--fk-text-xs);color:var(--fk-text-muted);margin-bottom:10px;}
+  .mono{font-family:var(--fk-font-mono);}
+  .rr{display:flex;gap:16px;flex-wrap:wrap;} .u{text-align:center;} .b{width:76px;height:56px;background:var(--fk-surface-card);border:1px solid var(--fk-border-strong);} .t{font-family:var(--fk-font-mono);font-size:10px;color:var(--fk-text-muted);margin-top:6px;}
+</style>
+</head>
+<body><div class="wrap">
+  <div class="rr">
+    <div class="u"><div class="b" style="border-radius:var(--fk-radius-sm);"></div><div class="t">sm · chip</div></div><div class="u"><div class="b" style="border-radius:var(--fk-radius-md);"></div><div class="t">md · button</div></div><div class="u"><div class="b" style="border-radius:var(--fk-radius-lg);"></div><div class="t">lg · card</div></div><div class="u"><div class="b" style="border-radius:var(--fk-radius-xl);"></div><div class="t">xl · image</div></div><div class="u"><div class="b" style="border-radius:var(--fk-radius-2xl);"></div><div class="t">2xl · panel</div></div><div class="u"><div class="b" style="border-radius:var(--fk-radius-full);width:56px;border-radius:999px;"></div><div class="t">full · pill</div></div>
+  </div>
+</div></body></html>

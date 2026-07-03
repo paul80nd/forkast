@@ -1,0 +1,27 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Elevation" subtitle="Warm-toned, restrained shadows" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--fk-font-body);color:var(--fk-text);background:var(--fk-surface-page);-webkit-font-smoothing:antialiased;}
+  .wrap{padding:22px 26px;}
+  .row{display:flex;flex-wrap:wrap;gap:10px;}
+  .swatch{border-radius:var(--fk-radius-md);border:1px solid rgba(0,0,0,.06);height:56px;display:flex;align-items:flex-end;padding:6px 8px;font-family:var(--fk-font-mono);font-size:10px;color:rgba(255,255,255,.92);}
+  .swatch.dark-label{color:rgba(0,0,0,.55);}
+  .cap{font-size:var(--fk-text-xs);color:var(--fk-text-muted);margin-bottom:10px;}
+  .mono{font-family:var(--fk-font-mono);}
+  .el{display:flex;gap:22px;flex-wrap:wrap;padding:6px;} .u{text-align:center;} .b{width:110px;height:66px;background:var(--fk-surface-card);border-radius:var(--fk-radius-lg);border:1px solid var(--fk-border);} .t{font-family:var(--fk-font-mono);font-size:10px;color:var(--fk-text-muted);margin-top:10px;}
+</style>
+</head>
+<body><div class="wrap">
+  <div class="el">
+    <div class="u"><div class="b" style="box-shadow:var(--fk-shadow-xs)"></div><div class="t">xs</div></div>
+    <div class="u"><div class="b" style="box-shadow:var(--fk-shadow-sm)"></div><div class="t">sm · card</div></div>
+    <div class="u"><div class="b" style="box-shadow:var(--fk-shadow-md)"></div><div class="t">md · hover</div></div>
+    <div class="u"><div class="b" style="box-shadow:var(--fk-shadow-lg)"></div><div class="t">lg · modal</div></div>
+  </div>
+</div></body></html>

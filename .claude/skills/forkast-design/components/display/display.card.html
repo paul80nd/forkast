@@ -1,0 +1,62 @@
+<!-- @dsCard group="Components" viewport="700x430" name="Tags, chips, card, panel, row" subtitle="Content display primitives" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+*{box-sizing:border-box;} body{margin:0;font-family:var(--fk-font-body);color:var(--fk-text);background:var(--fk-surface-page);-webkit-font-smoothing:antialiased;}
+.wrap{padding:22px 24px;}
+.eye{font-size:var(--fk-text-2xs);letter-spacing:var(--fk-tracking-caps);text-transform:uppercase;color:var(--fk-text-subtle);font-weight:600;margin:0 0 10px;}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.stack{display:flex;flex-direction:column;gap:16px;}
+/* button */
+.btn{font-family:var(--fk-font-body);font-weight:var(--fk-weight-medium);font-size:var(--fk-text-body);padding:7px 15px;border-radius:var(--fk-radius-md);border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;line-height:1.1;}
+.b-primary{background:var(--fk-brand);color:#fff;} .b-positive{background:var(--fk-positive-tint);color:var(--fk-positive-ink);}
+.b-soft{background:var(--fk-brand-tint);color:var(--fk-brand-ink);} .b-danger{background:var(--fk-danger);color:#fff;}
+.b-ghost{background:transparent;color:var(--fk-text-muted);} .b-outline{background:var(--fk-surface-card);color:var(--fk-text);border-color:var(--fk-border-strong);}
+.btn.sm{font-size:var(--fk-text-sm);padding:5px 11px;} .btn.dis{opacity:.5;cursor:not-allowed;}
+.ib{width:34px;height:34px;border-radius:var(--fk-radius-md);border:none;background:transparent;color:var(--fk-text-muted);font-size:17px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+.seg{display:inline-flex;border:1px solid var(--fk-border-strong);border-radius:var(--fk-radius-md);overflow:hidden;}
+.seg button{font-family:var(--fk-font-body);font-weight:500;font-size:var(--fk-text-sm);padding:5px 14px;border:none;background:var(--fk-surface-card);color:var(--fk-text-muted);cursor:pointer;}
+.seg button+button{border-left:1px solid var(--fk-border);} .seg .on{background:var(--fk-brand);color:#fff;}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:var(--fk-text-xs);font-weight:500;padding:3px 9px;border-radius:var(--fk-radius-full);}
+.t-neutral{background:var(--fk-surface-sunken);color:var(--fk-text-muted);} .t-star{background:var(--fk-star-tint);color:var(--fk-star-ink);}
+.t-info{background:var(--fk-info-tint);color:var(--fk-info-ink);} .t-warn{background:var(--fk-warn-tint);color:var(--fk-warn-ink);} .t-brand{background:var(--fk-brand-tint);color:var(--fk-brand-ink);}
+.chip{font-family:var(--fk-font-body);font-weight:500;font-size:var(--fk-text-sm);padding:6px 14px;border-radius:var(--fk-radius-full);border:1px solid var(--fk-border-strong);background:var(--fk-surface-card);color:var(--fk-text-muted);cursor:pointer;} .chip.on{background:var(--fk-brand);color:#fff;border-color:var(--fk-brand);}
+.card{width:224px;background:var(--fk-surface-card);border:1px solid var(--fk-border);border-radius:var(--fk-radius-lg);box-shadow:var(--fk-shadow-sm);overflow:hidden;}
+.card img{aspect-ratio:4/3;width:100%;object-fit:cover;display:block;}
+.card .pad{padding:12px;} .badge{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.92);color:var(--fk-star-ink);font-size:var(--fk-text-xs);font-weight:600;padding:2px 8px;border-radius:999px;}
+.panel{background:var(--fk-info-wash);border:1px solid var(--fk-harbour-200);border-radius:var(--fk-radius-2xl);padding:16px;}
+.lrow{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--fk-surface-card);border:1px solid var(--fk-border);border-radius:var(--fk-radius-lg);}
+.lrow img{width:56px;height:56px;border-radius:var(--fk-radius-md);object-fit:cover;}
+.cols{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;}
+</style></head><body><div class="wrap">
+<div class="stack">
+  <div><p class="eye">Tags · chips</p><div class="row">
+    <span class="tag t-neutral">Italian</span><span class="tag t-star">★★★★</span><span class="tag t-info">variety</span><span class="tag t-warn">unrated</span><span class="tag t-brand">⇄ 3 versions</span>
+    <span style="width:12px;"></span>
+    <button class="chip on">All</button><button class="chip">Dinners</button><button class="chip">Baking</button>
+  </div></div>
+  <div class="cols">
+    <div>
+      <p class="eye">Recipe card</p>
+      <div class="card"><div style="position:relative;"><img src="../../assets/recipes/sunset-tomato-orzo.svg" alt=""><span class="badge">★★★★</span></div>
+        <div class="pad"><span class="tag t-neutral">Italian</span>
+          <div style="font-family:var(--fk-font-display);font-weight:600;font-size:16px;margin-top:8px;line-height:1.3;">Sunset Tomato Orzo</div>
+          <div style="font-size:13.5px;color:var(--fk-text-muted);margin-top:4px;line-height:1.3;">Weeknight comfort with barely any washing up.</div>
+          <div style="font-size:12px;color:var(--fk-text-muted);margin-top:8px;">⏱ 25 min · vegetarian</div></div></div>
+    </div>
+    <div style="flex:1;min-width:300px;">
+      <p class="eye">Panel (info) · list row</p>
+      <div class="panel">
+        <div style="font-family:var(--fk-font-display);font-weight:600;font-size:18px;color:var(--fk-harbour-900);">Suggested week</div>
+        <div style="font-size:12px;color:var(--fk-info-ink);margin-top:2px;">A proposal — reroll, lock or swap, then accept.</div>
+      </div>
+      <div class="lrow" style="margin-top:14px;">
+        <img src="../../assets/recipes/lemongrass-chicken-bowls.svg" alt="">
+        <div style="flex:1;min-width:0;"><div style="font-weight:500;">Lemongrass Chicken Bowls</div>
+          <div style="font-size:12px;color:var(--fk-text-muted);margin-top:2px;">Thai · chicken · ⏱ 25 min</div></div>
+        <button class="btn b-positive" style="font-family:var(--fk-font-body);font-weight:500;font-size:var(--fk-text-sm);padding:5px 11px;border:none;border-radius:var(--fk-radius-md);background:var(--fk-positive-tint);color:var(--fk-positive-ink);cursor:pointer;">✓ Cooked</button>
+      </div>
+    </div>
+  </div>
+</div></div></body></html>

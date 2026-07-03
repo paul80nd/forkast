@@ -1,0 +1,41 @@
+<!-- @dsCard group="Components" viewport="700x270" name="Buttons & controls" subtitle="Button variants, split, icon, segmented" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+*{box-sizing:border-box;} body{margin:0;font-family:var(--fk-font-body);color:var(--fk-text);background:var(--fk-surface-page);-webkit-font-smoothing:antialiased;}
+.wrap{padding:22px 24px;}
+.eye{font-size:var(--fk-text-2xs);letter-spacing:var(--fk-tracking-caps);text-transform:uppercase;color:var(--fk-text-subtle);font-weight:600;margin:0 0 10px;}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.stack{display:flex;flex-direction:column;gap:16px;}
+/* button */
+.btn{font-family:var(--fk-font-body);font-weight:var(--fk-weight-medium);font-size:var(--fk-text-body);padding:7px 15px;border-radius:var(--fk-radius-md);border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;line-height:1.1;}
+.b-primary{background:var(--fk-brand);color:#fff;} .b-positive{background:var(--fk-positive-tint);color:var(--fk-positive-ink);}
+.b-soft{background:var(--fk-brand-tint);color:var(--fk-brand-ink);} .b-danger{background:var(--fk-danger);color:#fff;}
+.b-ghost{background:transparent;color:var(--fk-text-muted);} .b-outline{background:var(--fk-surface-card);color:var(--fk-text);border-color:var(--fk-border-strong);}
+.btn.sm{font-size:var(--fk-text-sm);padding:5px 11px;} .btn.dis{opacity:.5;cursor:not-allowed;}
+.ib{width:34px;height:34px;border-radius:var(--fk-radius-md);border:none;background:transparent;color:var(--fk-text-muted);font-size:17px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+.seg{display:inline-flex;border:1px solid var(--fk-border-strong);border-radius:var(--fk-radius-md);overflow:hidden;}
+.seg button{font-family:var(--fk-font-body);font-weight:500;font-size:var(--fk-text-sm);padding:5px 14px;border:none;background:var(--fk-surface-card);color:var(--fk-text-muted);cursor:pointer;}
+.seg button+button{border-left:1px solid var(--fk-border);} .seg .on{background:var(--fk-brand);color:#fff;}
+.split{display:inline-flex;} .split .m{background:var(--fk-brand);color:#fff;border:none;border-radius:var(--fk-radius-md) 0 0 var(--fk-radius-md);padding:7px 15px;font-weight:500;font-family:var(--fk-font-body);font-size:var(--fk-text-body);cursor:pointer;} .split .c{background:var(--fk-brand);color:#fff;border:none;border-left:1px solid rgba(255,255,255,.3);border-radius:0 var(--fk-radius-md) var(--fk-radius-md) 0;padding:0 9px;cursor:pointer;}
+</style></head><body><div class="wrap">
+<div class="stack">
+  <div><p class="eye">Variants</p><div class="row">
+    <button class="btn b-primary" glyph>+ Add to week</button>
+    <button class="btn b-positive">✓ In week</button>
+    <button class="btn b-soft">Rate them together</button>
+    <button class="btn b-danger">Delete selected</button>
+    <button class="btn b-ghost">Skip →</button>
+    <button class="btn b-outline">Clear filter</button>
+  </div></div>
+  <div><p class="eye">Sizes · disabled · split · icon · segmented</p><div class="row">
+    <button class="btn b-primary sm">Small</button>
+    <button class="btn b-primary">Medium</button>
+    <button class="btn b-primary dis">Disabled</button>
+    <span class="split"><button class="m">+ Add to week</button><button class="c">▾</button></span>
+    <button class="ib">🌙</button>
+    <button class="ib">✕</button>
+    <span class="seg"><button class="on">2</button><button>4</button><button>6</button></span>
+  </div></div>
+</div></div></body></html>

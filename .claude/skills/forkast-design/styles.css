@@ -1,0 +1,9 @@
+/* ==========================================================================
+   Forkast Design System — global entry point.
+   Consumers link THIS one file. It is an @import manifest only; every rule
+   lives in a token file below. Order: fonts → colours → type → spacing.
+   ========================================================================== */
+
+@import "./tokens/typography.css";
+@import "./tokens/colors.css";
+@import "./tokens/spacing.css";

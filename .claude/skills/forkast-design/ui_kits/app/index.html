@@ -1,0 +1,42 @@
+<!-- @dsCard group="Forkast App" viewport="1120x820" name="Forkast — meal planner" subtitle="Interactive: Browse · Recipe · Curate · Plan · Shop" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forkast — UI kit</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/forkast-mark.svg">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    html, body { margin: 0; height: 100%; }
+    body { background: var(--fk-surface-page); }
+    /* Nav sits inline after the wordmark on wider screens; drops to its own
+       full-width scrolling row on narrow screens (mirrors the app). */
+    @media (min-width: 640px) {
+      .fk-nav { order: 0 !important; width: auto !important; }
+    }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="data.js"></script>
+  <script>
+    /* Transform app.jsx with the CLASSIC JSX runtime (React.createElement) so no
+       ESM `import` is emitted, then run it in global scope. */
+    (async function () {
+      try {
+        const src = await (await fetch('app.jsx')).text()
+        const { code } = Babel.transform(src, { presets: [['react', { runtime: 'classic' }]], filename: 'app.jsx' })
+        const s = document.createElement('script')
+        s.textContent = code
+        document.body.appendChild(s)
+      } catch (e) {
+        document.getElementById('root').textContent = 'Failed to load UI kit: ' + e
+      }
+    })()
+  </script>
+</body>
+</html>

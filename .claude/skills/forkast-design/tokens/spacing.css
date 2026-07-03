@@ -1,0 +1,43 @@
+/* ==========================================================================
+   Forkast — Spacing, radius, shadow & motion tokens
+   ========================================================================== */
+
+:root {
+  /* --- Spacing scale (4px base) ------------------------------------------ */
+  --fk-space-0:  0;
+  --fk-space-1:  4px;
+  --fk-space-2:  8px;
+  --fk-space-3:  12px;
+  --fk-space-4:  16px;
+  --fk-space-5:  20px;
+  --fk-space-6:  24px;
+  --fk-space-8:  32px;
+  --fk-space-10: 40px;
+  --fk-space-12: 48px;
+  --fk-space-16: 64px;
+
+  /* Layout */
+  --fk-content-max: 1024px;   /* the centred app column (max-w-5xl)   */
+  --fk-gutter:      16px;      /* page side padding                    */
+
+  /* --- Radius ------------------------------------------------------------ */
+  --fk-radius-sm:   6px;    /* chips, small controls                   */
+  --fk-radius-md:   10px;   /* buttons, inputs                         */
+  --fk-radius-lg:   14px;   /* recipe cards, list rows                 */
+  --fk-radius-xl:   18px;   /* stacked cards / images                  */
+  --fk-radius-2xl:  24px;   /* big feature panels                      */
+  --fk-radius-full: 999px;  /* pills, avatars, badges                  */
+
+  /* --- Elevation --------------------------------------------------------- */
+  --fk-shadow-xs:   0 1px 2px rgba(30, 41, 28, 0.05);
+  --fk-shadow-sm:   0 1px 3px rgba(30, 41, 28, 0.07), 0 1px 2px rgba(30, 41, 28, 0.04);
+  --fk-shadow-md:   0 6px 16px -6px rgba(30, 41, 28, 0.18), 0 2px 6px rgba(30, 41, 28, 0.06);
+  --fk-shadow-lg:   0 18px 40px -16px rgba(30, 41, 28, 0.28), 0 4px 12px rgba(30, 41, 28, 0.08);
+  --fk-shadow-focus: 0 0 0 3px var(--fk-ring);
+
+  /* --- Motion ------------------------------------------------------------ */
+  --fk-ease:        cubic-bezier(0.2, 0.7, 0.2, 1);   /* soft settle       */
+  --fk-duration:    150ms;
+  --fk-duration-lg: 240ms;
+  --fk-lift:        -2px;   /* card hover translateY                     */
+}

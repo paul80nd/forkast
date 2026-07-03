@@ -1,0 +1,136 @@
+/* Forkast UI kit — demo recipe data (the six fictional demo recipes, mirrored
+   from the app's public/demo/recipes.json). Attached to window for the kit. */
+window.FK_RECIPES = [
+  {
+    id: 'sunset-tomato-orzo', title: 'Sunset Tomato Orzo', cuisine: 'Italian',
+    image: '../../assets/recipes/sunset-tomato-orzo.svg', prepTime: 25, serves: 2, mainProtein: 'vegetarian',
+    seedStars: 5,
+    description: 'A one-pan orzo simmered in roasted cherry tomatoes and basil, finished with a handful of soft cheese. Weeknight comfort with barely any washing up.',
+    tags: ['quick', 'vegetarian', 'comfort'], allergens: ['gluten', 'milk'],
+    ingredients: [
+      { rawLabel: '300g orzo', name: 'orzo', qty: 300, unit: 'g', aisle: 'Pasta, rice & grains' },
+      { rawLabel: '400g cherry tomatoes', name: 'cherry tomatoes', qty: 400, unit: 'g', aisle: 'Fruit & veg' },
+      { rawLabel: '2 garlic cloves', name: 'garlic', qty: 2, aisle: 'Fruit & veg' },
+      { rawLabel: '1 vegetable stock cube', name: 'vegetable stock cube', qty: 1, aisle: 'Tins & packets' },
+      { rawLabel: '20g fresh basil', name: 'basil', qty: 20, unit: 'g', aisle: 'Fruit & veg' },
+      { rawLabel: '60g soft cheese', name: 'soft cheese', qty: 60, unit: 'g', aisle: 'Chilled & dairy' },
+    ],
+    basics: ['olive oil', 'salt', 'black pepper'],
+    instructions: [
+      'Roast the cherry tomatoes with a drizzle of oil until bursting.',
+      'Add garlic and orzo, toast for a minute, then pour in stock.',
+      'Simmer until the orzo is tender and saucy.',
+      'Stir through soft cheese and torn basil. Season and serve.',
+    ],
+  },
+  {
+    id: 'golden-chickpea-curry', title: 'Golden Chickpea Curry', cuisine: 'Indian',
+    image: '../../assets/recipes/golden-chickpea-curry.svg', prepTime: 30, serves: 2, mainProtein: 'chickpea',
+    seedStars: 4,
+    description: 'Turmeric-stained chickpeas in a creamy coconut sauce with spinach. Hearty, gently spiced, and entirely plant-based.',
+    tags: ['vegan', 'batch-friendly', 'freezer'], allergens: [],
+    ingredients: [
+      { rawLabel: '2 x 400g tins chickpeas', name: 'chickpeas', qty: 800, unit: 'g', aisle: 'Tins & packets' },
+      { rawLabel: '1 tin coconut milk', name: 'coconut milk', qty: 400, unit: 'ml', aisle: 'Tins & packets' },
+      { rawLabel: '1 onion', name: 'onion', qty: 1, aisle: 'Fruit & veg' },
+      { rawLabel: '3 garlic cloves', name: 'garlic', qty: 3, aisle: 'Fruit & veg' },
+      { rawLabel: '1 thumb ginger', name: 'ginger', qty: 1, aisle: 'Fruit & veg' },
+      { rawLabel: '2 tsp curry powder', name: 'curry powder', qty: 2, unit: 'tsp', aisle: 'Herbs & spices' },
+      { rawLabel: '100g spinach', name: 'spinach', qty: 100, unit: 'g', aisle: 'Fruit & veg' },
+    ],
+    basics: ['vegetable oil', 'salt'],
+    instructions: [
+      'Soften the onion, then add garlic, ginger and curry powder.',
+      'Tip in chickpeas and coconut milk; simmer to thicken.',
+      'Wilt in the spinach, season and serve with rice.',
+    ],
+  },
+  {
+    id: 'lemongrass-chicken-bowls', title: 'Lemongrass Chicken Bowls', cuisine: 'Thai',
+    image: '../../assets/recipes/lemongrass-chicken-bowls.svg', prepTime: 25, serves: 2, mainProtein: 'chicken',
+    seedStars: 5,
+    description: 'Charred lemongrass chicken over fluffy rice with quick pickled carrot and a lime dressing. Bright, fresh and fast.',
+    tags: ['quick', 'fresh', 'high-protein'], allergens: ['soya'],
+    ingredients: [
+      { rawLabel: '2 chicken breasts', name: 'chicken breast', qty: 2, aisle: 'Meat & fish' },
+      { rawLabel: '1 lemongrass stalk', name: 'lemongrass', qty: 1, aisle: 'Fruit & veg' },
+      { rawLabel: '150g jasmine rice', name: 'jasmine rice', qty: 150, unit: 'g', aisle: 'Pasta, rice & grains' },
+      { rawLabel: '1 carrot', name: 'carrot', qty: 1, aisle: 'Fruit & veg' },
+      { rawLabel: '1 lime', name: 'lime', qty: 1, aisle: 'Fruit & veg' },
+      { rawLabel: '2 tbsp soy sauce', name: 'soy sauce', qty: 2, unit: 'tbsp', aisle: 'Condiments' },
+    ],
+    basics: ['vegetable oil', 'sugar', 'salt'],
+    instructions: [
+      'Cook the rice. Pickle the grated carrot in lime juice and a pinch of sugar.',
+      'Marinate sliced chicken with crushed lemongrass and soy, then sear.',
+      'Build bowls with rice, chicken and pickled carrot.',
+    ],
+  },
+  {
+    id: 'smoky-black-bean-tacos', title: 'Smoky Black Bean Tacos', cuisine: 'Mexican',
+    image: '../../assets/recipes/smoky-black-bean-tacos.svg', prepTime: 20, serves: 2, mainProtein: 'beans',
+    seedStars: 3,
+    description: 'Chipotle-spiced black beans piled into warm tortillas with charred sweetcorn and a squeeze of lime. Big flavour, ten ingredients.',
+    tags: ['vegan', 'quick', 'crowd-pleaser'], allergens: ['gluten'],
+    ingredients: [
+      { rawLabel: '1 x 400g tin black beans', name: 'black beans', qty: 400, unit: 'g', aisle: 'Tins & packets' },
+      { rawLabel: '1 tsp chipotle paste', name: 'chipotle paste', qty: 1, unit: 'tsp', aisle: 'Condiments' },
+      { rawLabel: '150g sweetcorn', name: 'sweetcorn', qty: 150, unit: 'g', aisle: 'Tins & packets' },
+      { rawLabel: '6 small tortillas', name: 'tortillas', qty: 6, aisle: 'Bakery' },
+      { rawLabel: '1 lime', name: 'lime', qty: 1, aisle: 'Fruit & veg' },
+      { rawLabel: '1 red onion', name: 'red onion', qty: 1, aisle: 'Fruit & veg' },
+    ],
+    basics: ['olive oil', 'salt'],
+    instructions: [
+      'Char the sweetcorn in a dry pan; set aside.',
+      'Warm the beans with chipotle paste until thick.',
+      'Fill tortillas with beans, corn, red onion and lime.',
+    ],
+  },
+  {
+    id: 'garden-herb-fish-pie', title: 'Garden Herb Fish Pie', cuisine: 'British',
+    image: '../../assets/recipes/garden-herb-fish-pie.svg', prepTime: 45, serves: 2, mainProtein: 'fish',
+    seedStars: undefined,
+    description: 'A classic creamy fish pie under a golden mash lid, flecked with parsley and chives. Pure comfort.',
+    tags: ['comfort', 'weekend'], allergens: ['fish', 'milk', 'gluten'],
+    ingredients: [
+      { rawLabel: '300g white fish fillet', name: 'white fish', qty: 300, unit: 'g', aisle: 'Meat & fish' },
+      { rawLabel: '600g potatoes', name: 'potatoes', qty: 600, unit: 'g', aisle: 'Fruit & veg' },
+      { rawLabel: '300ml milk', name: 'milk', qty: 300, unit: 'ml', aisle: 'Chilled & dairy' },
+      { rawLabel: '20g plain flour', name: 'plain flour', qty: 20, unit: 'g', aisle: 'Baking' },
+      { rawLabel: '10g fresh parsley', name: 'parsley', qty: 10, unit: 'g', aisle: 'Fruit & veg' },
+      { rawLabel: '50g cheddar', name: 'cheddar', qty: 50, unit: 'g', aisle: 'Chilled & dairy' },
+    ],
+    basics: ['butter', 'salt', 'black pepper'],
+    instructions: [
+      'Boil and mash the potatoes with butter.',
+      'Make a parsley white sauce; fold through the fish.',
+      'Top with mash and cheddar; bake until golden.',
+    ],
+  },
+  {
+    id: 'gochujang-beef-noodles', title: 'Gochujang Beef Noodles', cuisine: 'Korean',
+    image: '../../assets/recipes/gochujang-beef-noodles.svg', prepTime: 20, serves: 2, mainProtein: 'beef',
+    seedStars: 4,
+    description: 'Sticky, spicy gochujang beef tossed through slippery noodles with spring onion. Comes together in the time it takes to boil the kettle, twice.',
+    tags: ['quick', 'spicy', 'high-protein'], allergens: ['gluten', 'soya', 'sesame'],
+    ingredients: [
+      { rawLabel: '250g beef mince', name: 'beef mince', qty: 250, unit: 'g', aisle: 'Meat & fish' },
+      { rawLabel: '2 tbsp gochujang', name: 'gochujang', qty: 2, unit: 'tbsp', aisle: 'Condiments' },
+      { rawLabel: '200g udon noodles', name: 'udon noodles', qty: 200, unit: 'g', aisle: 'Pasta, rice & grains' },
+      { rawLabel: '2 spring onions', name: 'spring onion', qty: 2, aisle: 'Fruit & veg' },
+      { rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp', aisle: 'Condiments' },
+      { rawLabel: '1 tsp sesame oil', name: 'sesame oil', qty: 1, unit: 'tsp', aisle: 'Condiments' },
+    ],
+    basics: ['vegetable oil', 'sugar'],
+    instructions: [
+      'Brown the beef mince hard, then stir in gochujang and soy.',
+      'Cook the udon; drain and toss into the beef.',
+      'Finish with sesame oil and spring onion.',
+    ],
+  },
+]
+
+window.FK_AISLE_ORDER = ['Fruit & veg', 'Meat & fish', 'Chilled & dairy', 'Bakery', 'Tins & packets', 'Pasta, rice & grains', 'Condiments', 'Herbs & spices', 'Baking']
+window.FK_STAR_LABELS = { 1: 'Yuk', 2: 'Rather not', 3: "I'd eat it", 4: 'Like it', 5: 'Yum Yum' }
+window.FK_ROTATION_LABELS = { 1: 'Rarely', 2: 'Occasionally', 3: 'Now & then', 4: 'Often', 5: 'On repeat' }

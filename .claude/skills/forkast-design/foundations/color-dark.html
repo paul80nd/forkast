@@ -1,0 +1,31 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Dark mode" subtitle="Same aliases, .dark re-points them" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--fk-font-body);color:var(--fk-text);background:var(--fk-surface-page);-webkit-font-smoothing:antialiased;}
+  .wrap{padding:22px 26px;}
+  .row{display:flex;flex-wrap:wrap;gap:10px;}
+  .swatch{border-radius:var(--fk-radius-md);border:1px solid rgba(0,0,0,.06);height:56px;display:flex;align-items:flex-end;padding:6px 8px;font-family:var(--fk-font-mono);font-size:10px;color:rgba(255,255,255,.92);}
+  .swatch.dark-label{color:rgba(0,0,0,.55);}
+  .cap{font-size:var(--fk-text-xs);color:var(--fk-text-muted);margin-bottom:10px;}
+  .mono{font-family:var(--fk-font-mono);}
+  .pane{border-radius:var(--fk-radius-lg);padding:16px;} .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;} .chip{padding:6px 12px;border-radius:var(--fk-radius-sm);font-size:var(--fk-text-xs);font-weight:600;}
+</style>
+</head>
+<body><div class="wrap">
+  <div class="dark pane" style="background:var(--fk-surface-page);color:var(--fk-text);border:1px solid var(--fk-border);">
+    <div style="font-family:var(--fk-font-display);font-weight:600;font-size:18px;letter-spacing:var(--fk-tracking-tight);">Plan a varied week</div>
+    <div style="color:var(--fk-text-muted);font-size:var(--fk-text-sm);margin-top:2px;">Cards, text and accents all re-theme from the semantic aliases.</div>
+    <div class="chips">
+      <span class="chip" style="background:var(--fk-brand);color:#fff;">Add to week</span>
+      <span class="chip" style="background:var(--fk-positive-tint);color:var(--fk-positive-ink);">✓ In week</span>
+      <span class="chip" style="background:var(--fk-info-tint);color:var(--fk-info-ink);">Suggested</span>
+      <span class="chip" style="background:var(--fk-star-tint);color:var(--fk-star-ink);">★★★★</span>
+    </div>
+  </div>
+</div></body></html>

@@ -1,0 +1,30 @@
+<!-- @dsCard group="Spacing" viewport="700x210" name="Card anatomy" subtitle="Recipe card composition" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--fk-font-body);color:var(--fk-text);background:var(--fk-surface-page);-webkit-font-smoothing:antialiased;}
+  .wrap{padding:22px 26px;}
+  .row{display:flex;flex-wrap:wrap;gap:10px;}
+  .swatch{border-radius:var(--fk-radius-md);border:1px solid rgba(0,0,0,.06);height:56px;display:flex;align-items:flex-end;padding:6px 8px;font-family:var(--fk-font-mono);font-size:10px;color:rgba(255,255,255,.92);}
+  .swatch.dark-label{color:rgba(0,0,0,.55);}
+  .cap{font-size:var(--fk-text-xs);color:var(--fk-text-muted);margin-bottom:10px;}
+  .mono{font-family:var(--fk-font-mono);}
+  .card{width:230px;background:var(--fk-surface-card);border:1px solid var(--fk-border);border-radius:var(--fk-radius-lg);box-shadow:var(--fk-shadow-sm);overflow:hidden;} .img{aspect-ratio:4/3;background:linear-gradient(135deg,var(--fk-green-300),var(--fk-green-600));position:relative;} .pad{padding:12px;} .chip{display:inline-block;background:var(--fk-surface-sunken);color:var(--fk-text-muted);font-size:var(--fk-text-xs);font-weight:500;padding:3px 9px;border-radius:999px;} .badge{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.92);color:var(--fk-star-ink);font-size:var(--fk-text-xs);font-weight:600;padding:2px 8px;border-radius:999px;}
+</style>
+</head>
+<body><div class="wrap">
+  <div class="card">
+    <div class="img"><span class="badge">★★★★</span></div>
+    <div class="pad">
+      <span class="chip">Italian</span>
+      <div style="font-family:var(--fk-font-display);font-weight:600;font-size:16px;margin-top:8px;">Sunset Tomato Orzo</div>
+      <div style="font-size:13.5px;color:var(--fk-text-muted);margin-top:4px;line-height:1.4;">Weeknight comfort, barely any washing up.</div>
+      <div style="font-size:12px;color:var(--fk-text-muted);margin-top:8px;">⏱ 25 min · vegetarian</div>
+    </div>
+  </div>
+</div></body></html>

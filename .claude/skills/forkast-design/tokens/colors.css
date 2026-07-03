@@ -1,0 +1,173 @@
+/* ==========================================================================
+   Forkast — Colour tokens
+   Fresh Organic: warm-paper neutrals, a garden-green brand, honey stars,
+   a cool harbour blue for "proposals", and rose for destructive actions.
+   All ramps are oklch so hues stay true when lightened/darkened, and so
+   dark mode can lean on the same values.
+   ========================================================================== */
+
+:root {
+  /* --- Neutral: warm paper → ink (a hair of green-yellow warmth) ---------- */
+  --fk-neutral-50:  oklch(98.4% 0.004 95);
+  --fk-neutral-100: oklch(96.6% 0.005 95);
+  --fk-neutral-150: oklch(94.6% 0.006 95);
+  --fk-neutral-200: oklch(92.4% 0.006 95);
+  --fk-neutral-300: oklch(86.5% 0.008 95);
+  --fk-neutral-400: oklch(71.5% 0.009 95);
+  --fk-neutral-500: oklch(58.5% 0.009 95);
+  --fk-neutral-600: oklch(49.5% 0.009 100);
+  --fk-neutral-700: oklch(40.5% 0.010 110);
+  --fk-neutral-800: oklch(30.5% 0.010 120);
+  --fk-neutral-900: oklch(23.5% 0.011 130);
+  --fk-neutral-950: oklch(17.0% 0.010 135);
+
+  /* --- Green: the brand. Leaf / garden green, hue ~150 -------------------- */
+  --fk-green-50:  oklch(97.2% 0.020 152);
+  --fk-green-100: oklch(94.0% 0.043 152);
+  --fk-green-200: oklch(88.5% 0.072 152);
+  --fk-green-300: oklch(80.0% 0.105 152);
+  --fk-green-400: oklch(70.5% 0.128 151);
+  --fk-green-500: oklch(60.5% 0.118 150);
+  --fk-green-600: oklch(52.0% 0.104 150);
+  --fk-green-700: oklch(44.0% 0.088 150);
+  --fk-green-800: oklch(36.0% 0.070 150);
+  --fk-green-900: oklch(29.5% 0.055 150);
+
+  /* --- Honey: quality stars (★) + gentle warnings, hue ~75 --------------- */
+  --fk-honey-50:  oklch(97.4% 0.028 82);
+  --fk-honey-100: oklch(93.5% 0.058 82);
+  --fk-honey-200: oklch(88.0% 0.090 80);
+  --fk-honey-400: oklch(78.0% 0.128 76);
+  --fk-honey-500: oklch(71.5% 0.130 74);
+  --fk-honey-600: oklch(63.5% 0.125 70);
+  --fk-honey-700: oklch(52.5% 0.108 66);
+
+  /* --- Harbour: proposals / rotation (◆) / info, hue ~240 ---------------- */
+  --fk-harbour-50:  oklch(96.5% 0.018 240);
+  --fk-harbour-100: oklch(92.5% 0.038 240);
+  --fk-harbour-200: oklch(86.5% 0.062 240);
+  --fk-harbour-500: oklch(62.5% 0.105 242);
+  --fk-harbour-600: oklch(54.5% 0.108 244);
+  --fk-harbour-700: oklch(46.5% 0.095 246);
+  --fk-harbour-900: oklch(33.0% 0.070 248);
+
+  /* --- Rose: destructive, hue ~22 ---------------------------------------- */
+  --fk-rose-50:  oklch(96.2% 0.020 20);
+  --fk-rose-100: oklch(92.0% 0.045 20);
+  --fk-rose-500: oklch(62.5% 0.190 22);
+  --fk-rose-600: oklch(55.5% 0.192 23);
+  --fk-rose-700: oklch(47.5% 0.170 24);
+
+  /* ======================================================================
+     Semantic aliases — always style against these, not the raw ramps.
+     ====================================================================== */
+
+  /* Surfaces */
+  --fk-surface-page:   var(--fk-neutral-50);
+  --fk-surface-card:   #ffffff;
+  --fk-surface-sunken: var(--fk-neutral-100);
+  --fk-surface-inset:  var(--fk-neutral-150);
+
+  /* Text */
+  --fk-text:        var(--fk-neutral-900);
+  --fk-text-muted:  var(--fk-neutral-500);
+  --fk-text-subtle: var(--fk-neutral-400);
+  --fk-text-onbrand: #ffffff;
+
+  /* Lines */
+  --fk-border:        var(--fk-neutral-200);
+  --fk-border-strong: var(--fk-neutral-300);
+  --fk-divider:       var(--fk-neutral-150);
+
+  /* Brand (green) */
+  --fk-brand:        var(--fk-green-500);
+  --fk-brand-hover:  var(--fk-green-600);
+  --fk-brand-ink:    var(--fk-green-700);   /* brand text on light surfaces */
+  --fk-brand-tint:   var(--fk-green-100);   /* filled chip / soft button bg  */
+  --fk-brand-wash:   var(--fk-green-50);    /* faint panel bg                */
+
+  /* Positive / confirmed state (in-week, cooked) — shares the green family */
+  --fk-positive-tint: var(--fk-green-100);
+  --fk-positive-ink:  var(--fk-green-700);
+
+  /* Quality (stars) */
+  --fk-star:      var(--fk-honey-600);
+  --fk-star-ink:  var(--fk-honey-700);
+  --fk-star-tint: var(--fk-honey-100);
+
+  /* Proposal / info (rotation, suggested week) */
+  --fk-info:      var(--fk-harbour-600);
+  --fk-info-ink:  var(--fk-harbour-700);
+  --fk-info-tint: var(--fk-harbour-100);
+  --fk-info-wash: var(--fk-harbour-50);
+
+  /* Attention / warning */
+  --fk-warn:      var(--fk-honey-600);
+  --fk-warn-ink:  var(--fk-honey-700);
+  --fk-warn-tint: var(--fk-honey-100);
+  --fk-warn-wash: var(--fk-honey-50);
+
+  /* Destructive */
+  --fk-danger:      var(--fk-rose-600);
+  --fk-danger-hover:var(--fk-rose-700);
+  --fk-danger-ink:  var(--fk-rose-600);
+  --fk-danger-tint: var(--fk-rose-100);
+  --fk-danger-wash: var(--fk-rose-50);
+
+  /* Focus ring */
+  --fk-ring: var(--fk-green-300);
+}
+
+/* ==========================================================================
+   Dark mode — toggled by `.dark` on <html> (matches the app's existing hook).
+   Semantic aliases are re-pointed; the raw ramps stay put, so component code
+   that references only the aliases re-themes wholesale.
+   ========================================================================== */
+.dark {
+  color-scheme: dark;
+
+  --fk-surface-page:   oklch(17.0% 0.010 135);
+  --fk-surface-card:   oklch(22.0% 0.011 132);
+  --fk-surface-sunken: oklch(25.5% 0.011 130);
+  --fk-surface-inset:  oklch(28.5% 0.011 128);
+
+  --fk-text:        oklch(96.0% 0.006 100);
+  --fk-text-muted:  oklch(72.0% 0.010 105);
+  --fk-text-subtle: oklch(58.0% 0.010 110);
+
+  --fk-border:        oklch(31.0% 0.011 128);
+  --fk-border-strong: oklch(40.0% 0.011 124);
+  --fk-divider:       oklch(27.5% 0.011 130);
+
+  /* Brand reads a touch brighter on dark so it stays legible as a fill. */
+  --fk-brand:        oklch(66.0% 0.128 151);
+  --fk-brand-hover:  oklch(72.0% 0.132 151);
+  --fk-brand-ink:    oklch(80.0% 0.110 152);
+  --fk-brand-tint:   oklch(38.0% 0.075 150);
+  --fk-brand-wash:   oklch(30.0% 0.055 150);
+
+  --fk-positive-tint: oklch(36.0% 0.070 150);
+  --fk-positive-ink:  oklch(82.0% 0.100 152);
+
+  --fk-star:      oklch(78.0% 0.128 76);
+  --fk-star-ink:  oklch(85.0% 0.115 78);
+  --fk-star-tint: oklch(40.0% 0.090 72);
+
+  --fk-info:      oklch(70.0% 0.108 242);
+  --fk-info-ink:  oklch(82.0% 0.090 240);
+  --fk-info-tint: oklch(37.0% 0.080 244);
+  --fk-info-wash: oklch(30.0% 0.060 246);
+
+  --fk-warn:      oklch(80.0% 0.120 76);
+  --fk-warn-ink:  oklch(86.0% 0.110 78);
+  --fk-warn-tint: oklch(40.0% 0.090 72);
+  --fk-warn-wash: oklch(31.0% 0.070 74);
+
+  --fk-danger:      oklch(68.0% 0.190 20);
+  --fk-danger-hover:oklch(74.0% 0.185 20);
+  --fk-danger-ink:  oklch(78.0% 0.150 20);
+  --fk-danger-tint: oklch(38.0% 0.130 22);
+  --fk-danger-wash: oklch(30.0% 0.100 22);
+
+  --fk-ring: oklch(52.0% 0.104 150);
+}
