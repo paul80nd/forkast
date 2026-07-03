@@ -31,6 +31,20 @@ Feature: Plan a week of meals
     Then the cooked history holds 1 entry for "r1"
     And the plan does not contain "r1"
 
+  Scenario: Undoing a remove restores the meal to its original slot
+    Given the plan is exactly "r1, r2, r3"
+    When I remove recipe "r2" from the plan
+    And I re-insert recipe "r2" at slot 1
+    Then the plan is exactly "r1, r2, r3"
+
+  Scenario: Undoing a cook removes the stamp and restores the meal
+    Given I have added recipe "r1" to the plan
+    When I mark recipe "r1" as cooked
+    And I unmark the last cook
+    And I re-insert recipe "r1" at slot 0
+    Then the cooked history holds 0 entry for "r1"
+    And the plan is exactly "r1"
+
   Scenario: Swapping a planned meal for a variant keeps its slot position
     Given I have added recipe "r1" to the plan
     And I have added recipe "r2" to the plan

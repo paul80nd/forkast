@@ -7,6 +7,8 @@ import {
   getPlanShoppingList,
   getPlanShoppingListText,
   toggleChecked,
+  clearChecked,
+  setChecked,
   addExtra,
   removeExtra,
   setBinding,
@@ -193,6 +195,20 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Given('a recipe {string} with {string} bound to {string}', boundRecipe)
     And('recipes {string} are on the plan for {int}', onPlan)
     When('I tick off {string}', async (_, key: string) => toggleChecked(key))
+    Then('{string} is ticked', async (_, key: string) => {
+      const s = await db.shopping.get(CURRENT_PLAN_ID)
+      expect(s?.checked).toContain(key)
+    })
+  })
+
+  Scenario('Undoing a Clear ticks restores the ticked items', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} with {string} bound to {string}', boundRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    And('I tick off {string}', async (_, key: string) => toggleChecked(key))
+    When('I clear all ticks', async () => clearChecked())
+    And('I restore ticks {string}', async (_, csv: string) =>
+      setChecked(csv.split(',').map((s) => s.trim())),
+    )
     Then('{string} is ticked', async (_, key: string) => {
       const s = await db.shopping.get(CURRENT_PLAN_ID)
       expect(s?.checked).toContain(key)

@@ -4,10 +4,12 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { CURRENT_PLAN_ID } from '../lib/plan'
 import { usePersistentState } from '../hooks/usePersistentState'
+import { useToast } from '../hooks/useToast'
 import {
   getPlanShoppingList,
   toggleChecked,
   clearChecked,
+  setChecked,
   addExtra,
   toggleExtra,
   removeExtra,
@@ -44,6 +46,7 @@ export function ShopPage() {
   const dict = useLiveQuery(() => db.dictionary.toArray(), [])
   const bindings = useLiveQuery(() => db.bindings.toArray(), [])
   const [extraText, setExtraText] = useState('')
+  const showToast = useToast()
 
   const portions = plan?.portions ?? 2
 
@@ -93,7 +96,15 @@ export function ShopPage() {
           {checked.size > 0 && (
             <button
               type="button"
-              onClick={() => clearChecked()}
+              onClick={() => {
+                const prev = [...checked]
+                void clearChecked()
+                showToast({
+                  action: 'Undo',
+                  onAction: () => void setChecked(prev),
+                  message: `Cleared ${prev.length} tick${prev.length === 1 ? '' : 's'}`,
+                })
+              }}
               className="rounded-md px-2 py-1 text-muted hover:bg-sunken"
             >
               Clear ticks

@@ -4,7 +4,17 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
-import { addToPlan, addRecipesToPlan, removeFromPlan, setPortions, markCooked, swapPlanRecipe } from '../app/plan'
+import {
+  addToPlan,
+  addRecipesToPlan,
+  removeFromPlan,
+  insertIntoPlanAt,
+  setPortions,
+  markCooked,
+  unmarkCooked,
+  swapPlanRecipe,
+} from '../app/plan'
+import { useToast } from '../hooks/useToast'
 import { suggestWeekPlan } from '../app/suggest'
 import { resolveDishes, variantLabel } from '../lib/variants'
 import { usePersistentState } from '../hooks/usePersistentState'
@@ -44,6 +54,37 @@ export function PlanPage() {
   const [pickerQuery, setPickerQuery] = useState('')
   // The recipe shown in the pop-up detail view (opened from a suggested or planned row); null = closed.
   const [modalRecipe, setModalRecipe] = useState<Recipe | null>(null)
+  const showToast = useToast()
+
+  // Remove a meal (or mark it cooked) with an undo toast — both silently mutate the week off to
+  // the side, so a confirmation that restores the meal to its slot guards against a mis-tap.
+  function removeWithUndo(recipe: Recipe, slot: number) {
+    void removeFromPlan(recipe.id)
+    showToast({
+      action: 'Undo',
+      onAction: () => void insertIntoPlanAt(recipe.id, slot),
+      message: (
+        <>
+          Removed <span className="font-medium">{recipe.title}</span> from the week
+        </>
+      ),
+    })
+  }
+  async function cookWithUndo(recipe: Recipe, slot: number) {
+    const cookedId = await markCooked(recipe.id)
+    showToast({
+      action: 'Undo',
+      onAction: () => {
+        void unmarkCooked(cookedId)
+        void insertIntoPlanAt(recipe.id, slot)
+      },
+      message: (
+        <>
+          Marked <span className="font-medium">{recipe.title}</span> cooked
+        </>
+      ),
+    })
+  }
 
   // Assisted "suggest a varied week": a non-destructive shortlist you reroll / lock / swap /
   // accept. The target count persists; the shortlist is transient until accepted.
@@ -361,7 +402,7 @@ export function PlanPage() {
           </div>
 
           <ul className="mt-4 space-y-2">
-            {planned.map((r) => {
+            {planned.map((r, slot) => {
               const rec = recency(lastCookedById.get(r.id))
               const siblings = dishByRecipe.get(r.id) ?? [r]
               const hasVersions = siblings.length > 1
@@ -416,7 +457,7 @@ export function PlanPage() {
                   )}
                   <button
                     type="button"
-                    onClick={() => markCooked(r.id)}
+                    onClick={() => void cookWithUndo(r, slot)}
                     className="rounded-md bg-positive-tint px-2.5 py-1 text-sm font-medium text-positive-ink hover:bg-positive-tint"
                     title="Mark as cooked (stamps today, removes from week)"
                   >
@@ -424,7 +465,7 @@ export function PlanPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => removeFromPlan(r.id)}
+                    onClick={() => removeWithUndo(r, slot)}
                     className="rounded-md px-2 py-1 text-muted hover:bg-sunken hover:text-muted"
                     title="Remove from week"
                   >

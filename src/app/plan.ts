@@ -38,6 +38,19 @@ export async function removeFromPlan(recipeId: string): Promise<void> {
 }
 
 /**
+ * Re-insert a recipe at a given slot (index clamped to the current length), skipping if it's
+ * already on the plan. Backs the "undo" of a remove/cook, restoring the meal to its slot.
+ */
+export async function insertIntoPlanAt(recipeId: string, index: number): Promise<void> {
+  const plan = await getOrCreatePlan()
+  if (plan.recipeIds.includes(recipeId)) return
+  const at = Math.max(0, Math.min(index, plan.recipeIds.length))
+  const recipeIds = [...plan.recipeIds]
+  recipeIds.splice(at, 0, recipeId)
+  await db.plans.put({ ...plan, recipeIds })
+}
+
+/**
  * Swap a planned meal for one of its variants, keeping its slot position. Used by the
  * Plan-page version picker. No-op when the recipe isn't planned, the target is identical,
  * or the target is already on the plan (so a swap never creates a duplicate).
@@ -57,8 +70,17 @@ export async function setPortions(portions: number): Promise<void> {
   await db.plans.put({ ...plan, portions })
 }
 
-/** Stamp today's cook and take the recipe off the current week (it's done). */
-export async function markCooked(recipeId: string): Promise<void> {
-  await db.cooked.add({ recipeId, date: todayISO() })
+/**
+ * Stamp today's cook and take the recipe off the current week (it's done). Returns the new
+ * cooked-entry id so the caller can undo the stamp (see `unmarkCooked`).
+ */
+export async function markCooked(recipeId: string): Promise<number> {
+  const cookedId = await db.cooked.add({ recipeId, date: todayISO() })
   await removeFromPlan(recipeId)
+  return cookedId
+}
+
+/** Delete a single cooked-history entry by id — the inverse of one `markCooked` stamp. */
+export async function unmarkCooked(cookedId: number): Promise<void> {
+  await db.cooked.delete(cookedId)
 }

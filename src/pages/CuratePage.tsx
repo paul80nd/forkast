@@ -8,8 +8,8 @@ import { RotationRating, StarRating } from '../components/RatingScale'
 import { Select, fieldBoxClass } from '../components/Select'
 import { Switch } from '../components/Switch'
 import { ProgressBar } from '../components/ProgressBar'
-import { Toast } from '../components/Toast'
 import { FilterPopover } from '../components/FilterPopover'
+import { useToast } from '../hooks/useToast'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
@@ -91,15 +91,8 @@ export function CuratePage() {
   const [phase, setPhase] = useState<'stars' | 'rotation'>('stars')
   const starsRef = useRef(starsById)
   starsRef.current = starsById
-  // Undo toast: after a rating auto-advances, a bottom-centre pill lets you take it back. We
-  // snapshot exactly what changed — the rated card, any variants the rating cascaded onto, and
-  // the queue/index at that moment — so Undo restores the pre-rating state in full. `seq` keys
-  // the Toast so a fresh rating remounts it (and restarts its dismiss timer).
-  const [undo, setUndo] = useState<
-    | { ids: string[]; queue: string[]; index: number; title: string; stars: Stars; seq: number }
-    | null
-  >(null)
-  const seqRef = useRef(0)
+  // Undo toast: after a rating auto-advances, the shared host shows a pill that takes it back.
+  const showToast = useToast()
 
   // Capture only once both tables have loaded (else an early recipes-only load would treat
   // already-rated recipes as unrated). `dataReady` flips false→true once, so this fires on
@@ -146,18 +139,26 @@ export function CuratePage() {
     return written
   }
 
-  // Snapshot the just-finalised rating so the toast can undo it — the card, the siblings the
+  // Snapshot the just-finalised rating and raise an undo toast — the card, the siblings the
   // cascade wrote, and the pre-cascade queue/index (Undo restores all of them).
   function offerUndo(recipe: Recipe, stars: Stars, cascaded: string[], queueBefore: string[]) {
-    seqRef.current += 1
-    setUndo({
-      ids: [recipe.id, ...cascaded],
-      queue: queueBefore,
-      index,
-      title: recipe.title,
-      stars,
-      seq: seqRef.current,
+    const snapshot = { ids: [recipe.id, ...cascaded], queue: queueBefore, index }
+    showToast({
+      action: 'Undo',
+      onAction: () => void undoRating(snapshot),
+      message: (
+        <>
+          Rated <span className="font-semibold text-star">{'★'.repeat(stars)}</span> · {recipe.title}
+        </>
+      ),
     })
+  }
+
+  async function undoRating(snapshot: { ids: string[]; queue: string[]; index: number }) {
+    await Promise.all(snapshot.ids.map((id) => clearCuration(id)))
+    setQueue(snapshot.queue)
+    setIndex(snapshot.index)
+    setPhase('stars')
   }
 
   async function rateStars(v: Stars | undefined) {
@@ -189,17 +190,6 @@ export function CuratePage() {
       offerUndo(recipe, stars, cascaded, queueBefore)
       advance()
     }
-  }
-
-  // Revert the last auto-advanced rating: clear the card and any cascaded variants back to
-  // unrated, restore the queue (bringing pruned variants back) and step to the rated card.
-  async function undoLast() {
-    if (!undo) return
-    await Promise.all(undo.ids.map((id) => clearCuration(id)))
-    setQueue(undo.queue)
-    setIndex(undo.index)
-    setPhase('stars')
-    setUndo(null)
   }
 
   // Keyboard: digit sets ★ then ◆ (advancing as it goes), ←/→ (or S) navigate, Backspace clears.
@@ -502,14 +492,6 @@ export function CuratePage() {
       {/* Rated overview — scoped to the active filter, like the triage backlog. */}
       {ratedCount > 0 && (
         <RatedOverview recipes={scoped} starsById={starsById} rotationById={rotationById} />
-      )}
-
-      {/* Confirm-and-undo after a rating auto-advances. Keyed by seq so each rating restarts it. */}
-      {undo && (
-        <Toast key={undo.seq} action="Undo" onAction={undoLast} onClose={() => setUndo(null)}>
-          Rated <span className="font-semibold text-star">{'★'.repeat(undo.stars)}</span> ·{' '}
-          {undo.title}
-        </Toast>
       )}
     </section>
   )

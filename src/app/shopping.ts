@@ -123,6 +123,12 @@ export async function clearChecked(): Promise<void> {
   await db.shopping.put({ ...s, checked: [] })
 }
 
+/** Replace the whole set of ticked keys — used to undo a Clear ticks. */
+export async function setChecked(keys: string[]): Promise<void> {
+  const s = await getState()
+  await db.shopping.put({ ...s, checked: keys })
+}
+
 export async function addExtra(text: string): Promise<void> {
   const t = text.trim()
   if (!t) return

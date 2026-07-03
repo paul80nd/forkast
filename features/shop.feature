@@ -81,6 +81,14 @@ Feature: Shopping list
     When I tick off "lime|each"
     Then "lime|each" is ticked
 
+  Scenario: Undoing a Clear ticks restores the ticked items
+    Given a recipe "r1" with "1 lime" bound to "lime"
+    And recipes "r1" are on the plan for 2
+    And I tick off "lime|each"
+    When I clear all ticks
+    And I restore ticks "lime|each"
+    Then "lime|each" is ticked
+
   Scenario: Exporting the shopping list as text keeps ticks and conversions
     Given a recipe "r1" with "1 lime" bound to "lime"
     And recipes "r1" are on the plan for 2

@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { ThemeToggle } from './components/ThemeToggle'
 import { BackupNudge } from './components/BackupNudge'
+import { ToastProvider } from './hooks/useToast'
 
 const tabs = [
   { to: '/browse', label: 'Browse' },
@@ -13,7 +14,8 @@ const tabs = [
 
 export function AppLayout() {
   return (
-    <div className="min-h-screen bg-surface text-ink">
+    <ToastProvider>
+      <div className="min-h-screen bg-surface text-ink">
       <header className="border-b border-line bg-card">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <span className="inline-flex items-center gap-2">
@@ -60,6 +62,7 @@ export function AppLayout() {
       <main className="mx-auto max-w-5xl px-4 py-6">
         <Outlet />
       </main>
-    </div>
+      </div>
+    </ToastProvider>
   )
 }
