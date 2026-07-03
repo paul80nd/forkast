@@ -5,6 +5,7 @@ import { db } from '../db/db'
 import { applyRatingToGroup, clearCuration, setRotation, setStars } from '../app/curation'
 import { ROTATION_LABELS, STAR_LABELS } from '../lib/curation'
 import { RotationRating, StarRating } from '../components/RatingScale'
+import { Select, fieldBoxClass } from '../components/Select'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
@@ -183,9 +184,6 @@ export function CuratePage() {
   const ratedCount = scoped.filter((r) => starsById.has(r.id)).length
   const remaining = queue.filter((id) => !starsById.has(id)).length
 
-  const selectClass =
-    'rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
-
   return (
     <section>
       <div className="flex items-end justify-between gap-3">
@@ -218,11 +216,10 @@ export function CuratePage() {
 
       {/* Focus the working set — rate one cuisine / protein at a time for consistency. */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <select
+        <Select
           value={fCuisine}
           onChange={(e) => setFCuisine(e.target.value)}
           aria-label="Filter by cuisine"
-          className={selectClass}
         >
           <option value="all">All cuisines</option>
           {cuisines.map((c) => (
@@ -230,12 +227,12 @@ export function CuratePage() {
               {c}
             </option>
           ))}
-        </select>
-        <select
+        </Select>
+        <Select
           value={fProtein}
           onChange={(e) => setFProtein(e.target.value)}
           aria-label="Filter by main protein"
-          className={`${selectClass} capitalize`}
+          className="capitalize"
         >
           <option value="all">All proteins</option>
           {proteins.map((p) => (
@@ -243,7 +240,7 @@ export function CuratePage() {
               {p}
             </option>
           ))}
-        </select>
+        </Select>
         {filterActive && (
           <button
             type="button"
@@ -261,7 +258,7 @@ export function CuratePage() {
             type="checkbox"
             checked={applyToVariants}
             onChange={(e) => setApplyToVariants(e.target.checked)}
-            className="size-4 rounded border-stone-300 text-sky-700 focus:ring-sky-400"
+            className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
           />
           Apply rating to variants
         </label>
@@ -494,8 +491,6 @@ function RatedOverview({
     })
     .filter((g) => g.slice.length > 0)
 
-  const controlClass =
-    'rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
 
   return (
     <div className="mt-10">
@@ -509,13 +504,12 @@ function RatedOverview({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search rated…"
-            className={`${controlClass} w-44`}
+            className={`${fieldBoxClass} w-44 px-2.5 py-1.5 text-sm`}
           />
-          <select
+          <Select
             value={String(tierFilter)}
             onChange={(e) => setTierFilter(e.target.value === 'all' ? 'all' : (Number(e.target.value) as Stars))}
             aria-label="Filter by star tier"
-            className={controlClass}
           >
             <option value="all">All ratings</option>
             {([5, 4, 3, 2, 1] as Stars[]).map((t) => (
@@ -523,7 +517,7 @@ function RatedOverview({
                 {'★'.repeat(t)} {STAR_LABELS[t]}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 

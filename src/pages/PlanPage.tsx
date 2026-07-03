@@ -9,6 +9,7 @@ import { suggestWeekPlan } from '../app/suggest'
 import { resolveDishes, variantLabel } from '../lib/variants'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
+import { Select } from '../components/Select'
 import type { Suggestion } from '../lib/suggest'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
@@ -260,7 +261,7 @@ export function PlanPage() {
             type="checkbox"
             checked={includeUnrated}
             onChange={(e) => setIncludeUnrated(e.target.checked)}
-            className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+            className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
           />
           Include unrated
         </label>
@@ -576,11 +577,12 @@ function SuggestionSlot({
         </div>
 
         {siblings.length > 0 && (
-          <select
+          <Select
+            size="sm"
             value=""
             onChange={(e) => e.target.value && onSwap(e.target.value)}
             aria-label="Swap to a variant"
-            className="max-w-32 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-1.5 py-1 text-xs text-stone-600"
+            className="max-w-32 text-stone-600"
           >
             <option value="">Swap variant…</option>
             {siblings.map((m) => (
@@ -588,7 +590,7 @@ function SuggestionSlot({
                 {variantLabel(m.title, recipe.title) || m.title}
               </option>
             ))}
-          </select>
+          </Select>
         )}
         <button
           type="button"

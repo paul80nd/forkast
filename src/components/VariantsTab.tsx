@@ -13,6 +13,7 @@ import {
   dissolveOverride,
 } from '../app/variants'
 import { deleteRecipe } from '../app/cleanup'
+import { Select, fieldBoxClass } from './Select'
 import type { CandidateCluster } from '../lib/similarity'
 import { CompareView } from './CompareView'
 
@@ -141,7 +142,7 @@ function VariantCandidateCard({
               type="checkbox"
               checked={included.has(m.id)}
               onChange={() => toggle(m.id)}
-              className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+              className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
               aria-label={`Include ${m.title}`}
             />
             <label className="flex cursor-pointer items-center gap-1.5">
@@ -151,7 +152,7 @@ function VariantCandidateCard({
                 checked={lead === m.id}
                 disabled={!included.has(m.id)}
                 onChange={() => setLeadId(m.id)}
-                className="text-orange-500 focus:ring-orange-400"
+                className="accent-orange-500 focus:ring-orange-400"
                 aria-label={`Make ${m.title} the original`}
               />
               <span className="text-xs text-stone-600">lead</span>
@@ -265,7 +266,7 @@ function VariantCreate({
                   name="create-lead"
                   checked={lead === id}
                   onChange={() => setLeadId(id)}
-                  className="text-orange-500 focus:ring-orange-400"
+                  className="accent-orange-500 focus:ring-orange-400"
                 />
                 <span className="text-xs text-stone-600">lead</span>
               </label>
@@ -339,17 +340,16 @@ function VariantDishList({
             setVisible(50)
           }}
           placeholder="Search dishes…"
-          className="min-w-56 flex-1 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none"
+          className={`${fieldBoxClass} min-w-56 flex-1 px-2.5 py-1.5 text-sm`}
         />
-        <select
+        <Select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm"
           aria-label="Sort dishes"
         >
           <option value="size">Most versions</option>
           <option value="title">A–Z</option>
-        </select>
+        </Select>
       </div>
 
       <ul className="mt-3 space-y-2">

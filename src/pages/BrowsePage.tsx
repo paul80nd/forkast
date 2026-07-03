@@ -148,7 +148,7 @@ export function BrowsePage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search title or ingredient…"
-          className={`${fieldBoxClass} min-w-56 flex-1 px-2.5`}
+          className={`${fieldBoxClass} min-w-56 flex-1 px-2.5 py-1.5 text-sm`}
         />
         <Select
           value={cuisine}
