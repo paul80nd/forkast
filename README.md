@@ -4,6 +4,12 @@
 recipes, plan a varied week, and generate a merged shopping list — all in your
 browser, with nothing leaving your machine.
 
+### ▶ [Try the live demo →](https://paul80nd.github.io/forkast/)
+
+Seeded with a handful of fictional demo recipes so you can wander through Curate →
+Plan → Shop without importing anything. It all runs in your browser — poke about,
+rate things, plan a week; nothing is saved anywhere but your machine.
+
 > ⚠️ **This is not a generic recipe manager.** Forkast is built around one fussy
 > household's very specific workflow and tastes. It's shared in case the approach
 > — or the simple, portable recipe **storage format** — is useful to you. If you
@@ -31,6 +37,23 @@ can see the shape of things. Fittingly for an agent-built app, an **agent playbo
 ([`scripts/ACQUIRE.md`](scripts/ACQUIRE.md)) walks Claude Code through acquiring from your
 chosen source, end to end.
 
+## Run it locally
+
+React 19 · Vite · TypeScript · Tailwind v4 · Dexie (IndexedDB) · HashRouter. Supports all
+evergreen browsers.
+
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # type-check + production build
+npm test         # unit + feature (Gherkin) tests
+```
+
+The live demo is the `npm run build` output, deployed to GitHub Pages on every push to
+`main` (see [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)). It ships the
+bundled demo recipes and their placeholder art; **images for recipes you import yourself
+aren't hosted** — they live only on your machine — so they won't appear on the hosted demo.
+
 ## How this was built
 
 Forkast is an experiment in **agent-first, no-hand-coding development**: every line
@@ -41,7 +64,9 @@ pragmatic: I'd rather shape an app than hand-crank a weekly shopping list. 🙂
 
 ## Status
 
-🚧 Early days — see [`docs/spec.md`](docs/spec.md) for the full design and the MVP scope,
+**v1 — feature-complete.** The core loop (Curate → Plan → Shop → export) is closed, with a
+cook-along recipe view (serving scaler, ingredient/step check-offs, nutrition) on top. Now in
+dogfooding and polish. See [`docs/spec.md`](docs/spec.md) for the full design and MVP scope,
 [`docs/decisions.md`](docs/decisions.md) for how it got here.
 
 ## Licence
