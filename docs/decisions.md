@@ -49,7 +49,7 @@ week). Resolved choices: soft variety (penalise, don't forbid); favour favourite
 **propose-then-accept** (non-destructive, like the other suggesters); **weighted-random + seed**
 so weeks vary but tests stay deterministic; week length 5, adjustable. The pure scorer lands in
 `src/lib/` (the first pure resident); plan Dexie writes move `src/lib/plan.ts` → `src/app/plan.ts`
-to fix the long-standing lib→app wrinkle. Not built yet.
+to fix the long-standing lib→app wrinkle. (Built 2026-06-30 — see `plan-suggest-spec.md`.)
 
 ## 2026-06-29 — Duplicate detection reuses the variant scorer, separated by title overlap
 

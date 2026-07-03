@@ -5,8 +5,8 @@ action that proposes a balanced set of meals from your shortlist, which you then
 or accept. Provider-neutral by design.
 
 > A **feature spec**: the design and rationale for one area, sitting alongside the whole-app
-> [`spec.md`](spec.md) (this is the "Assisted planning" item under *Later*) and the
-> cross-cutting [`decisions.md`](decisions.md). Living documentation — the build will ship with
+> [`spec.md`](spec.md) (the assisted-planning MVP item — built) and the
+> cross-cutting [`decisions.md`](decisions.md). Living documentation — the build ships with
 > Gherkin scenarios in `features/`; the planned ones are listed at the foot.
 >
 > **Status: built 2026-06-30.** Pure scorer `src/lib/suggest.ts` (+ unit tests), app seam

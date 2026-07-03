@@ -22,7 +22,7 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
   - [`docs/shop-spec.md`](docs/shop-spec.md) — Shop (merged list + lazy ingredient binding at
     shopping time: dictionary, name bindings, match, density).
   - [`docs/plan-suggest-spec.md`](docs/plan-suggest-spec.md) — assisted "suggest a varied week"
-    (design only, not built).
+    (**built**: propose-then-accept shortlist; `src/lib/suggest.ts` + `src/app/suggest.ts`).
   - [`docs/variants-spec.md`](docs/variants-spec.md) — **Variants** (built): one dish, many swaps —
     import-seeded `variantGroupKey`/lead + a user-**override** layer; one card per dish in Browse,
     the swap selector on the recipe page, the swap chosen at plan time, curated in **Refine → Variants**.
@@ -69,6 +69,10 @@ npm run test:features  # feature (Gherkin) tests only
   persistence is IndexedDB (working store) + JSON **export** (the durable backup — browsers may
   evict idle IDB, Safari most eagerly). Keep user-facing copy browser-neutral (don't name Safari).
 - CLI/scripts run on **native Node ≥22** (strips TS types — no build step, no `tsx`).
+- **Design:** the **`forkast-design`** skill (`.claude/skills/forkast-design/`) is the brand +
+  design-system source of truth — "Fresh Organic": a **green** brand (replacing the current
+  orange), `--fk-*` oklch tokens, named primitives. **Not yet wired into the app** (the UI still
+  uses the orange/inline-Tailwind look) — invoke `/forkast-design` for any UI/design work.
 
 ## Architecture
 

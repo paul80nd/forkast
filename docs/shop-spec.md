@@ -48,6 +48,29 @@ Tick-off state and manually-added extras are **per plan**, in the `shopping` sto
 `addExtra` / `toggleExtra` / `removeExtra` in `src/app/shopping.ts`. The list itself is derived,
 so only the ticks + extras are persisted.
 
+## Export / share
+
+The list can leave the app as a plain-text checklist — for shopping away from the browser
+(which needs the private images) or a preferred notes app. A collapsible **"Copy / share
+list"** panel on Shop offers two copies over a live text preview (also the manual-copy
+fallback):
+
+- **Copy text** — a clean checklist: `Shopping list · <date>`, then each aisle on its own
+  line with items tab-indented beneath, amounts compacted (`× 2` → `x2`, `11 g` → `11g`) and
+  the recipe-unit conversion kept in parentheses just as the UI shows it
+  (`Soy sauce 45ml (3 tbsp)`). **No `- [ ]` markers** — Apple Notes only *exports* that
+  markdown and never parses it on paste, so we emit plain lines: paste → select all → tap the
+  checklist button gives tidy (nested) checkboxes with no literal cruft. Ticked items carry a
+  trailing ✓ (a pasted list can't arrive pre-checked, and no browser-writable clipboard flavour
+  conveys checked-state).
+- **Copy rich** — styled HTML (bold aisle headers, bulleted items, ticked struck through) placed
+  on the clipboard alongside the plain text, for pasting a formatted list into a **new email**
+  (a `mailto:` body is plain-text only and can't be styled) or a notes app.
+
+Both renderings are pure (`src/lib/shoppingExport.ts`: `shoppingListToText` / `shoppingListToHtml`),
+assembled with the plan's ticks + extras + a dated title by `getPlanShoppingListText` in the app
+layer. Store-cupboard basics and to-taste/unquantified items are omitted from the export for now.
+
 ## Lazy ingredient binding (at shopping time)
 
 Imported recipes carry **no** `ingredientId`, so on real data almost every line starts
@@ -93,12 +116,14 @@ or **Unbind** (back to verbatim). The list has a filter box and 50-at-a-time inf
 
 ## Seams + tests
 
-- Pure logic in `src/lib/shopping.ts` (merge/convert/format) and `src/lib/ingredientMatch.ts`
-  (ranking) — no Dexie, unit-tested.
-- Dexie use-cases in `src/app/shopping.ts` (`getPlanShoppingList`, tick/extras, `setBinding`/
-  `unbind`, `createIngredient`, `updateIngredient`) — the seam the UI and feature tests share.
+- Pure logic in `src/lib/shopping.ts` (merge/convert/format), `src/lib/ingredientMatch.ts`
+  (ranking), and `src/lib/shoppingExport.ts` (text/HTML export) — no Dexie, unit-tested.
+- Dexie use-cases in `src/app/shopping.ts` (`getPlanShoppingList`, `getPlanShoppingListText`,
+  tick/extras, `setBinding`/`unbind`, `createIngredient`, `updateIngredient`) — the seam the UI
+  and feature tests share.
 - `features/shop.feature` covers merge, scale, verbatim, tick/extras, bind-merges,
-  create-then-bind, density conversion, editing an ingredient, and the per-line recipe count.
+  create-then-bind, density conversion, editing an ingredient, the per-line recipe count, and the
+  text export (ticks + conversions).
 
 ## Not built / later
 

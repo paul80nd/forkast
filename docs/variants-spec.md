@@ -103,7 +103,9 @@ Because variants stay separate full recipes, planning needs **no new schema**:
   `removeFromOverride`, `setOverrideLead`, `dissolveOverride`).
 - **Refine → Variants** (replaces the old Group tab) is where the user curates: *suggest* merges the
   image-hash missed (text-match, kept only if a cluster spans >1 effective dish) → confirm + pick
-  lead; *create* by hand; and an *all-dishes* list with re-lead / remove-member / revert-to-auto.
+  lead; *create* by hand; and an *all-dishes* list with re-lead / remove-member / revert-to-auto /
+  **delete-recipe** (removes it outright via `deleteRecipe`, e.g. the unwanted "with dessert" combos —
+  the delete cascade drops it from any override, promoting a new lead if it was the lead).
 - **Resolved open questions:** *groups vs variants* → variants win, groups removed. *Lead-override
   storage/UI* → the override table + Refine → Variants (mirrors the old edit model). *Rating* →
   dish-level (Curate's group-aware rating fans onto the effective dish's unrated variants).

@@ -87,6 +87,11 @@ no separate review pass** — the SPA owns ingredient identity, lazily.
 - **Why not File System Access API?** Not universally supported (e.g. Safari, our
   primary/reference target). IndexedDB + JSON export is universal. Note: browsers may evict
   IndexedDB for long-idle sites (Safari most eagerly) — hence Export is the real backup.
+- **Durability guards** (against that eviction): on load the app requests
+  `navigator.storage.persist()` (best-effort; lowers eviction odds), and it nudges you to keep
+  a fresh backup — the last successful Save is stamped in `localStorage`, and a **header ⚠ pill**
+  + the Config Backup card go amber when there's no backup yet or it's over a week old. Pure
+  staleness logic in `src/lib/backupNudge.ts`; shared live via the `useBackupStatus` hook.
 
 ## Data model
 
@@ -144,22 +149,19 @@ Conceptual; the exact record shapes are the TS types in `src/schema/userData.ts`
 3. **Curate** — set ★1–5; fast keyboard triage of the unrated backlog.
 4. **Plan a week** — manually add recipes; choose portions (default **2**,
    scalable to **4**/N); show cuisine / protein / time badges + a "not cooked
-   recently" hint so variety is eyeballable.
+   recently" hint so variety is eyeballable. Plus **assisted "suggest a varied
+   week"** (built) — a propose-then-accept shortlist scored on stars, rotation
+   and the variety axes. See [`plan-suggest-spec.md`](plan-suggest-spec.md).
 5. **Shopping list** — parse + **merge** ingredients across the plan, **scale**
    to portions, group by aisle, list `basics` separately as "assumed in
-   cupboard", tick off, add manual extras, and **bind ingredients to the
-   dictionary at shopping time** so they merge. See [`shop-spec.md`](shop-spec.md).
+   cupboard", tick off, add manual extras, **bind ingredients to the
+   dictionary at shopping time** so they merge, and **export the list as text**
+   (copy for Apple Notes / rich for email). See [`shop-spec.md`](shop-spec.md).
 6. **Mark as cooked** (date) — builds history from day one.
 7. **Export / Import** user data (backup/restore).
 
 ## Later (noted, not built)
 
-- **Assisted planning** — "suggest a varied week" using stars + the four variety
-  axes the household cares about: **cuisine, main protein, cooking time/effort,
-  recency (not cooked recently)**. ★3s are the variety pool, and each recipe's
-  **`rotation`** (how often you'd want it — captured in Curate) caps how readily a
-  favourite is re-suggested. **Designed** in
-  [`plan-suggest-spec.md`](plan-suggest-spec.md) (group-aware; propose-then-accept).
 - Leftovers/batch awareness, multi-week plan history. (Per-serving nutrition is
   **captured at import and already shown** on the recipe page; a richer nutrition view
   could come later.)
