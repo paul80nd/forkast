@@ -9,219 +9,9 @@
  * Fresh Organic design system — the semantic bridge. Exposes utilities like bg-brand,
  * text-muted, bg-card, text-star, bg-info-wash, font-display, mapped (via @theme inline) to
  * live --fk-* tokens, so the .dark alias swap in theme/tokens/colors.css re-themes everything
- * with no dark: variants. This is the app's colour source of truth.
+ * with no dark: variants. This is the app's single colour/type/radius/shadow source of truth.
  */
 @import "./theme/tailwind-theme.css";
-
-/*
- * TRANSITIONAL: the old ramp-remap (stone→neutral, orange→green, amber→honey, sky→harbour).
- * Kept only until every screen has migrated to the semantic utilities above, so un-migrated
- * markup still renders in-brand. Removed (with the .dark mirror-swap below) once migration is
- * complete. All values are oklch so hues stay true.
- */
-@theme {
-  /* Type — Bricolage Grotesque (display) + Figtree (body/UI). */
-  --font-sans: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
-
-  /* Soft, rounded corners — the Fresh Organic signature. */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-2xl: 24px;
-
-  /* Green-tinted elevation, matching the paper neutrals. */
-  --shadow-xs: 0 1px 2px rgba(30, 41, 28, 0.05);
-  --shadow-sm: 0 1px 3px rgba(30, 41, 28, 0.07), 0 1px 2px rgba(30, 41, 28, 0.04);
-  --shadow-md: 0 6px 16px -6px rgba(30, 41, 28, 0.18), 0 2px 6px rgba(30, 41, 28, 0.06);
-  --shadow-lg: 0 18px 40px -16px rgba(30, 41, 28, 0.28), 0 4px 12px rgba(30, 41, 28, 0.08);
-
-  /* Neutral: warm paper → ink (a hair of green-yellow warmth). */
-  --color-stone-50: oklch(98.4% 0.004 95);
-  --color-stone-100: oklch(96.6% 0.005 95);
-  --color-stone-200: oklch(92.4% 0.006 95);
-  --color-stone-300: oklch(86.5% 0.008 95);
-  --color-stone-400: oklch(71.5% 0.009 95);
-  --color-stone-500: oklch(58.5% 0.009 95);
-  --color-stone-600: oklch(49.5% 0.009 100);
-  --color-stone-700: oklch(40.5% 0.010 110);
-  --color-stone-800: oklch(30.5% 0.010 120);
-  --color-stone-900: oklch(23.5% 0.011 130);
-  --color-stone-950: oklch(17.0% 0.010 135);
-
-  /* Brand: garden green (was orange). */
-  --color-orange-50: oklch(97.2% 0.020 152);
-  --color-orange-100: oklch(94.0% 0.043 152);
-  --color-orange-200: oklch(88.5% 0.072 152);
-  --color-orange-300: oklch(80.0% 0.105 152);
-  --color-orange-400: oklch(70.5% 0.128 151);
-  --color-orange-500: oklch(60.5% 0.118 150);
-  --color-orange-600: oklch(52.0% 0.104 150);
-  --color-orange-700: oklch(44.0% 0.088 150);
-  --color-orange-800: oklch(36.0% 0.070 150);
-  --color-orange-900: oklch(29.5% 0.055 150);
-  --color-orange-950: oklch(22.0% 0.045 150);
-
-  /* Confirmed / positive (in-week, cooked) — shares the green family. */
-  --color-green-50: oklch(97.2% 0.020 152);
-  --color-green-100: oklch(94.0% 0.043 152);
-  --color-green-200: oklch(88.5% 0.072 152);
-  --color-green-300: oklch(80.0% 0.105 152);
-  --color-green-400: oklch(70.5% 0.128 151);
-  --color-green-500: oklch(60.5% 0.118 150);
-  --color-green-600: oklch(52.0% 0.104 150);
-  --color-green-700: oklch(44.0% 0.088 150);
-  --color-green-800: oklch(36.0% 0.070 150);
-  --color-green-900: oklch(29.5% 0.055 150);
-  --color-green-950: oklch(22.0% 0.045 150);
-  --color-emerald-50: oklch(97.2% 0.020 152);
-  --color-emerald-100: oklch(94.0% 0.043 152);
-  --color-emerald-200: oklch(88.5% 0.072 152);
-  --color-emerald-300: oklch(80.0% 0.105 152);
-  --color-emerald-400: oklch(70.5% 0.128 151);
-  --color-emerald-500: oklch(60.5% 0.118 150);
-  --color-emerald-600: oklch(52.0% 0.104 150);
-  --color-emerald-700: oklch(44.0% 0.088 150);
-  --color-emerald-800: oklch(36.0% 0.070 150);
-  --color-emerald-900: oklch(29.5% 0.055 150);
-  --color-emerald-950: oklch(22.0% 0.045 150);
-
-  /* Honey: quality stars (★) + gentle warnings. */
-  --color-amber-50: oklch(97.4% 0.028 82);
-  --color-amber-100: oklch(93.5% 0.058 82);
-  --color-amber-200: oklch(88.0% 0.090 80);
-  --color-amber-300: oklch(83.0% 0.108 78);
-  --color-amber-400: oklch(78.0% 0.128 76);
-  --color-amber-500: oklch(71.5% 0.130 74);
-  --color-amber-600: oklch(63.5% 0.125 70);
-  --color-amber-700: oklch(52.5% 0.108 66);
-  --color-amber-800: oklch(44.0% 0.092 64);
-  --color-amber-900: oklch(36.0% 0.075 62);
-  --color-amber-950: oklch(28.0% 0.058 60);
-
-  /* Harbour: proposals / rotation (◆) / info. */
-  --color-sky-50: oklch(96.5% 0.018 240);
-  --color-sky-100: oklch(92.5% 0.038 240);
-  --color-sky-200: oklch(86.5% 0.062 240);
-  --color-sky-300: oklch(78.0% 0.085 241);
-  --color-sky-400: oklch(70.0% 0.098 241);
-  --color-sky-500: oklch(62.5% 0.105 242);
-  --color-sky-600: oklch(54.5% 0.108 244);
-  --color-sky-700: oklch(46.5% 0.095 246);
-  --color-sky-800: oklch(40.0% 0.082 247);
-  --color-sky-900: oklch(33.0% 0.070 248);
-  --color-sky-950: oklch(26.0% 0.055 249);
-
-  /* Rose: destructive only. */
-  --color-rose-50: oklch(96.2% 0.020 20);
-  --color-rose-100: oklch(92.0% 0.045 20);
-  --color-rose-200: oklch(87.0% 0.075 20);
-  --color-rose-300: oklch(78.0% 0.120 21);
-  --color-rose-400: oklch(70.0% 0.160 21);
-  --color-rose-500: oklch(62.5% 0.190 22);
-  --color-rose-600: oklch(55.5% 0.192 23);
-  --color-rose-700: oklch(47.5% 0.170 24);
-  --color-rose-800: oklch(40.0% 0.140 24);
-  --color-rose-900: oklch(33.0% 0.105 24);
-  --color-rose-950: oklch(26.0% 0.075 22);
-}
-
-/*
- * Dark theme = the Fresh Organic ramps mirror-swapped (50↔950, 100↔900, … 500↔500). Because
- * the app uses every ramp conventionally (low shades = surfaces, high shades = text), one swap
- * re-themes the whole app: warm-paper surfaces go to deep ink and text lightens, pale accent
- * panels darken while their text lightens, and the saturated midpoints (the fills) barely move.
- * `white` is deliberately NOT remapped (it's the literal label colour on saturated fills); light
- * surfaces using `bg-white` carry an explicit `dark:bg-stone-100`. Primary buttons use a fixed
- * green hex (bg-[#2a673a]) that opts out of this swap so white labels stay legible in both themes.
- */
-.dark {
-  color-scheme: dark;
-
-  --color-stone-50: oklch(17.0% 0.010 135);
-  --color-stone-100: oklch(23.5% 0.011 130);
-  --color-stone-200: oklch(30.5% 0.010 120);
-  --color-stone-300: oklch(40.5% 0.010 110);
-  --color-stone-400: oklch(49.5% 0.009 100);
-  --color-stone-500: oklch(58.5% 0.009 95);
-  --color-stone-600: oklch(71.5% 0.009 95);
-  --color-stone-700: oklch(86.5% 0.008 95);
-  --color-stone-800: oklch(92.4% 0.006 95);
-  --color-stone-900: oklch(96.6% 0.005 95);
-  --color-stone-950: oklch(98.4% 0.004 95);
-
-  --color-orange-50: oklch(22.0% 0.045 150);
-  --color-orange-100: oklch(29.5% 0.055 150);
-  --color-orange-200: oklch(36.0% 0.070 150);
-  --color-orange-300: oklch(44.0% 0.088 150);
-  --color-orange-400: oklch(52.0% 0.104 150);
-  --color-orange-500: oklch(60.5% 0.118 150);
-  --color-orange-600: oklch(70.5% 0.128 151);
-  --color-orange-700: oklch(80.0% 0.105 152);
-  --color-orange-800: oklch(88.5% 0.072 152);
-  --color-orange-900: oklch(94.0% 0.043 152);
-  --color-orange-950: oklch(97.2% 0.020 152);
-
-  --color-green-50: oklch(22.0% 0.045 150);
-  --color-green-100: oklch(29.5% 0.055 150);
-  --color-green-200: oklch(36.0% 0.070 150);
-  --color-green-300: oklch(44.0% 0.088 150);
-  --color-green-400: oklch(52.0% 0.104 150);
-  --color-green-500: oklch(60.5% 0.118 150);
-  --color-green-600: oklch(70.5% 0.128 151);
-  --color-green-700: oklch(80.0% 0.105 152);
-  --color-green-800: oklch(88.5% 0.072 152);
-  --color-green-900: oklch(94.0% 0.043 152);
-  --color-green-950: oklch(97.2% 0.020 152);
-  --color-emerald-50: oklch(22.0% 0.045 150);
-  --color-emerald-100: oklch(29.5% 0.055 150);
-  --color-emerald-200: oklch(36.0% 0.070 150);
-  --color-emerald-300: oklch(44.0% 0.088 150);
-  --color-emerald-400: oklch(52.0% 0.104 150);
-  --color-emerald-500: oklch(60.5% 0.118 150);
-  --color-emerald-600: oklch(70.5% 0.128 151);
-  --color-emerald-700: oklch(80.0% 0.105 152);
-  --color-emerald-800: oklch(88.5% 0.072 152);
-  --color-emerald-900: oklch(94.0% 0.043 152);
-  --color-emerald-950: oklch(97.2% 0.020 152);
-
-  --color-amber-50: oklch(28.0% 0.058 60);
-  --color-amber-100: oklch(36.0% 0.075 62);
-  --color-amber-200: oklch(44.0% 0.092 64);
-  --color-amber-300: oklch(52.5% 0.108 66);
-  --color-amber-400: oklch(63.5% 0.125 70);
-  --color-amber-500: oklch(71.5% 0.130 74);
-  --color-amber-600: oklch(78.0% 0.128 76);
-  --color-amber-700: oklch(83.0% 0.108 78);
-  --color-amber-800: oklch(88.0% 0.090 80);
-  --color-amber-900: oklch(93.5% 0.058 82);
-  --color-amber-950: oklch(97.4% 0.028 82);
-
-  --color-sky-50: oklch(26.0% 0.055 249);
-  --color-sky-100: oklch(33.0% 0.070 248);
-  --color-sky-200: oklch(40.0% 0.082 247);
-  --color-sky-300: oklch(46.5% 0.095 246);
-  --color-sky-400: oklch(54.5% 0.108 244);
-  --color-sky-500: oklch(62.5% 0.105 242);
-  --color-sky-600: oklch(70.0% 0.098 241);
-  --color-sky-700: oklch(78.0% 0.085 241);
-  --color-sky-800: oklch(86.5% 0.062 240);
-  --color-sky-900: oklch(92.5% 0.038 240);
-  --color-sky-950: oklch(96.5% 0.018 240);
-
-  --color-rose-50: oklch(26.0% 0.075 22);
-  --color-rose-100: oklch(33.0% 0.105 24);
-  --color-rose-200: oklch(40.0% 0.140 24);
-  --color-rose-300: oklch(47.5% 0.170 24);
-  --color-rose-400: oklch(55.5% 0.192 23);
-  --color-rose-500: oklch(62.5% 0.190 22);
-  --color-rose-600: oklch(70.0% 0.160 21);
-  --color-rose-700: oklch(78.0% 0.120 21);
-  --color-rose-800: oklch(87.0% 0.075 20);
-  --color-rose-900: oklch(92.0% 0.045 20);
-  --color-rose-950: oklch(96.2% 0.020 20);
-}
 
 /* Display face on the wordmark and page/section titles; body defaults to Figtree. */
 @layer base {
@@ -235,10 +25,10 @@
 }
 
 /*
- * Custom checkbox / radio. Native controls draw their tick from color-scheme, so
- * under the dark theme the check renders dark on our brand-green fill — barely
- * visible. appearance-none + our own white glyph gives a crisp, identical control
- * in both themes. Brand green fill (rose for .fk-check--danger destructive picks).
+ * Custom checkbox / radio. Native controls draw their tick from color-scheme, so under the
+ * dark theme the check renders dark on our brand-green fill — barely visible. appearance-none
+ * + our own white glyph gives a crisp, identical control in both themes. Colours reference the
+ * --fk-* tokens directly (the @theme-inline --color-* names aren't emitted as usable vars).
  */
 @layer components {
   .fk-check,
@@ -248,8 +38,8 @@
     width: 1rem;
     height: 1rem;
     flex: none;
-    border: 1px solid var(--color-stone-300);
-    background-color: var(--color-stone-50);
+    border: 1px solid var(--fk-border-strong);
+    background-color: var(--fk-surface-card);
     background-position: center;
     background-repeat: no-repeat;
     background-size: 0.8rem;
@@ -268,8 +58,8 @@
   .fk-check:checked,
   .fk-radio:checked {
     /* Fixed brand green (same as primary buttons) so the white glyph keeps a
-       6.8:1 contrast in BOTH themes — a ramp value would lighten in the dark swap
-       and wash the tick out. */
+       6.8:1 contrast in BOTH themes — a themed value would lighten in dark and
+       wash the tick out. */
     background-color: #2a673a;
     border-color: #2a673a;
   }
@@ -288,6 +78,6 @@
   .fk-check:focus-visible,
   .fk-radio:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--color-orange-200);
+    box-shadow: 0 0 0 3px var(--fk-ring);
   }
 }
