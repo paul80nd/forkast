@@ -34,7 +34,8 @@ export interface UseStorageEstimate {
   loading: boolean
   /** True only when persistence can still be requested (supported + not already granted). */
   canRequestPersist: boolean
-  requestPersist: () => Promise<void>
+  /** Requests persistence and resolves to whether it's granted afterwards (browsers may decline). */
+  requestPersist: () => Promise<boolean>
 }
 
 export function useStorageEstimate(): UseStorageEstimate {
@@ -49,13 +50,15 @@ export function useStorageEstimate(): UseStorageEstimate {
   useEffect(refresh, [refresh])
 
   const requestPersist = useCallback(async () => {
+    let granted = false
     try {
-      if (navigator.storage?.persist) await navigator.storage.persist()
+      if (navigator.storage?.persist) granted = await navigator.storage.persist()
     } catch {
-      // ignore — refusal or unsupported; the refresh below reflects the real state.
+      // ignore — refusal or unsupported; the fresh read below reflects the real state.
     }
-    refresh()
-  }, [refresh])
+    setInfo(await read().catch(() => UNSUPPORTED))
+    return granted
+  }, [])
 
   return {
     display: info ? storageDisplay(info) : null,

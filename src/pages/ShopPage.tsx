@@ -65,7 +65,7 @@ export function ShopPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
         <div className="mt-4 rounded-2xl border border-dashed border-line-strong bg-card p-8 text-center text-muted">
           No meals planned, so nothing to buy.{' '}
-          <Link to="/plan" className="text-brand-ink hover:underline">
+          <Link to="/plan" className="font-medium text-brand-ink underline underline-offset-2">
             Plan a week →
           </Link>
         </div>

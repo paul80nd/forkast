@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStorageEstimate } from '../hooks/useStorageEstimate'
 
 // Config → Storage: how much space the app is using in this browser and whether the browser
@@ -6,6 +7,14 @@ import { useStorageEstimate } from '../hooks/useStorageEstimate'
 // figures are in text right beside it, so screen readers get the real content.
 export function StorageUsage() {
   const { display, loading, canRequestPersist, requestPersist } = useStorageEstimate()
+  // Set only when a request was made and the browser declined — so the click always has a
+  // visible result (granting flips the banner to calm; declining shows this note).
+  const [declined, setDeclined] = useState(false)
+
+  async function onRequest() {
+    const granted = await requestPersist()
+    setDeclined(!granted)
+  }
 
   return (
     <div className="rounded-xl border border-line bg-card p-4">
@@ -55,13 +64,22 @@ export function StorageUsage() {
           </p>
 
           {canRequestPersist && (
-            <button
-              type="button"
-              onClick={requestPersist}
-              className="mt-3 rounded-md border border-line-strong px-3 py-1.5 text-sm font-medium text-ink transition hover:bg-surface"
-            >
-              Request persistent storage
-            </button>
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={onRequest}
+                className="rounded-md border border-line-strong px-3 py-1.5 text-sm font-medium text-ink transition hover:bg-surface"
+              >
+                Request persistent storage
+              </button>
+              {declined && (
+                <p className="mt-2 text-sm text-muted">
+                  The browser declined for now. It typically grants this once you’ve used the
+                  app a few times, bookmarked it, or added it to your dock or home screen —
+                  try again after that. Keeping a saved backup covers you either way.
+                </p>
+              )}
+            </div>
           )}
         </>
       )}
