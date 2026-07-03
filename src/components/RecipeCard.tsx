@@ -67,7 +67,7 @@ export function RecipeCard({
               ⏱ {recipe.prepTime} min
               {recipe.mainProtein && <span className="capitalize"> · {recipe.mainProtein}</span>}
             </span>
-            <span className="text-sm font-medium whitespace-nowrap">{recipe.cuisine}</span>
+            <span className="text-sm font-normal whitespace-nowrap">{recipe.cuisine}</span>
           </div>
         </div>
       </Link>
