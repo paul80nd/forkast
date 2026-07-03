@@ -17,7 +17,7 @@ export function RatingScale({
   onChange,
   labels,
   glyph = '★',
-  filledClass = 'text-amber-500',
+  filledClass = 'text-amber-600',
   size = 'md',
   showLabel = false,
   name = 'rating',
@@ -69,7 +69,7 @@ export function RatingScale({
         })}
       </div>
       {showLabel && (
-        <span className={`${LABEL_SIZES[size]} text-stone-500`}>
+        <span className={`${LABEL_SIZES[size]} text-stone-600`}>
           {labelFor ? labels[labelFor] : ''}
         </span>
       )}
@@ -84,7 +84,7 @@ export function StarRating(props: {
   size?: keyof typeof SIZES
   showLabel?: boolean
 }) {
-  return <RatingScale glyph="★" filledClass="text-amber-500" labels={STAR_LABELS} name="rating" {...props} />
+  return <RatingScale glyph="★" filledClass="text-amber-600" labels={STAR_LABELS} name="rating" {...props} />
 }
 
 /** Frequency rating — sky diamonds, "how often you'd want it" (3 = neutral). */
@@ -95,6 +95,6 @@ export function RotationRating(props: {
   showLabel?: boolean
 }) {
   return (
-    <RatingScale glyph="◆" filledClass="text-sky-500" labels={ROTATION_LABELS} name="rotation" {...props} />
+    <RatingScale glyph="◆" filledClass="text-sky-600" labels={ROTATION_LABELS} name="rotation" {...props} />
   )
 }

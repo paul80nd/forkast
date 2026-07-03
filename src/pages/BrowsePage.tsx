@@ -129,7 +129,7 @@ export function BrowsePage() {
   }, [cards.length, visible])
 
   if (recipes === undefined) {
-    return <p className="text-stone-500">Loading recipes…</p>
+    return <p className="text-stone-600">Loading recipes…</p>
   }
 
   const selectClass =
@@ -139,7 +139,7 @@ export function BrowsePage() {
     <section>
       <div className="flex items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Browse</h1>
-        <span className="text-sm text-stone-500">
+        <span className="text-sm text-stone-600">
           {cards.length} {groupVariants ? 'dishes' : 'recipes'} of {recipes.length}
         </span>
       </div>
@@ -232,7 +232,7 @@ export function BrowsePage() {
       )}
 
       {cards.length === 0 ? (
-        <p className="mt-10 text-center text-stone-500">
+        <p className="mt-10 text-center text-stone-600">
           No recipes match those filters.
         </p>
       ) : (
@@ -250,7 +250,7 @@ export function BrowsePage() {
             ))}
           </div>
           {visible < cards.length && (
-            <div ref={sentinelRef} className="mt-6 text-center text-sm text-stone-400">
+            <div ref={sentinelRef} className="mt-6 text-center text-sm text-stone-600">
               Loading more…
             </div>
           )}

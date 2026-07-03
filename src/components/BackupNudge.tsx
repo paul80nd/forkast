@@ -26,7 +26,7 @@ export function BackupNudge() {
           role="tooltip"
           className="w-64 rounded-lg border border-amber-200 bg-white dark:bg-stone-100 p-2.5 text-xs text-stone-600 shadow-md"
         >
-          {status.text} <span className="font-medium text-orange-600">Open Config →</span>
+          {status.text} <span className="font-medium text-orange-700">Open Config →</span>
         </div>
       </div>
     </div>

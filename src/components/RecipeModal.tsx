@@ -37,7 +37,7 @@ export function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () =
         <div className="mb-4 flex items-center justify-between gap-3">
           <Link
             to={`/recipe/${recipe.id}`}
-            className="text-sm text-orange-600 hover:underline"
+            className="text-sm text-orange-700 hover:underline"
           >
             Open full page →
           </Link>
@@ -45,7 +45,7 @@ export function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () =
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-md px-2 py-1 text-lg leading-none text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+            className="rounded-md px-2 py-1 text-lg leading-none text-stone-600 hover:bg-stone-100 hover:text-stone-600"
           >
             ✕
           </button>

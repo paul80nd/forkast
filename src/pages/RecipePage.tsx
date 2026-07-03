@@ -20,14 +20,14 @@ export function RecipePage() {
   )
 
   if (recipe === undefined) {
-    return <p className="text-stone-500">Loading…</p>
+    return <p className="text-stone-600">Loading…</p>
   }
 
   if (recipe === null) {
     return (
       <section>
         <p className="text-stone-600">Recipe not found.</p>
-        <Link to="/browse" className="mt-2 inline-block text-orange-600 hover:underline">
+        <Link to="/browse" className="mt-2 inline-block text-orange-700 hover:underline">
           ← Back to Browse
         </Link>
       </section>
@@ -36,7 +36,7 @@ export function RecipePage() {
 
   return (
     <section>
-      <Link to="/browse" className="text-sm text-orange-600 hover:underline">
+      <Link to="/browse" className="text-sm text-orange-700 hover:underline">
         ← Back to Browse
       </Link>
 
@@ -61,7 +61,7 @@ export function RecipePage() {
                 <button
                   type="button"
                   onClick={() => addToPlan(shown.id)}
-                  className="rounded-l-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600"
+                  className="rounded-l-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#9a3412]"
                 >
                   + Add to week
                 </button>
@@ -75,7 +75,7 @@ export function RecipePage() {
                 className={`rounded-r-md border-l px-2 py-1.5 text-sm font-medium ${
                   inPlan
                     ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                    : 'border-orange-400 bg-orange-500 text-white hover:bg-orange-600'
+                    : 'border-orange-400 bg-[#c2410c] text-white hover:bg-[#9a3412]'
                 }`}
               >
                 ▾

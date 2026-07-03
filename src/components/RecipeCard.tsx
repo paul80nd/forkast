@@ -33,12 +33,12 @@ export function RecipeCard({
             loading="lazy"
           />
           {stars && (
-            <span className="absolute top-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-amber-600 shadow-sm">
+            <span className="absolute top-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-amber-700 shadow-sm">
               {'★'.repeat(stars)}
             </span>
           )}
           {variantCount !== undefined && variantCount > 1 && (
-            <span className="absolute bottom-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-orange-600 shadow-sm">
+            <span className="absolute bottom-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-orange-700 shadow-sm">
               ⇄ {variantCount} versions
             </span>
           )}
@@ -50,8 +50,8 @@ export function RecipeCard({
             </span>
           </div>
           <h3 className="mt-1.5 leading-tight font-semibold">{recipe.title}</h3>
-          <p className="mt-1 line-clamp-2 text-sm text-stone-500">{recipe.description}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
+          <p className="mt-1 line-clamp-2 text-sm text-stone-600">{recipe.description}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-600">
             <span>⏱ {recipe.prepTime} min</span>
             {recipe.mainProtein && <span className="capitalize">· {recipe.mainProtein}</span>}
           </div>

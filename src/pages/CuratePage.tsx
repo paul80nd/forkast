@@ -176,7 +176,7 @@ export function CuratePage() {
   }, [currentId, phase, queue.length, applyToVariants])
 
   if (recipes === undefined || userData === undefined) {
-    return <p className="text-stone-500">Loading…</p>
+    return <p className="text-stone-600">Loading…</p>
   }
 
   // Counts reflect the active filter (the working set), not the whole collection.
@@ -190,18 +190,18 @@ export function CuratePage() {
     <section>
       <div className="flex items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Curate</h1>
-        <span className="text-sm text-stone-500">
+        <span className="text-sm text-stone-600">
           {ratedCount} rated · {remaining} to triage
           {filterActive && ' (in filter)'}
         </span>
       </div>
 
       {/* Legend driven off the label maps so it can't drift: ★ = how good, ◆ = how often. */}
-      <div className="mt-2 flex flex-wrap justify-between gap-x-6 gap-y-1 text-sm text-stone-500">
+      <div className="mt-2 flex flex-wrap justify-between gap-x-6 gap-y-1 text-sm text-stone-600">
         <div className="flex flex-wrap gap-x-3 gap-y-0.5">
           {([5, 4, 3, 2, 1] as Stars[]).map((n) => (
             <span key={n} className="whitespace-nowrap">
-              <span className="font-medium text-amber-500">★{n}</span>{' '}
+              <span className="font-medium text-amber-700">★{n}</span>{' '}
               {STAR_LABELS[n]}
             </span>
           ))}
@@ -209,7 +209,7 @@ export function CuratePage() {
         <div className="flex flex-wrap gap-x-3 gap-y-0.5">
           {([5, 4, 3, 2, 1] as Rotation[]).map((n) => (
             <span key={n} className="whitespace-nowrap">
-              <span className="font-medium text-sky-500">◆{n}</span>{' '}
+              <span className="font-medium text-sky-700">◆{n}</span>{' '}
               {ROTATION_LABELS[n]}
             </span>
           ))}
@@ -251,7 +251,7 @@ export function CuratePage() {
               setFCuisine('all')
               setFProtein('all')
             }}
-            className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-500 hover:bg-stone-100"
+            className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
           >
             Clear filter
           </button>
@@ -261,7 +261,7 @@ export function CuratePage() {
             type="checkbox"
             checked={applyToVariants}
             onChange={(e) => setApplyToVariants(e.target.checked)}
-            className="size-4 rounded border-stone-300 text-sky-500 focus:ring-sky-400"
+            className="size-4 rounded border-stone-300 text-sky-700 focus:ring-sky-400"
           />
           Apply rating to variants
         </label>
@@ -282,7 +282,7 @@ export function CuratePage() {
             />
           </Link>
           <div className="flex flex-1 flex-col p-5">
-            <div className="flex items-center gap-2 text-xs text-stone-500">
+            <div className="flex items-center gap-2 text-xs text-stone-600">
               <span className="rounded-full bg-stone-100 px-2 py-0.5 font-medium">
                 {current.cuisine}
               </span>
@@ -296,11 +296,11 @@ export function CuratePage() {
                 {current.title}
               </h2>
             </Link>
-            <p className="mt-1 text-sm text-stone-500">{current.description}</p>
+            <p className="mt-1 text-sm text-stone-600">{current.description}</p>
 
             <div className="mt-auto space-y-2 pt-5">
               <div className="flex items-center gap-3">
-                <span className="w-16 shrink-0 text-xs font-medium tracking-wide text-stone-400 uppercase">
+                <span className="w-16 shrink-0 text-xs font-medium tracking-wide text-stone-600 uppercase">
                   Rating
                 </span>
                 <StarRating size="lg" showLabel value={currentStars} onChange={rateStars} />
@@ -308,7 +308,7 @@ export function CuratePage() {
               {/* Rotation appears once it's a keeper (★3+); set it to move on. */}
               {currentStars !== undefined && currentStars >= 3 && (
                 <div className="flex items-center gap-3">
-                  <span className="w-16 shrink-0 text-xs font-medium tracking-wide text-stone-400 uppercase">
+                  <span className="w-16 shrink-0 text-xs font-medium tracking-wide text-stone-600 uppercase">
                     How often
                   </span>
                   <RotationRating size="lg" showLabel value={currentRotation} onChange={rateRotation} />
@@ -350,12 +350,12 @@ export function CuratePage() {
                             )}
                             <span className="truncate">{v.title}</span>
                             {s ? (
-                              <span className="shrink-0 text-amber-600">
+                              <span className="shrink-0 text-amber-700">
                                 {'★'.repeat(s)}
-                                {applyToVariants && <span className="ml-1 text-sky-400">kept</span>}
+                                {applyToVariants && <span className="ml-1 text-sky-700">kept</span>}
                               </span>
                             ) : (
-                              <span className="shrink-0 text-sky-400">
+                              <span className="shrink-0 text-sky-700">
                                 {applyToVariants ? 'will match' : 'unrated'}
                               </span>
                             )}
@@ -369,22 +369,22 @@ export function CuratePage() {
                 <button
                   type="button"
                   onClick={back}
-                  className="rounded-md px-2.5 py-1 text-stone-500 hover:bg-stone-100"
+                  className="rounded-md px-2.5 py-1 text-stone-600 hover:bg-stone-100"
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={advance}
-                  className="rounded-md px-2.5 py-1 text-stone-500 hover:bg-stone-100"
+                  className="rounded-md px-2.5 py-1 text-stone-600 hover:bg-stone-100"
                 >
                   Skip →
                 </button>
-                <span className="ml-auto text-right text-xs text-stone-400">
+                <span className="ml-auto text-right text-xs text-stone-600">
                   {phase === 'rotation'
                     ? 'Now press 1–5 for how often'
                     : 'Press 1–5 to rate'}
-                  <span className="ml-1 text-stone-500">· {index + 1}/{queue.length}</span>
+                  <span className="ml-1 text-stone-600">· {index + 1}/{queue.length}</span>
                 </span>
               </div>
             </div>
@@ -397,7 +397,7 @@ export function CuratePage() {
               <p className="text-lg font-medium text-stone-700">
                 {filterActive ? 'Nothing to triage in this filter 🎉' : 'All triaged 🎉'}
               </p>
-              <p className="mt-1 text-sm text-stone-500">
+              <p className="mt-1 text-sm text-stone-600">
                 {filterActive
                   ? 'Clear the filter to triage the rest, or re-rate any below.'
                   : 'Every recipe has a rating. Re-rate any below.'}
@@ -406,9 +406,9 @@ export function CuratePage() {
           ) : (
             <>
               <p className="text-lg font-medium text-stone-700">End of the batch 🎉</p>
-              <p className="mt-1 text-sm text-stone-500">
+              <p className="mt-1 text-sm text-stone-600">
                 {remaining > 0 ? `${remaining} skipped — ` : 'All rated. '}
-                <button type="button" onClick={back} className="text-orange-600 hover:underline">
+                <button type="button" onClick={back} className="text-orange-700 hover:underline">
                   ← Back
                 </button>{' '}
                 to revisit, or re-rate any below.
@@ -501,7 +501,7 @@ function RatedOverview({
     <div className="mt-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-lg font-semibold">
-          Rated <span className="text-sm font-normal text-stone-400">({total})</span>
+          Rated <span className="text-sm font-normal text-stone-600">({total})</span>
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -528,19 +528,19 @@ function RatedOverview({
       </div>
 
       {total === 0 ? (
-        <p className="mt-2 text-sm text-stone-500">No rated recipes match.</p>
+        <p className="mt-2 text-sm text-stone-600">No rated recipes match.</p>
       ) : (
         <>
-          <p className="mt-2 text-xs text-stone-400">
+          <p className="mt-2 text-xs text-stone-600">
             Showing {Math.min(visible, total)} of {total}.
           </p>
           <div className="mt-2 space-y-6">
             {shown.map(({ tier, slice, fullCount }) => (
               <div key={tier}>
                 <h3 className="text-sm font-semibold text-stone-600">
-                  <span className="text-amber-500">{'★'.repeat(tier)}</span>{' '}
-                  <span className="text-stone-400">{STAR_LABELS[tier]}</span>{' '}
-                  <span className="text-stone-400">· {fullCount}</span>
+                  <span className="text-amber-700">{'★'.repeat(tier)}</span>{' '}
+                  <span className="text-stone-600">{STAR_LABELS[tier]}</span>{' '}
+                  <span className="text-stone-600">· {fullCount}</span>
                 </h3>
                 <ul className="mt-2 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
                   {slice.map((r) => (
@@ -575,7 +575,7 @@ function RatedRow({
           className="size-10 shrink-0 rounded-md object-cover"
         />
         <span className="truncate font-medium text-stone-800">{recipe.title}</span>
-        <span className="shrink-0 text-xs text-stone-400">{recipe.cuisine}</span>
+        <span className="shrink-0 text-xs text-stone-600">{recipe.cuisine}</span>
       </Link>
       {/* Rotation (how often) is a keeper concern — only offered for the planner's pool (★3+). */}
       {stars >= 3 && (

@@ -15,11 +15,13 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
       <header className="border-b border-stone-200 bg-white dark:bg-stone-100">
-        <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <span className="text-lg font-semibold tracking-tight">
             Forkast <span aria-hidden>🍴</span>
           </span>
-          <nav className="flex gap-1">
+          {/* On narrow screens the nav drops to its own full-width row (order-last + w-full)
+              so the header never overflows; on sm+ it sits inline after the logo. */}
+          <nav className="order-last flex w-full gap-1 overflow-x-auto sm:order-none sm:w-auto sm:overflow-visible">
             {tabs.map((t) => (
               <NavLink
                 key={t.to}

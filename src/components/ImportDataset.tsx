@@ -41,7 +41,7 @@ export function ImportDataset() {
   return (
     <div className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
       <h2 className="text-lg font-semibold">Dataset</h2>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-600">
         Import a recipe dataset (<code className="text-stone-600">recipes.json</code>).
         By default this <span className="font-medium">adds new recipes and refreshes
         existing ones</span> by id — recipes already in your collection that aren’t in
@@ -76,7 +76,7 @@ export function ImportDataset() {
         type="button"
         disabled={busy}
         onClick={() => inputRef.current?.click()}
-        className="mt-3 rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
+        className="mt-3 rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412] disabled:opacity-50"
       >
         {busy ? 'Importing…' : replaceAll ? 'Replace all…' : 'Import dataset…'}
       </button>

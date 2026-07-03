@@ -21,7 +21,7 @@ export function ConfigPage() {
   }, [bindings])
 
   if (dict === undefined || bindings === undefined)
-    return <p className="text-stone-500">Loading…</p>
+    return <p className="text-stone-600">Loading…</p>
 
   // Fall back to the static seed if the Dexie dictionary is empty (e.g. before the first reseed).
   const source = dict.length ? dict : INGREDIENTS
@@ -39,16 +39,16 @@ export function ConfigPage() {
       </div>
 
       <h2 className="mt-5 text-lg font-semibold">Ingredients</h2>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-600">
         The canonical dictionary the shopping list merges by. {source.length}{' '}
         ingredients.{' '}
-        <span className="text-stone-400">Grows as you bind ingredients while shopping.</span>
+        <span className="text-stone-600">Grows as you bind ingredients while shopping.</span>
       </p>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-200 text-left text-xs tracking-wide text-stone-500 uppercase">
+            <tr className="border-b border-stone-200 text-left text-xs tracking-wide text-stone-600 uppercase">
               <th className="px-3 py-2 font-semibold">Name</th>
               <th className="px-3 py-2 font-semibold">Plural</th>
               <th className="px-3 py-2 font-semibold">Aisle</th>
@@ -61,18 +61,18 @@ export function ConfigPage() {
               const bound = bindCount.get(def.id) ?? 0
               const unit = getUnit(def.purchaseUnit)
               return (
-                <tr key={def.id} className={bound === 0 ? 'text-stone-400' : 'text-stone-800'}>
+                <tr key={def.id} className={bound === 0 ? 'text-stone-600' : 'text-stone-800'}>
                   <td className="px-3 py-1.5 font-medium">{def.name}</td>
-                  <td className="px-3 py-1.5 text-stone-500">
+                  <td className="px-3 py-1.5 text-stone-600">
                     {pluralOf(def)}
                     {!def.plural && (
-                      <span className="ml-1 text-xs text-stone-400" title="auto-pluralised">
+                      <span className="ml-1 text-xs text-stone-600" title="auto-pluralised">
                         (auto)
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-1.5 text-stone-500">{def.aisle}</td>
-                  <td className="px-3 py-1.5 text-stone-500">
+                  <td className="px-3 py-1.5 text-stone-600">{def.aisle}</td>
+                  <td className="px-3 py-1.5 text-stone-600">
                     {unit.dimension === 'count' ? 'count' : unit.label}
                   </td>
                   <td className="px-3 py-1.5 text-right">{bound || '—'}</td>

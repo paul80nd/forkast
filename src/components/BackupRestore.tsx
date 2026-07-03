@@ -67,7 +67,7 @@ export function BackupRestore() {
   return (
     <div className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
       <h2 className="text-lg font-semibold">Backup</h2>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-600">
         <span className="font-medium">Save</span> downloads a complete snapshot of your
         collection — recipes plus every refinement (stars, groups, plans, shopping). It's a
         true restore point: keep it somewhere safe.{' '}
@@ -88,7 +88,7 @@ export function BackupRestore() {
           type="button"
           disabled={busy !== null}
           onClick={onSave}
-          className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
+          className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412] disabled:opacity-50"
         >
           {busy === 'save' ? 'Saving…' : 'Save backup…'}
         </button>
@@ -106,7 +106,7 @@ export function BackupRestore() {
         className={`mt-3 text-sm ${
           status.tone === 'warn'
             ? 'rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800'
-            : 'text-stone-500'
+            : 'text-stone-600'
         }`}
       >
         {status.text}

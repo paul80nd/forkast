@@ -58,7 +58,7 @@ export function RecipeDetail({
 
         <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+            <h3 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
               Your rating
             </h3>
             {/* Reset to unrated — back into the Curate triage backlog, e.g. to cook it
@@ -68,7 +68,7 @@ export function RecipeDetail({
                 type="button"
                 onClick={() => void clearCuration(recipe.id)}
                 title="Clear your rating — sends it back to triage"
-                className="text-xs font-medium text-stone-400 hover:text-rose-600"
+                className="text-xs font-medium text-stone-600 hover:text-rose-600"
               >
                 Clear
               </button>
@@ -80,7 +80,7 @@ export function RecipeDetail({
           {/* Rotation matters only for the planner's pool (★3+); mirrors Curate. */}
           {stars !== undefined && stars >= 3 && (
             <div className="mt-3 flex items-center gap-2">
-              <span className="text-xs text-stone-500">How often</span>
+              <span className="text-xs text-stone-600">How often</span>
               <RotationRating
                 showLabel
                 value={rotation}
@@ -92,7 +92,7 @@ export function RecipeDetail({
 
         {recipe.allergens.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+            <h3 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
               Allergens
             </h3>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -110,7 +110,7 @@ export function RecipeDetail({
 
         {recipe.tags.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">Tags</h3>
+            <h3 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">Tags</h3>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {recipe.tags.map((t) => (
                 <span
@@ -126,7 +126,7 @@ export function RecipeDetail({
 
         {recipe.nutrition && (
           <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
-            <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+            <h3 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
               Nutrition <span className="font-normal normal-case">(per serving)</span>
             </h3>
             <dl className="mt-1.5 space-y-1 text-sm">
@@ -160,7 +160,7 @@ export function RecipeDetail({
             href={recipe.sourceUrl}
             target="_blank"
             rel="noreferrer noopener"
-            className="mt-2 inline-block text-sm text-orange-600 hover:underline"
+            className="mt-2 inline-block text-sm text-orange-700 hover:underline"
           >
             View original ↗
           </a>
@@ -168,9 +168,9 @@ export function RecipeDetail({
 
         {members.length > 1 && (
           <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50 p-3">
-            <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+            <h2 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
               Versions{' '}
-              <span className="font-normal normal-case text-stone-400">
+              <span className="font-normal normal-case text-stone-600">
                 — {members.length} swaps of this dish
               </span>
             </h2>
@@ -184,7 +184,7 @@ export function RecipeDetail({
                     onClick={() => setShownId(m.id)}
                     className={`rounded-full border px-2.5 py-1 text-sm transition ${
                       isShown
-                        ? 'border-orange-500 bg-orange-500 text-white'
+                        ? 'border-orange-500 bg-[#c2410c] text-white'
                         : 'border-stone-200 bg-white dark:bg-stone-100 text-stone-700 hover:border-orange-300 hover:text-orange-700'
                     }`}
                   >
@@ -208,7 +208,7 @@ export function RecipeDetail({
                 ))}
               </p>
             ) : delta ? (
-              <p className="mt-2 text-sm text-stone-500">
+              <p className="mt-2 text-sm text-stone-600">
                 Same ingredients as the original — differs in amounts or method.
               </p>
             ) : null}
@@ -216,7 +216,7 @@ export function RecipeDetail({
         )}
 
 
-        <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-500 uppercase">
+        <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-600 uppercase">
           Ingredients
         </h2>
         <ul className="mt-2 divide-y divide-stone-100">
@@ -224,7 +224,7 @@ export function RecipeDetail({
             <li key={i} className="flex items-baseline justify-between gap-3 py-1.5">
               <span className="text-stone-800">{ing.rawLabel}</span>
               {/* Parsed breakdown — for proof-reading imports */}
-              <span className="shrink-0 font-mono text-xs text-stone-400">
+              <span className="shrink-0 font-mono text-xs text-stone-600">
                 {ing.qty != null ? ing.qty : '—'}
                 {ing.unit ? ` ${ing.unit}` : ''} · {ing.name}
               </span>
@@ -233,13 +233,13 @@ export function RecipeDetail({
         </ul>
 
         {recipe.basics.length > 0 && (
-          <p className="mt-3 text-sm text-stone-500">
+          <p className="mt-3 text-sm text-stone-600">
             <span className="font-medium text-stone-600">Store cupboard:</span>{' '}
             {recipe.basics.join(', ')}
           </p>
         )}
 
-        <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-500 uppercase">Method</h2>
+        <h2 className="mt-6 text-sm font-semibold tracking-wide text-stone-600 uppercase">Method</h2>
         <ol className="mt-2 space-y-3">
           {[...recipe.instructions]
             .sort((a, b) => a.order - b.order)
@@ -268,7 +268,7 @@ function Fact({
 }) {
   return (
     <div className="flex justify-between gap-3">
-      <dt className="text-stone-500">{label}</dt>
+      <dt className="text-stone-600">{label}</dt>
       <dd className={`text-right font-medium text-stone-800 ${capitalize ? 'capitalize' : ''}`}>
         {value}
       </dd>

@@ -203,7 +203,7 @@ export function PlanPage() {
   const variety = candidates.filter((r) => starsById.get(r.id) === 3)
 
   if (recipes === undefined || userData === undefined) {
-    return <p className="text-stone-500">Loading…</p>
+    return <p className="text-stone-600">Loading…</p>
   }
 
   return (
@@ -211,7 +211,7 @@ export function PlanPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Plan</h1>
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-stone-500">Cooking for</span>
+          <span className="text-stone-600">Cooking for</span>
           <div className="inline-flex overflow-hidden rounded-md border border-stone-300">
             {PORTION_OPTIONS.map((n) => (
               <button
@@ -220,7 +220,7 @@ export function PlanPage() {
                 onClick={() => setPortions(n)}
                 className={`px-3 py-1 font-medium transition ${
                   portions === n
-                    ? 'bg-orange-500 text-white'
+                    ? 'bg-[#c2410c] text-white'
                     : 'bg-white dark:bg-stone-100 text-stone-600 hover:bg-stone-100'
                 }`}
               >
@@ -237,11 +237,11 @@ export function PlanPage() {
           type="button"
           disabled={suggesting}
           onClick={runSuggest}
-          className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
+          className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412] disabled:opacity-50"
         >
           {suggesting ? 'Thinking…' : 'Suggest a varied week'}
         </button>
-        <label className="flex items-center gap-1.5 text-sm text-stone-500">
+        <label className="flex items-center gap-1.5 text-sm text-stone-600">
           <input
             type="number"
             min={1}
@@ -253,7 +253,7 @@ export function PlanPage() {
           <span>meals a week</span>
         </label>
         <label
-          className="flex items-center gap-1.5 text-sm text-stone-500"
+          className="flex items-center gap-1.5 text-sm text-stone-600"
           title="Also draw from recipes you haven’t rated yet, treating them as a neutral ★3"
         >
           <input
@@ -265,17 +265,17 @@ export function PlanPage() {
           Include unrated
         </label>
         {plannedCount > 0 && (
-          <span className="text-xs text-stone-400">
+          <span className="text-xs text-stone-600">
             fills the {Math.max(0, suggestCount - plannedCount)} slots left after {plannedCount} planned
           </span>
         )}
       </div>
 
       {suggestedEmpty && shortlist.length === 0 && (
-        <p className="mt-3 text-sm text-stone-500">
+        <p className="mt-3 text-sm text-stone-600">
           Nothing to suggest — your week may be full, or there aren’t enough rated,
           not-recently-cooked recipes.{' '}
-          <Link to="/curate" className="text-orange-600 underline">
+          <Link to="/curate" className="text-orange-700 underline">
             Rate more →
           </Link>
         </p>
@@ -309,7 +309,7 @@ export function PlanPage() {
               <button
                 type="button"
                 onClick={() => setShortlist([])}
-                className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-500 hover:bg-stone-100"
+                className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
               >
                 Clear
               </button>
@@ -353,7 +353,7 @@ export function PlanPage() {
 
       {/* The week */}
       {planned.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-8 text-center text-stone-500">
+        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-8 text-center text-stone-600">
           Nothing planned yet — add meals from your shortlist below.
         </div>
       ) : (
@@ -389,15 +389,15 @@ export function PlanPage() {
                         type="button"
                         onClick={() => setModalRecipe(r)}
                         title="View recipe"
-                        className="block max-w-full truncate text-left font-medium text-stone-800 hover:text-orange-600 hover:underline"
+                        className="block max-w-full truncate text-left font-medium text-stone-800 hover:text-orange-700 hover:underline"
                       >
                         {r.title}
                       </button>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-600">
                         <span>{r.cuisine}</span>
                         {r.mainProtein && <span className="capitalize">· {r.mainProtein}</span>}
                         <span>· ⏱ {r.prepTime} min</span>
-                        <span className={rec.warn ? 'text-amber-600' : 'text-stone-400'}>
+                        <span className={rec.warn ? 'text-amber-700' : 'text-stone-600'}>
                           · {rec.text}
                         </span>
                       </div>
@@ -410,8 +410,8 @@ export function PlanPage() {
                       aria-expanded={versionsOpen}
                       className={`rounded-md px-2.5 py-1 text-sm font-medium ${
                         versionsOpen
-                          ? 'bg-orange-500 text-white hover:bg-orange-600'
-                          : 'text-orange-600 hover:bg-orange-50'
+                          ? 'bg-[#c2410c] text-white hover:bg-[#9a3412]'
+                          : 'text-orange-700 hover:bg-orange-50'
                       }`}
                       title="Swap this dish for another version"
                     >
@@ -429,7 +429,7 @@ export function PlanPage() {
                   <button
                     type="button"
                     onClick={() => removeFromPlan(r.id)}
-                    className="rounded-md px-2 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+                    className="rounded-md px-2 py-1 text-stone-600 hover:bg-stone-100 hover:text-stone-600"
                     title="Remove from week"
                   >
                     ✕
@@ -437,7 +437,7 @@ export function PlanPage() {
                   </div>
                   {hasVersions && versionsOpen && (
                     <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-stone-100 pt-2">
-                      <span className="mr-1 text-xs font-medium tracking-wide text-stone-400 uppercase">
+                      <span className="mr-1 text-xs font-medium tracking-wide text-stone-600 uppercase">
                         Version
                       </span>
                       {siblings.map((m) => {
@@ -453,7 +453,7 @@ export function PlanPage() {
                             }}
                             className={`rounded-full border px-2.5 py-1 text-sm transition ${
                               isCurrent
-                                ? 'border-orange-500 bg-orange-500 text-white'
+                                ? 'border-orange-500 bg-[#c2410c] text-white'
                                 : 'border-stone-200 bg-white dark:bg-stone-100 text-stone-700 hover:border-orange-300 hover:text-orange-700'
                             }`}
                           >
@@ -497,9 +497,9 @@ export function PlanPage() {
         />
 
         {favourites.length === 0 && variety.length === 0 && (
-          <p className="mt-3 text-sm text-stone-500">
+          <p className="mt-3 text-sm text-stone-600">
             No more shortlisted recipes to add.{' '}
-            <Link to="/curate" className="text-orange-600 underline">
+            <Link to="/curate" className="text-orange-700 underline">
               Rate some more →
             </Link>
           </p>
@@ -550,15 +550,15 @@ function SuggestionSlot({
               type="button"
               onClick={onOpen}
               title="View recipe"
-              className="block max-w-full truncate text-left font-medium text-stone-800 hover:text-orange-600 hover:underline"
+              className="block max-w-full truncate text-left font-medium text-stone-800 hover:text-orange-700 hover:underline"
             >
               {recipe.title}
             </button>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-600">
               <span>{recipe.cuisine}</span>
               {recipe.mainProtein && <span className="capitalize">· {recipe.mainProtein}</span>}
               <span>· ⏱ {recipe.prepTime} min</span>
-              <span className={rec.warn ? 'text-amber-600' : 'text-stone-400'}>· {rec.text}</span>
+              <span className={rec.warn ? 'text-amber-700' : 'text-stone-600'}>· {rec.text}</span>
             </div>
             <div className="mt-1 flex flex-wrap gap-1">
               {unrated && (
@@ -596,7 +596,7 @@ function SuggestionSlot({
           aria-pressed={slot.locked}
           title={slot.locked ? 'Locked — kept when re-suggesting' : 'Lock this slot'}
           className={`rounded-md px-2 py-1 text-sm transition ${
-            slot.locked ? 'bg-sky-100 text-sky-700' : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600'
+            slot.locked ? 'bg-sky-100 text-sky-700' : 'text-stone-600 hover:bg-stone-100 hover:text-stone-600'
           }`}
         >
           {slot.locked ? '🔒' : '🔓'}
@@ -605,7 +605,7 @@ function SuggestionSlot({
           type="button"
           onClick={onReroll}
           title="Reroll this slot"
-          className="rounded-md px-2 py-1 text-sm text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+          className="rounded-md px-2 py-1 text-sm text-stone-600 hover:bg-stone-100 hover:text-stone-600"
         >
           ↻
         </button>
@@ -613,7 +613,7 @@ function SuggestionSlot({
           type="button"
           onClick={onRemove}
           title="Remove from suggestion"
-          className="rounded-md px-2 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+          className="rounded-md px-2 py-1 text-stone-600 hover:bg-stone-100 hover:text-stone-600"
         >
           ✕
         </button>
@@ -640,7 +640,7 @@ function VarietyGroup({
   if (counts.size === 0) return null
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs font-semibold tracking-wide text-stone-400 uppercase">
+      <span className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
         {label}
       </span>
       <div className="flex flex-wrap gap-1.5">
@@ -676,7 +676,7 @@ function PickerStrip({
   return (
     <div className="mt-4">
       <h3 className="text-sm font-medium text-stone-600">
-        {title} <span className="text-stone-400">{subtitle}</span>
+        {title} <span className="text-stone-600">{subtitle}</span>
       </h3>
       <div className="mt-2 flex gap-3 overflow-x-auto pb-2">
         {items.map((r) => {
@@ -694,16 +694,16 @@ function PickerStrip({
                 alt=""
                 className="aspect-[4/3] w-full object-cover"
               />
-              <span className="absolute top-1.5 right-1.5 rounded-full bg-orange-500 px-1.5 text-lg leading-6 font-bold text-white opacity-0 transition group-hover:opacity-100">
+              <span className="absolute top-1.5 right-1.5 rounded-full bg-[#c2410c] px-1.5 text-lg leading-6 font-bold text-white opacity-0 transition group-hover:opacity-100">
                 +
               </span>
               <div className="p-2">
                 <div className="truncate text-sm font-medium text-stone-800">{r.title}</div>
-                <div className="mt-0.5 truncate text-xs text-stone-500">
+                <div className="mt-0.5 truncate text-xs text-stone-600">
                   {r.cuisine}
                   {r.mainProtein ? ` · ${r.mainProtein}` : ''}
                 </div>
-                <div className={`mt-0.5 truncate text-xs ${rec.warn ? 'text-amber-600' : 'text-stone-400'}`}>
+                <div className={`mt-0.5 truncate text-xs ${rec.warn ? 'text-amber-700' : 'text-stone-600'}`}>
                   {rec.text}
                 </div>
               </div>

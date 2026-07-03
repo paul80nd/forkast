@@ -40,13 +40,13 @@ export function RefinePage() {
   }, [recipes, starsById])
 
   if (recipes === undefined || userData === undefined) {
-    return <p className="text-stone-500">Loading…</p>
+    return <p className="text-stone-600">Loading…</p>
   }
 
   return (
     <section>
       <h1 className="text-2xl font-semibold tracking-tight">Refine</h1>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-600">
         Tidy your collection: group related recipes, weed out duplicates, or clear out the
         ones you’ve binned.
       </p>
@@ -60,7 +60,7 @@ export function RefinePage() {
             className={`-mb-px border-b-2 px-3 py-1.5 text-sm font-medium transition ${
               tab === t
                 ? 'border-orange-500 text-orange-700'
-                : 'border-transparent text-stone-500 hover:text-stone-700'
+                : 'border-transparent text-stone-600 hover:text-stone-700'
             }`}
           >
             {t === 'variants'
@@ -80,7 +80,7 @@ export function RefinePage() {
 
       {tab === 'cleanup' && (
         <>
-          <p className="mt-4 text-sm text-stone-500">
+          <p className="mt-4 text-sm text-stone-600">
             Recipes you’ve binned, split by how you rated them. Deletion sticks across
             re-imports (the export is your backup).
           </p>
@@ -125,25 +125,25 @@ function DuplicatesSection({
           type="button"
           disabled={finding}
           onClick={run}
-          className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
+          className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412] disabled:opacity-50"
         >
           {finding ? 'Finding…' : candidates ? 'Refresh' : 'Find duplicates'}
         </button>
       </div>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-600">
         Recipes that look like the same dish — near-identical title and ingredients (not a
         protein/carb swap; those belong in a group). Tick the ones to delete; the suggested
         keeper is badged.
       </p>
 
       {candidates && candidates.length === 0 && (
-        <p className="mt-3 text-sm text-stone-500">
+        <p className="mt-3 text-sm text-stone-600">
           No duplicates — nothing ungrouped looks near-identical.
         </p>
       )}
       {candidates && candidates.length > 0 && (
         <>
-          <p className="mt-3 text-xs text-stone-400">
+          <p className="mt-3 text-xs text-stone-600">
             Showing {Math.min(candidates.length, 25)} of {candidates.length}.
           </p>
           <ul className="mt-2 space-y-3">
@@ -229,14 +229,14 @@ function DuplicateCard({
   return (
     <li className="rounded-lg border border-stone-200 p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium tracking-wide text-stone-400 uppercase">
+        <span className="text-xs font-medium tracking-wide text-stone-600 uppercase">
           {Math.round(cluster.score * 100)}% similar
         </span>
         <div className="flex gap-1.5">
           <button
             type="button"
             onClick={() => setComparing((c) => !c)}
-            className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-500 hover:bg-stone-100"
+            className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-600 hover:bg-stone-100"
           >
             {comparing ? 'Hide compare' : 'Compare'}
           </button>
@@ -251,7 +251,7 @@ function DuplicateCard({
           <button
             type="button"
             onClick={onDone}
-            className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-500 hover:bg-stone-100"
+            className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-600 hover:bg-stone-100"
           >
             Dismiss
           </button>
@@ -271,7 +271,7 @@ function DuplicateCard({
                 className="size-4 rounded border-stone-300 text-rose-500 focus:ring-rose-400"
               />
               {stars ? (
-                <span className="w-12 shrink-0 truncate text-xs text-amber-600">
+                <span className="w-12 shrink-0 truncate text-xs text-amber-700">
                   {'★'.repeat(stars)}
                 </span>
               ) : (
@@ -304,7 +304,7 @@ function DuplicateCard({
 // in bulk) and ★2 ("bin it" — a chance to reconsider). Each list deletes independently.
 function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[] }) {
   if (binned.length === 0) {
-    return <p className="mt-2 text-sm text-stone-500">Nothing binned — nothing to clean up.</p>
+    return <p className="mt-2 text-sm text-stone-600">Nothing binned — nothing to clean up.</p>
   }
   const ones = binned.filter((b) => b.stars === 1)
   const twos = binned.filter((b) => b.stars === 2)
@@ -382,11 +382,11 @@ function CleanupList({
       <div className="flex items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-stone-700">
-            <span className="text-amber-500">{'★'.repeat(tier)}</span>{' '}
+            <span className="text-amber-700">{'★'.repeat(tier)}</span>{' '}
             {STAR_LABELS[tier]}{' '}
-            <span className="font-normal text-stone-400">· {items.length}</span>
+            <span className="font-normal text-stone-600">· {items.length}</span>
           </h3>
-          <p className="mt-0.5 text-xs text-stone-500">{prompt}</p>
+          <p className="mt-0.5 text-xs text-stone-600">{prompt}</p>
         </div>
         <button
           type="button"

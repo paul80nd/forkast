@@ -46,7 +46,7 @@ export function ShopPage() {
 
   const portions = plan?.portions ?? 2
 
-  if (plan === undefined || list === undefined) return <p className="text-stone-500">Loading…</p>
+  if (plan === undefined || list === undefined) return <p className="text-stone-600">Loading…</p>
 
   // Meals = recipes actually on the list; a plan can hold stale ids (e.g. recipes deleted by a
   // re-import) that no longer resolve, so count what the list is built from, not the raw ids.
@@ -56,9 +56,9 @@ export function ShopPage() {
     return (
       <section>
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
-        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-8 text-center text-stone-500">
+        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-8 text-center text-stone-600">
           No meals planned, so nothing to buy.{' '}
-          <Link to="/plan" className="text-orange-600 hover:underline">
+          <Link to="/plan" className="text-orange-700 hover:underline">
             Plan a week →
           </Link>
         </div>
@@ -75,7 +75,7 @@ export function ShopPage() {
     <section>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
-        <div className="flex items-center gap-3 text-sm text-stone-500">
+        <div className="flex items-center gap-3 text-sm text-stone-600">
           <span>
             {itemCount} items · {mealCount} meals · for {portions}
           </span>
@@ -83,7 +83,7 @@ export function ShopPage() {
             <button
               type="button"
               onClick={() => clearChecked()}
-              className="rounded-md px-2 py-1 text-stone-500 hover:bg-stone-100"
+              className="rounded-md px-2 py-1 text-stone-600 hover:bg-stone-100"
             >
               Clear ticks
             </button>
@@ -97,7 +97,7 @@ export function ShopPage() {
         <div className="lg:columns-2 lg:gap-6">
           {list.aisles.map((group) => (
             <div key={group.aisle} className="mb-6 break-inside-avoid last:mb-0">
-              <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+              <h2 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
                 {group.aisle}
               </h2>
               <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
@@ -118,8 +118,8 @@ export function ShopPage() {
 
         {list.unmatched.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold tracking-wide text-amber-600 uppercase">
-              Check these <span className="font-normal normal-case text-amber-500">· bind to merge across recipes</span>
+            <h2 className="text-xs font-semibold tracking-wide text-amber-700 uppercase">
+              Check these <span className="font-normal normal-case text-amber-700">· bind to merge across recipes</span>
             </h2>
             <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-amber-200 bg-amber-50 lg:columns-2 lg:gap-6">
               {list.unmatched.map((line) => (
@@ -139,7 +139,7 @@ export function ShopPage() {
         )}
 
         {list.unquantified.length > 0 && (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-stone-600">
             <span className="font-medium text-stone-600">Also (no quantity given):</span>{' '}
             {list.unquantified.join(', ')}
           </p>
@@ -147,7 +147,7 @@ export function ShopPage() {
 
         {/* Manual extras */}
         <div>
-          <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+          <h2 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
             Extras
           </h2>
           <form
@@ -166,7 +166,7 @@ export function ShopPage() {
             />
             <button
               type="submit"
-              className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600"
+              className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#9a3412]"
             >
               Add
             </button>
@@ -189,8 +189,8 @@ export function ShopPage() {
         {/* Store cupboard */}
         {list.basics.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
-              Store cupboard <span className="font-normal text-stone-400">· assumed in</span>
+            <h2 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
+              Store cupboard <span className="font-normal text-stone-600">· assumed in</span>
             </h2>
             <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-stone-50">
               {list.basics.map((b) => {
@@ -252,13 +252,13 @@ function CheckRow({
         <span className="min-w-0">
           <span
             className={`block ${
-              checked ? 'text-stone-400 line-through' : muted ? 'text-stone-500' : 'text-stone-800'
+              checked ? 'text-stone-600 line-through' : muted ? 'text-stone-600' : 'text-stone-800'
             }`}
           >
             {label}
           </span>
           {subline && (
-            <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-400'}`}>
+            <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-600'}`}>
               {subline}
             </span>
           )}
@@ -268,7 +268,7 @@ function CheckRow({
         <button
           type="button"
           onClick={onRemove}
-          className="rounded px-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+          className="rounded px-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-600"
           title="Remove"
         >
           ✕
@@ -301,11 +301,11 @@ function UnmatchedRow({
             className="size-4 accent-orange-500"
           />
           <span className="min-w-0">
-            <span className={checked ? 'text-stone-400 line-through' : 'text-stone-800'}>
+            <span className={checked ? 'text-stone-600 line-through' : 'text-stone-800'}>
               {line.label}
             </span>
             {line.recipeCount != null && line.recipeCount > 1 && (
-              <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-400'}`}>
+              <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-600'}`}>
                 from {line.recipeCount} recipes
               </span>
             )}
@@ -386,7 +386,7 @@ function BindPanel({
                     title={`Bind to “${c.def.name}”`}
                   >
                     {c.def.name}{' '}
-                    <span className="text-xs text-stone-400">· {c.def.aisle}</span>
+                    <span className="text-xs text-stone-600">· {c.def.aisle}</span>
                   </button>
                 </li>
               ))}
@@ -395,14 +395,14 @@ function BindPanel({
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="mt-2 text-xs font-medium text-orange-600 hover:underline"
+            className="mt-2 text-xs font-medium text-orange-700 hover:underline"
           >
             + Create “{query.trim() || name}” as a new ingredient…
           </button>
         </>
       ) : (
         <div className="mt-2 flex flex-wrap items-end gap-2">
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-stone-600">
             Aisle
             <select
               value={aisle}
@@ -416,7 +416,7 @@ function BindPanel({
               ))}
             </select>
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-stone-600">
             Bought in
             <select
               value={unit}
@@ -431,7 +431,7 @@ function BindPanel({
             </select>
           </label>
           {needsDensity(unit) && (
-            <label className="text-xs text-stone-500" title="Lets tbsp/tsp amounts convert to the buy unit">
+            <label className="text-xs text-stone-600" title="Lets tbsp/tsp amounts convert to the buy unit">
               Density
               <select
                 value={density}
@@ -450,14 +450,14 @@ function BindPanel({
           <button
             type="button"
             onClick={() => void create()}
-            className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-600"
+            className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#9a3412]"
           >
             Create &amp; bind
           </button>
           <button
             type="button"
             onClick={() => setCreating(false)}
-            className="rounded-md px-2 py-1.5 text-sm text-stone-500 hover:bg-stone-100"
+            className="rounded-md px-2 py-1.5 text-sm text-stone-600 hover:bg-stone-100"
           >
             Back
           </button>
@@ -503,7 +503,7 @@ function BindingsPanel({ bindings, dict }: { bindings: Binding[]; dict: Ingredie
 
   return (
     <details className="text-sm">
-      <summary className="cursor-pointer text-xs font-semibold tracking-wide text-stone-500 uppercase">
+      <summary className="cursor-pointer text-xs font-semibold tracking-wide text-stone-600 uppercase">
         Your bindings ({bindings.length})
       </summary>
       <input
@@ -518,7 +518,7 @@ function BindingsPanel({ bindings, dict }: { bindings: Binding[]; dict: Ingredie
           <BindingRow key={b.name} binding={b} def={byId.get(b.ingredientId)} />
         ))}
         {filtered.length === 0 && (
-          <li className="px-3 py-2 text-stone-400">No bindings match.</li>
+          <li className="px-3 py-2 text-stone-600">No bindings match.</li>
         )}
       </ul>
       {visible < filtered.length && <div ref={sentinelRef} className="h-1" />}
@@ -535,7 +535,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
       <div className="flex items-center justify-between gap-3">
         <span className="min-w-0 text-stone-600">
           {binding.name}{' '}
-          <span className="text-stone-400">
+          <span className="text-stone-600">
             → {def?.name ?? binding.ingredientId}
             {def && <span className="text-stone-300"> ({buyUnitLabel(def.purchaseUnit)})</span>}
           </span>
@@ -546,7 +546,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
               type="button"
               onClick={() => setEditing((e) => !e)}
               aria-expanded={editing}
-              className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+              className="rounded px-1.5 text-xs text-stone-600 hover:bg-stone-100 hover:text-stone-600"
             >
               {editing ? 'Done' : 'Edit'}
             </button>
@@ -554,7 +554,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
           <button
             type="button"
             onClick={() => void unbind(binding.name)}
-            className="rounded px-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600"
+            className="rounded px-1.5 text-xs text-stone-600 hover:bg-stone-100 hover:text-rose-600"
             title="Unbind — back to verbatim"
           >
             Unbind
@@ -564,7 +564,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
 
       {editing && def && (
         <div className="mt-2 flex flex-wrap items-end gap-2 pb-1">
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-stone-600">
             Aisle
             <select
               value={def.aisle}
@@ -578,7 +578,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
               ))}
             </select>
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-stone-600">
             Bought in
             <select
               value={def.purchaseUnit}
@@ -593,7 +593,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
             </select>
           </label>
           {needsDensity(def.purchaseUnit) && (
-            <label className="text-xs text-stone-500" title="Lets tbsp/tsp convert to the buy unit">
+            <label className="text-xs text-stone-600" title="Lets tbsp/tsp convert to the buy unit">
               Density
               <select
                 value={def.densityGPerMl ?? ''}

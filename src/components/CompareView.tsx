@@ -44,7 +44,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
                       loading="lazy"
                     />
                   ) : (
-                    <div className="mb-1.5 flex aspect-[4/3] w-full max-w-40 items-center justify-center rounded-md bg-stone-100 text-xs text-stone-400">
+                    <div className="mb-1.5 flex aspect-[4/3] w-full max-w-40 items-center justify-center rounded-md bg-stone-100 text-xs text-stone-600">
                       no image
                     </div>
                   )}
@@ -57,7 +57,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
         <tbody className="divide-y divide-stone-100">
           {metaRows.map((row) => (
             <tr key={row.label}>
-              <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-stone-400 uppercase">
+              <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-stone-600 uppercase">
                 {row.label}
               </th>
               {recipes.map((r) => (
@@ -68,7 +68,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
             </tr>
           ))}
           <tr>
-            <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-stone-400 uppercase">
+            <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-stone-600 uppercase">
               Ingredients
             </th>
             {recipes.map((r) => (
@@ -77,7 +77,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
                   {r.ingredients.map((ing, i) => (
                     <li
                       key={i}
-                      className={isShared(ing.name) ? 'text-stone-500' : 'font-medium text-orange-700'}
+                      className={isShared(ing.name) ? 'text-stone-600' : 'font-medium text-orange-700'}
                     >
                       {ing.name}
                     </li>
@@ -88,7 +88,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
           </tr>
         </tbody>
       </table>
-      <p className="px-2 pb-2 text-xs text-stone-400">
+      <p className="px-2 pb-2 text-xs text-stone-600">
         Highlighted ingredients aren’t shared by every recipe.
       </p>
     </div>
