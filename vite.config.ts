@@ -46,6 +46,10 @@ function privateImages(): Plugin {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // Served from a project sub-path on GitHub Pages (paul80nd.github.io/forkast/), so the
+  // production build needs that base for assets + the demo data to resolve. Dev/preview stay
+  // at "/" so the local dev server and the screenshot/audit scripts keep their URLs.
+  base: command === 'build' ? '/forkast/' : '/',
   plugins: [react(), tailwindcss(), privateImages()],
-})
+}))
