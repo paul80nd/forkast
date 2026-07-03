@@ -20,11 +20,11 @@ export function RecipeCard({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+      className={`group relative flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
         selected ? 'border-brand-400 ring-2 ring-brand-300' : 'border-line'
       }`}
     >
-      <Link to={`/recipe/${recipe.id}`} className="block">
+      <Link to={`/recipe/${recipe.id}`} className="flex flex-1 flex-col">
         <div className="relative">
           <img
             src={resolveAsset(recipe.image)}
@@ -43,25 +43,29 @@ export function RecipeCard({
             </span>
           )}
         </div>
-        <div className="p-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="rounded-full bg-sunken px-2 py-0.5 text-xs font-medium text-muted">
-              {recipe.cuisine}
-            </span>
-          </div>
-          <h3 className="mt-1.5 leading-tight font-semibold">{recipe.title}</h3>
+        {/* Body grows; the footer pins to the bottom (mt-auto) so meta lines up
+            across a grid of unequal-height cards. */}
+        <div className="flex flex-1 flex-col p-3">
+          <h3 className="leading-tight font-semibold">{recipe.title}</h3>
           <p className="mt-1 line-clamp-2 text-sm text-muted">{recipe.description}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
-            <span>⏱ {recipe.prepTime} min</span>
-            {recipe.mainProtein && <span className="capitalize">· {recipe.mainProtein}</span>}
+          <div className="mt-auto flex items-baseline justify-between gap-2 pt-2.5">
+            <span className="text-xs whitespace-nowrap text-muted">
+              ⏱ {recipe.prepTime} min
+              {recipe.mainProtein && <span className="capitalize"> · {recipe.mainProtein}</span>}
+            </span>
+            <span className="text-sm font-medium whitespace-nowrap">{recipe.cuisine}</span>
           </div>
         </div>
       </Link>
 
       {/* Selection tickbox — a sibling of the Link (not nested in the anchor), so ticking
-          never navigates. */}
+          never navigates. Reveals on hover/focus; stays put once the card is selected. */}
       {onToggleSelect && (
-        <label className="absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-card/90 p-1 shadow-sm">
+        <label
+          className={`absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-card/90 p-1 shadow-sm transition-opacity ${
+            selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
+          }`}
+        >
           <input
             type="checkbox"
             checked={selected}

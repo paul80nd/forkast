@@ -6,6 +6,7 @@ import { applyRatingToGroup, clearCuration, setRotation, setStars } from '../app
 import { ROTATION_LABELS, STAR_LABELS } from '../lib/curation'
 import { RotationRating, StarRating } from '../components/RatingScale'
 import { Select, fieldBoxClass } from '../components/Select'
+import { Switch } from '../components/Switch'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
@@ -253,15 +254,12 @@ export function CuratePage() {
             Clear filter
           </button>
         )}
-        <label className="ml-auto flex items-center gap-2 text-sm text-muted">
-          <input
-            type="checkbox"
-            checked={applyToVariants}
-            onChange={(e) => setApplyToVariants(e.target.checked)}
-            className="fk-check"
-          />
-          Apply rating to variants
-        </label>
+        <Switch
+          checked={applyToVariants}
+          onChange={setApplyToVariants}
+          label="Apply rating to variants"
+          className="ml-auto"
+        />
       </div>
 
       {/* Triage */}

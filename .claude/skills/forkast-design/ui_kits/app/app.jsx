@@ -110,10 +110,16 @@ function Sel({ value, onChange, children, style }) {
     <span aria-hidden style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--fk-text-muted)', fontSize: '11px' }}>▾</span>
   </span>
 }
-function Check({ checked, onChange, label }) {
+function Switch({ checked, onChange, label }) {
   return <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--fk-font-body)',
     fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)', cursor: 'pointer', userSelect: 'none' }}>
-    <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--fk-brand)' }} />{label}</label>
+    <button type="button" role="switch" aria-checked={checked} aria-label={typeof label === 'string' ? label : undefined} onClick={() => onChange(!checked)}
+      style={{ width: 38, height: 22, flex: 'none', borderRadius: 999, border: 'none', padding: 2, cursor: 'pointer',
+        background: checked ? 'var(--fk-brand)' : 'var(--fk-neutral-300)', display: 'inline-flex', alignItems: 'center',
+        transition: 'background var(--fk-duration) var(--fk-ease)' }}>
+      <span style={{ width: 18, height: 18, borderRadius: 999, background: '#fff', boxShadow: 'var(--fk-shadow-xs)',
+        transform: checked ? 'translateX(16px)' : 'translateX(0)', transition: 'transform var(--fk-duration) var(--fk-ease)' }} />
+    </button>{label}</label>
 }
 const PANEL_TONES = {
   info: ['var(--fk-info-wash)', 'var(--fk-harbour-200)', 'var(--fk-harbour-900)'],
@@ -136,18 +142,20 @@ function RecipeCard({ r, stars, onOpen }) {
   const [h, setH] = useState(false)
   return (
     <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)} onClick={onOpen}
-      style={{ cursor: 'pointer', overflow: 'hidden', background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)',
+      style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)',
         borderRadius: 'var(--fk-radius-lg)', boxShadow: h ? 'var(--fk-shadow-md)' : 'var(--fk-shadow-sm)',
         transform: h ? 'translateY(var(--fk-lift))' : 'none', transition: 'transform var(--fk-duration) var(--fk-ease), box-shadow var(--fk-duration) var(--fk-ease)' }}>
       <div style={{ position: 'relative' }}>
         <img src={r.image} alt="" style={{ aspectRatio: '4 / 3', width: '100%', objectFit: 'cover', display: 'block' }} />
         {stars != null && <span style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(255,255,255,.92)', color: 'var(--fk-star-ink)', fontSize: 'var(--fk-text-xs)', fontWeight: 600, padding: '2px 8px', borderRadius: 999, boxShadow: 'var(--fk-shadow-xs)' }}>{'★'.repeat(stars)}</span>}
       </div>
-      <div style={{ padding: 12 }}>
-        <Tag>{r.cuisine}</Tag>
-        <h3 style={{ margin: '8px 0 0', fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h3)', lineHeight: 'var(--fk-leading-snug)', color: 'var(--fk-text)' }}>{r.title}</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 12 }}>
+        <h3 style={{ margin: 0, fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h3)', lineHeight: 'var(--fk-leading-snug)', color: 'var(--fk-text)' }}>{r.title}</h3>
         <p style={{ margin: '4px 0 0', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)', lineHeight: 'var(--fk-leading-snug)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{r.description}</p>
-        <div style={{ marginTop: 8, fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)' }}>⏱ {r.prepTime} min <span style={{ textTransform: 'capitalize' }}>· {r.mainProtein}</span></div>
+        <div style={{ marginTop: 'auto', paddingTop: 10, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+          <span style={{ fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)', whiteSpace: 'nowrap' }}>⏱ {r.prepTime} min <span style={{ textTransform: 'capitalize' }}>· {r.mainProtein}</span></span>
+          <span style={{ fontSize: 'var(--fk-text-sm)', fontWeight: 500, color: 'var(--fk-text)', whiteSpace: 'nowrap' }}>{r.cuisine}</span>
+        </div>
       </div>
     </div>
   )
@@ -179,7 +187,7 @@ function Browse({ ratings, onOpen }) {
         <Field type="search" value={query} placeholder="Search title or ingredient…" onChange={(e) => setQuery(e.target.value)} style={{ flex: 1, minWidth: 220 }} />
         <Sel value={cuisine} onChange={(e) => setCuisine(e.target.value)}><option value="all">All cuisines</option>{cuisines.map((c) => <option key={c}>{c}</option>)}</Sel>
         <Sel value={sort} onChange={(e) => setSort(e.target.value)}><option value="rating">Top rated (your ★)</option><option value="time">Quickest</option><option value="name">A–Z</option></Sel>
-        <Check checked={group} onChange={setGroup} label="Group variants" />
+        <Switch checked={group} onChange={setGroup} label="Group variants" />
       </div>
       <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 16 }}>
         {list.map((r) => <RecipeCard key={r.id} r={r} stars={ratings[r.id]?.stars} onOpen={() => onOpen(r.id)} />)}

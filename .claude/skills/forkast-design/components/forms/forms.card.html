@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x180" name="Form controls" subtitle="Input, search, select, checkbox" -->
+<!-- @dsCard group="Components" viewport="700x210" name="Form controls" subtitle="Input, search, select, checkbox, switch" -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="../../styles.css">
@@ -22,6 +22,7 @@
 .inp.foc{border-color:var(--fk-brand);box-shadow:var(--fk-shadow-focus);}
 .sel{position:relative;display:inline-block;} .sel select{appearance:none;font-family:var(--fk-font-body);font-size:var(--fk-text-sm);color:var(--fk-text);background:var(--fk-surface-card);padding:7px 30px 7px 11px;border-radius:var(--fk-radius-md);border:1px solid var(--fk-border-strong);cursor:pointer;} .sel .car{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--fk-text-muted);font-size:11px;pointer-events:none;}
 .cbx{display:inline-flex;align-items:center;gap:8px;font-size:var(--fk-text-sm);color:var(--fk-text-muted);} .cbx input{width:16px;height:16px;accent-color:var(--fk-brand);}
+.sw{width:38px;height:22px;flex:none;border-radius:999px;padding:2px;background:var(--fk-neutral-300);display:inline-flex;align-items:center;} .sw.on{background:var(--fk-brand);} .sw .knob{width:18px;height:18px;border-radius:999px;background:#fff;box-shadow:var(--fk-shadow-xs);}
 </style></head><body><div class="wrap">
 <div class="stack">
   <div><p class="eye">Text & search · default and focused</p><div class="row">
@@ -31,7 +32,10 @@
   <div><p class="eye">Select · checkbox</p><div class="row">
     <span class="sel"><select><option>All cuisines</option><option>Italian</option></select><span class="car">▾</span></span>
     <span class="sel"><select><option>Top rated (your ★)</option></select><span class="car">▾</span></span>
-    <label class="cbx"><input type="checkbox" checked> Group variants</label>
-    <label class="cbx"><input type="checkbox"> Include unrated</label>
+    <label class="cbx"><input type="checkbox" checked> Include unrated</label>
+  </div></div>
+  <div><p class="eye">Switch <span style="text-transform:none;letter-spacing:0;font-weight:400;">· immediate on/off (use a checkbox for multi-select lists)</span></p><div class="row">
+    <label class="cbx"><span class="sw on"><span class="knob" style="transform:translateX(16px)"></span></span> Group variants</label>
+    <label class="cbx"><span class="sw"><span class="knob"></span></span> Include unrated</label>
   </div></div>
 </div></div></body></html>

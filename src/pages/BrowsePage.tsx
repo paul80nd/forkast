@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
 import { Select, fieldBoxClass } from '../components/Select'
+import { Switch } from '../components/Switch'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { deleteRecipes } from '../app/cleanup'
 import { resolveDishes, dishSizeByRecipe } from '../lib/variants'
@@ -192,15 +193,7 @@ export function BrowsePage() {
           <option value="time">Quickest</option>
           <option value="name">A–Z</option>
         </Select>
-        <label className="flex cursor-pointer items-center gap-1.5 text-sm text-muted select-none">
-          <input
-            type="checkbox"
-            checked={groupVariants}
-            onChange={(e) => setGroupVariants(e.target.checked)}
-            className="fk-check"
-          />
-          Group variants
-        </label>
+        <Switch checked={groupVariants} onChange={setGroupVariants} label="Group variants" />
       </div>
 
       {selected.size > 0 && (

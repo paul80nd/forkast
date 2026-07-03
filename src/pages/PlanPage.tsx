@@ -10,6 +10,7 @@ import { resolveDishes, variantLabel } from '../lib/variants'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
 import { Select } from '../components/Select'
+import { Switch } from '../components/Switch'
 import type { Suggestion } from '../lib/suggest'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
@@ -253,18 +254,12 @@ export function PlanPage() {
           />
           <span>meals a week</span>
         </label>
-        <label
-          className="flex items-center gap-1.5 text-sm text-muted"
+        <Switch
+          checked={includeUnrated}
+          onChange={setIncludeUnrated}
+          label="Include unrated"
           title="Also draw from recipes you haven’t rated yet, treating them as a neutral ★3"
-        >
-          <input
-            type="checkbox"
-            checked={includeUnrated}
-            onChange={(e) => setIncludeUnrated(e.target.checked)}
-            className="fk-check"
-          />
-          Include unrated
-        </label>
+        />
         {plannedCount > 0 && (
           <span className="text-xs text-muted">
             fills the {Math.max(0, suggestCount - plannedCount)} slots left after {plannedCount} planned
