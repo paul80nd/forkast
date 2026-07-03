@@ -9,6 +9,7 @@ import { Select, fieldBoxClass } from '../components/Select'
 import { Switch } from '../components/Switch'
 import { ProgressBar } from '../components/ProgressBar'
 import { Toast } from '../components/Toast'
+import { FilterPopover } from '../components/FilterPopover'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
@@ -28,6 +29,8 @@ export function CuratePage() {
   // variants and drops them from the triage queue — you rarely want to score near-identical
   // dishes separately. Persisted so the preference sticks.
   const [applyToVariants, setApplyToVariants] = usePersistentState('curate.applyToVariants', true)
+  // Show the ratings legend expanded inline on first use, then collapse it to the popover.
+  const [legendSeen, setLegendSeen] = usePersistentState('curate.legendSeen', false)
 
   const starsById = useMemo(() => {
     const m = new Map<string, Stars>()
@@ -226,54 +229,54 @@ export function CuratePage() {
     return <p className="text-muted">Loading…</p>
   }
 
-  // Counts reflect the active filter (the working set), not the whole collection.
+  // Counts reflect the active filter (the working set), not the whole collection. The progress
+  // bar measures the finite pile — how much of this filter is rated — so it stays honest about
+  // earlier work and dedupes the old header counts. `remaining` (frozen-queue backlog) still
+  // drives the end-of-batch copy below.
   const ratedCount = scoped.filter((r) => starsById.has(r.id)).length
   const remaining = queue.filter((id) => !starsById.has(id)).length
-  // Progress across the frozen triage batch, so the pile feels finite. `triageTotal` is the
-  // batch size (it shrinks as cascaded variants leave the queue — cards you'll never see).
-  const triageTotal = queue.length
-  const triaged = triageTotal - remaining
 
   return (
     <section>
       <div className="flex items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Curate</h1>
-        <span className="text-sm text-muted">
-          {ratedCount} rated · {remaining} to triage
-          {filterActive && ' (in filter)'}
-        </span>
+        {/* The legend lives behind a calm popover; the scale labels also show beside each
+            rating as you go. First-timers get it expanded inline (below) until dismissed. */}
+        <FilterPopover label="What do these mean?" align="right" width={230}>
+          <RatingLegend />
+        </FilterPopover>
       </div>
 
-      {/* Triage progress — a finite pile to work down. Hidden once the batch is empty. */}
-      {triageTotal > 0 && (
+      {/* Triage progress — the finite pile: how much of this filter is rated. Pairs with the
+          🎉 end state once it hits 100%. Only meaningful when the filter holds recipes. */}
+      {scoped.length > 0 && (
         <ProgressBar
           className="mt-3"
-          label="Triage progress"
-          value={triaged}
-          max={triageTotal}
+          label={filterActive ? 'Triage progress (in filter)' : 'Triage progress'}
+          value={ratedCount}
+          max={scoped.length}
           showValue
         />
       )}
 
-      {/* Legend driven off the label maps so it can't drift: ★ = how good, ◆ = how often. */}
-      <div className="mt-2 flex flex-wrap justify-between gap-x-6 gap-y-1 text-sm text-muted">
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-          {([5, 4, 3, 2, 1] as Stars[]).map((n) => (
-            <span key={n} className="whitespace-nowrap">
-              <span className="font-medium text-star-ink">★{n}</span>{' '}
-              {STAR_LABELS[n]}
-            </span>
-          ))}
+      {/* First-run: teach the two scales inline, once, then collapse to the popover above. */}
+      {!legendSeen && scoped.length > 0 && (
+        <div className="mt-3 rounded-lg border border-line bg-card p-4">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm font-medium text-ink">What the ratings mean</p>
+            <button
+              type="button"
+              onClick={() => setLegendSeen(true)}
+              className="shrink-0 rounded-md px-2.5 py-1 text-sm font-medium text-brand-ink hover:bg-sunken"
+            >
+              Got it
+            </button>
+          </div>
+          <div className="mt-2">
+            <RatingLegend />
+          </div>
         </div>
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-          {([5, 4, 3, 2, 1] as Rotation[]).map((n) => (
-            <span key={n} className="whitespace-nowrap">
-              <span className="font-medium text-info-700">◆{n}</span>{' '}
-              {ROTATION_LABELS[n]}
-            </span>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Focus the working set — rate one cuisine / protein at a time for consistency. */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -509,6 +512,41 @@ export function CuratePage() {
         </Toast>
       )}
     </section>
+  )
+}
+
+// The two verdict scales, driven off the label maps so they can't drift: ★ = how good, ◆ = how
+// often. Stacked and compact so it reads the same in the header popover and the first-run panel.
+function RatingLegend() {
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">
+          ★ How good
+        </p>
+        <ul className="space-y-0.5 text-sm">
+          {([5, 4, 3, 2, 1] as Stars[]).map((n) => (
+            <li key={n} className="flex gap-2">
+              <span className="w-7 shrink-0 font-medium text-star-ink">★{n}</span>
+              <span className="text-muted">{STAR_LABELS[n]}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <p className="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">
+          ◆ How often
+        </p>
+        <ul className="space-y-0.5 text-sm">
+          {([5, 4, 3, 2, 1] as Rotation[]).map((n) => (
+            <li key={n} className="flex gap-2">
+              <span className="w-7 shrink-0 font-medium text-info-700">◆{n}</span>
+              <span className="text-muted">{ROTATION_LABELS[n]}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   )
 }
 
