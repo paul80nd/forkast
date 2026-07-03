@@ -4,9 +4,9 @@ import { todayISO } from '../lib/plan'
 import { useBackupStatus, markBackupSaved } from '../hooks/useBackupStatus'
 
 // Save / Open: a self-contained snapshot of every table (recipes + all curation) to a
-// JSON file, and a wipe-and-restore back from one. Safari has no File System Access API,
-// so Save downloads via an anchor + object URL. The heavy lifting lives in the app layer;
-// this is the thin shell.
+// JSON file, and a wipe-and-restore back from one. We don't rely on the File System Access
+// API (not in every evergreen browser — e.g. Safari), so Save downloads via an anchor +
+// object URL. The heavy lifting lives in the app layer; this is the thin shell.
 export function BackupRestore() {
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState<'save' | 'open' | null>(null)

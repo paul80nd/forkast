@@ -5,7 +5,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 
 // Private recipe images are large (~625 MB) and must never be committed (privacy
-// firewall) nor held in IndexedDB (Safari evicts idle blobs). So serve them straight
+// firewall) nor held in IndexedDB (browsers may evict idle blobs). So serve them straight
 // from the gitignored folder on disk at /recipe-images/<file>, in dev and preview —
 // they never enter the bundle. resolveAsset() maps a bare image filename to this route.
 const IMAGES_DIR = 'data/private/images'

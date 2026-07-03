@@ -33,7 +33,7 @@ export function markBackupSaved(iso: string): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(iso))
   } catch {
-    // ignore: storage unavailable (e.g. Safari private mode)
+    // ignore: storage unavailable (e.g. private mode)
   }
   window.dispatchEvent(new Event(EVENT))
 }

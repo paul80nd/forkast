@@ -4,7 +4,7 @@
 import { daysSince } from './plan'
 
 // How old (days) a backup can get before we nudge. A week: long enough not to nag after a
-// quiet spell, short enough to bound how much curation Safari eviction could cost you.
+// quiet spell, short enough to bound how much curation a browser eviction could cost you.
 export const STALE_DAYS = 7
 
 export interface BackupStatus {
@@ -22,7 +22,7 @@ export function backupStatus(lastAt: string | null): BackupStatus {
     return {
       tone: 'warn',
       short: 'No backup yet',
-      text: "You haven't saved a backup on this device yet. Safari can clear the app's data — save one to be safe.",
+      text: "You haven't saved a backup on this device yet. Your browser can clear the app's data — save one to be safe.",
     }
   }
   const days = daysSince(lastAt)
