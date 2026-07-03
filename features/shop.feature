@@ -81,6 +81,13 @@ Feature: Shopping list
     When I tick off "lime|each"
     Then "lime|each" is ticked
 
+  Scenario: Exporting the shopping list as text keeps ticks and conversions
+    Given a recipe "r1" with "1 lime" bound to "lime"
+    And recipes "r1" are on the plan for 2
+    And I tick off "lime|each"
+    When I export the shopping list as text
+    Then the export contains "[x] Lime x1"
+
   Scenario: A manual extra can be added and removed
     When I add the extra "birthday candles"
     Then the extras contain "birthday candles"

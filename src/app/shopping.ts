@@ -1,6 +1,7 @@
 import { db } from '../db/db'
 import { CURRENT_PLAN_ID } from '../lib/plan'
 import { buildShoppingList, normalizeName, type ShoppingList } from '../lib/shopping'
+import { shoppingListToText } from '../lib/shoppingExport'
 import { INGREDIENTS_BY_ID, type IngredientDef } from '../data/ingredients'
 import type { Recipe } from '../schema/recipe'
 import type { ShoppingState } from '../schema/userData'
@@ -40,6 +41,21 @@ export async function getPlanShoppingList(planId: string = CURRENT_PLAN_ID): Pro
   ])
   const bindings = new Map(bindingRows.map((b) => [normalizeName(b.name), b.ingredientId]))
   return buildShoppingList(recipes, portions, dict, bindings)
+}
+
+/**
+ * The plan's shopping list as a plain-text checklist (aisle groups, ticked items, unit
+ * conversions) — for copying into a notes app or sharing by email. Title carries today's
+ * date so a pasted list is self-identifying.
+ */
+export async function getPlanShoppingListText(planId: string = CURRENT_PLAN_ID): Promise<string> {
+  const [list, state] = await Promise.all([getPlanShoppingList(planId), getState(planId)])
+  const title = `Shopping list · ${new Date().toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })}`
+  return shoppingListToText(list, new Set(state.checked), state.extras, { title })
 }
 
 // --- Lazy ingredient binding (at shopping time) ---

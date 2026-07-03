@@ -18,6 +18,7 @@ import {
   updateIngredient,
 } from '../app/shopping'
 import { matchIngredient } from '../lib/ingredientMatch'
+import { shoppingListToText } from '../lib/shoppingExport'
 import { AISLE_ORDER, DENSITY_PRESETS, type IngredientDef } from '../data/ingredients'
 import type { ShopLine } from '../lib/shopping'
 import type { Binding } from '../schema/userData'
@@ -71,6 +72,15 @@ export function ShopPage() {
   const itemCount =
     list.aisles.reduce((n, a) => n + a.lines.length, 0) + list.unmatched.length
 
+  // Plain-text checklist for copy/paste (notes app) or email — kept live so the preview and
+  // clipboard reflect the current ticks. Mirrors getPlanShoppingListText's title.
+  const shareTitle = `Shopping list · ${new Date().toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })}`
+  const shareText = shoppingListToText(list, checked, extras, { title: shareTitle })
+
   return (
     <section>
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -90,6 +100,8 @@ export function ShopPage() {
           )}
         </div>
       </div>
+
+      {itemCount + extras.length > 0 && <ShareList text={shareText} />}
 
       <div className="mt-4 space-y-6">
         {/* Aisle buy-list: on wide screens the cards flow into two columns so the
@@ -210,6 +222,68 @@ export function ShopPage() {
         )}
       </div>
     </section>
+  )
+}
+
+// Copy/paste-or-email the shopping list as a plain-text checklist. A collapsible panel with
+// a live preview (also the reliable manual-copy fallback), a Copy button, and an Email link.
+function ShareList({ text }: { text: string }) {
+  const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      // Clipboard blocked (permissions / insecure context) — the textarea below is selectable.
+    }
+  }
+
+  const subject = text.split('\n', 1)[0]
+  const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+      >
+        {open ? 'Hide share' : 'Copy / email list'}
+      </button>
+      {open && (
+        <div className="mt-2 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
+          <p className="text-xs text-stone-600">
+            Paste into a notes app, or send by email. Ticked items stay ticked; unit
+            conversions are included.
+          </p>
+          <textarea
+            readOnly
+            value={text}
+            onFocus={(e) => e.currentTarget.select()}
+            rows={Math.min(16, text.split('\n').length + 1)}
+            className="mt-2 w-full rounded-md border border-stone-300 bg-stone-50 p-2 font-mono text-xs text-stone-800"
+          />
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={copy}
+              className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412]"
+            >
+              {copied ? 'Copied ✓' : 'Copy'}
+            </button>
+            <a
+              href={mailto}
+              className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            >
+              Email
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

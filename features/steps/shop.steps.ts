@@ -5,6 +5,7 @@ import { CURRENT_PLAN_ID } from '../../src/lib/plan'
 import { addToPlan, setPortions } from '../../src/app/plan'
 import {
   getPlanShoppingList,
+  getPlanShoppingListText,
   toggleChecked,
   addExtra,
   removeExtra,
@@ -47,6 +48,7 @@ function labels(list: ShoppingList): string[] {
 describeFeature(feature, ({ Background, Scenario }) => {
   let list: ShoppingList
   let created: IngredientDef
+  let exportText: string
 
   Background(({ Given }) => {
     Given('a clean collection', async () => {
@@ -194,6 +196,18 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('{string} is ticked', async (_, key: string) => {
       const s = await db.shopping.get(CURRENT_PLAN_ID)
       expect(s?.checked).toContain(key)
+    })
+  })
+
+  Scenario('Exporting the shopping list as text keeps ticks and conversions', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} with {string} bound to {string}', boundRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    And('I tick off {string}', async (_, key: string) => toggleChecked(key))
+    When('I export the shopping list as text', async () => {
+      exportText = await getPlanShoppingListText()
+    })
+    Then('the export contains {string}', (_: unknown, s: string) => {
+      expect(exportText).toContain(s)
     })
   })
 
