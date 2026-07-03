@@ -64,8 +64,10 @@ npm run test:features  # feature (Gherkin) tests only
 
 - **HashRouter** (not BrowserRouter) — static hosting (GitHub Pages / local) with no
   rewrite config.
-- **Target browser is Safari** → no File System Access API; persistence is IndexedDB
-  (working store) + JSON **export** (the durable backup — Safari may evict idle IDB).
+- **Supports all evergreen browsers; Safari is the primary/reference target** (the strictest
+  constraint, so designing for it covers the rest). Practically: no File System Access API;
+  persistence is IndexedDB (working store) + JSON **export** (the durable backup — browsers may
+  evict idle IDB, Safari most eagerly). Keep user-facing copy browser-neutral (don't name Safari).
 - CLI/scripts run on **native Node ≥22** (strips TS types — no build step, no `tsx`).
 
 ## Architecture

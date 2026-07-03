@@ -84,9 +84,9 @@ no separate review pass** — the SPA owns ingredient identity, lazily.
   (recipes included), so Open is a true wipe-and-restore that needs no matching
   `recipes.json` and preserves in-app deletions (there are no tombstones). See
   `src/app/backup.ts` + `features/backup.feature`.
-- **Why not File System Access API?** Unsupported in Safari (the target browser).
-  IndexedDB + JSON export is universal. Note: Safari may evict IndexedDB for
-  long-idle sites — hence Export is the real backup.
+- **Why not File System Access API?** Not universally supported (e.g. Safari, our
+  primary/reference target). IndexedDB + JSON export is universal. Note: browsers may evict
+  IndexedDB for long-idle sites (Safari most eagerly) — hence Export is the real backup.
 
 ## Data model
 
