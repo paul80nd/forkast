@@ -258,7 +258,7 @@ export function CuratePage() {
             type="checkbox"
             checked={applyToVariants}
             onChange={(e) => setApplyToVariants(e.target.checked)}
-            className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
+            className="fk-check"
           />
           Apply rating to variants
         </label>

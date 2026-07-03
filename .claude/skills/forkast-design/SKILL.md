@@ -22,8 +22,12 @@ content voice, visual foundations and iconography. Then explore the other files:
 If creating visual artifacts (mocks, throwaway prototypes, slides), copy assets out
 and produce static HTML files that link `styles.css` and use the token variables.
 If working on production code, copy the tokens/components and follow the rules here
-to design as an expert in the Forkast brand — the app is React 19 + Tailwind v4, so
-these tokens can be wired into a Tailwind `@theme` block.
+to design as an expert in the Forkast brand — the app is React 19 + Tailwind v4.
+**For the Tailwind app, use `tailwind-theme.css`** (a `@theme inline` bridge): import
+it after `@import "tailwindcss";` and you get semantic utilities — `bg-brand`,
+`text-muted`, `border-line`, `bg-card`, `text-star`, `bg-info-wash`, `font-display`,
+`rounded-lg` — that re-theme with the class-based `.dark` swap automatically (no
+`dark:` variants needed).
 
 If the user invokes this skill without other guidance, ask what they want to build,
 ask a few focused questions, and act as an expert designer who outputs HTML

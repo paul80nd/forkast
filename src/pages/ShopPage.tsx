@@ -343,7 +343,7 @@ function CheckRow({
           type="checkbox"
           checked={checked}
           onChange={onToggle}
-          className="size-4 accent-orange-500"
+          className="fk-check"
         />
         <span className="min-w-0">
           <span
@@ -394,7 +394,7 @@ function UnmatchedRow({
             type="checkbox"
             checked={checked}
             onChange={() => toggleChecked(line.key)}
-            className="size-4 accent-orange-500"
+            className="fk-check"
           />
           <span className="min-w-0">
             <span className={checked ? 'text-stone-600 line-through' : 'text-stone-800'}>

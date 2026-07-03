@@ -268,7 +268,7 @@ function DuplicateCard({
                 type="checkbox"
                 checked={checked.has(r.id)}
                 onChange={() => toggle(r.id)}
-                className="size-4 rounded border-stone-300 accent-rose-500 focus:ring-rose-400"
+                className="fk-check fk-check--danger"
               />
               {stars ? (
                 <span className="w-12 shrink-0 truncate text-xs text-amber-700">
@@ -402,7 +402,7 @@ function CleanupList({
           type="checkbox"
           checked={allSelected}
           onChange={toggleAll}
-          className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
+          className="fk-check"
         />
         Select all
       </label>
@@ -413,7 +413,7 @@ function CleanupList({
               type="checkbox"
               checked={selected.has(recipe.id)}
               onChange={() => toggle(recipe.id)}
-              className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
+              className="fk-check"
             />
             <Link to={`/recipe/${recipe.id}`} className="flex-1 truncate text-sm text-stone-800 hover:text-orange-700">
               {recipe.title}

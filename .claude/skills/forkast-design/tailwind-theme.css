@@ -1,0 +1,153 @@
+/* ==========================================================================
+   Forkast — Tailwind v4 theme bridge
+   --------------------------------------------------------------------------
+   Wires the design-system tokens into Tailwind v4 utilities. Because it uses
+   `@theme inline`, every utility points at the live `--fk-*` variable — so the
+   class-based `.dark` swap in tokens/colors.css re-themes ALL utilities
+   automatically, with no `dark:` variants needed.
+
+   USAGE (in your app's src/index.css), replacing the current token setup:
+
+       @import "tailwindcss";
+       @custom-variant dark (&:where(.dark, .dark *));   /* keep — you already have this */
+       @import "./path/to/forkast-design/tailwind-theme.css";
+
+   Then style with semantic utilities:
+       bg-brand  text-onbrand  hover:bg-brand-hover        (primary button)
+       bg-card   border border-line  rounded-lg  shadow-sm  (a card)
+       text-ink / text-muted / text-subtle                 (text hierarchy)
+       bg-brand-tint text-brand-ink                          (chips, positive)
+       text-star  bg-info-wash  border-info-200              (stars / proposals)
+       font-display  text-h1                                 (page title)
+
+   Ramps are exposed too (bg-brand-500, bg-info-100, bg-sand-200, …) under
+   non-clobbering names, so Tailwind's own green/neutral/etc stay intact during
+   migration.
+   ========================================================================== */
+
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";
+
+@theme inline {
+  /* --- Semantic colours (the primary API) ------------------------------- */
+  --color-brand:        var(--fk-brand);
+  --color-brand-hover:  var(--fk-brand-hover);
+  --color-brand-ink:    var(--fk-brand-ink);
+  --color-brand-tint:   var(--fk-brand-tint);
+  --color-brand-wash:   var(--fk-brand-wash);
+  --color-onbrand:      var(--fk-text-onbrand);
+
+  --color-positive-tint: var(--fk-positive-tint);
+  --color-positive-ink:  var(--fk-positive-ink);
+
+  --color-surface:      var(--fk-surface-page);
+  --color-card:         var(--fk-surface-card);
+  --color-sunken:       var(--fk-surface-sunken);
+  --color-inset:        var(--fk-surface-inset);
+
+  --color-ink:          var(--fk-text);
+  --color-muted:        var(--fk-text-muted);
+  --color-subtle:       var(--fk-text-subtle);
+
+  --color-line:         var(--fk-border);
+  --color-line-strong:  var(--fk-border-strong);
+  --color-divider:      var(--fk-divider);
+
+  --color-star:         var(--fk-star);
+  --color-star-ink:     var(--fk-star-ink);
+  --color-star-tint:    var(--fk-star-tint);
+
+  --color-info:         var(--fk-info);
+  --color-info-ink:     var(--fk-info-ink);
+  --color-info-tint:    var(--fk-info-tint);
+  --color-info-wash:    var(--fk-info-wash);
+
+  --color-warn:         var(--fk-warn);
+  --color-warn-ink:     var(--fk-warn-ink);
+  --color-warn-tint:    var(--fk-warn-tint);
+  --color-warn-wash:    var(--fk-warn-wash);
+
+  --color-danger:       var(--fk-danger);
+  --color-danger-hover: var(--fk-danger-hover);
+  --color-danger-ink:   var(--fk-danger-ink);
+  --color-danger-tint:  var(--fk-danger-tint);
+  --color-danger-wash:  var(--fk-danger-wash);
+
+  --color-ring:         var(--fk-ring);
+
+  /* --- Ramps (branded names — do not clobber Tailwind defaults) ---------- */
+  --color-brand-50:  var(--fk-green-50);
+  --color-brand-100: var(--fk-green-100);
+  --color-brand-200: var(--fk-green-200);
+  --color-brand-300: var(--fk-green-300);
+  --color-brand-400: var(--fk-green-400);
+  --color-brand-500: var(--fk-green-500);
+  --color-brand-600: var(--fk-green-600);
+  --color-brand-700: var(--fk-green-700);
+  --color-brand-800: var(--fk-green-800);
+  --color-brand-900: var(--fk-green-900);
+
+  --color-info-50:  var(--fk-harbour-50);
+  --color-info-100: var(--fk-harbour-100);
+  --color-info-200: var(--fk-harbour-200);
+  --color-info-500: var(--fk-harbour-500);
+  --color-info-600: var(--fk-harbour-600);
+  --color-info-700: var(--fk-harbour-700);
+  --color-info-900: var(--fk-harbour-900);
+
+  --color-honey-50:  var(--fk-honey-50);
+  --color-honey-100: var(--fk-honey-100);
+  --color-honey-200: var(--fk-honey-200);
+  --color-honey-400: var(--fk-honey-400);
+  --color-honey-500: var(--fk-honey-500);
+  --color-honey-600: var(--fk-honey-600);
+  --color-honey-700: var(--fk-honey-700);
+
+  --color-danger-50:  var(--fk-rose-50);
+  --color-danger-100: var(--fk-rose-100);
+  --color-danger-500: var(--fk-rose-500);
+  --color-danger-600: var(--fk-rose-600);
+  --color-danger-700: var(--fk-rose-700);
+
+  --color-sand-50:  var(--fk-neutral-50);
+  --color-sand-100: var(--fk-neutral-100);
+  --color-sand-150: var(--fk-neutral-150);
+  --color-sand-200: var(--fk-neutral-200);
+  --color-sand-300: var(--fk-neutral-300);
+  --color-sand-400: var(--fk-neutral-400);
+  --color-sand-500: var(--fk-neutral-500);
+  --color-sand-600: var(--fk-neutral-600);
+  --color-sand-700: var(--fk-neutral-700);
+  --color-sand-800: var(--fk-neutral-800);
+  --color-sand-900: var(--fk-neutral-900);
+  --color-sand-950: var(--fk-neutral-950);
+
+  /* --- Typography ------------------------------------------------------- */
+  --font-sans:    var(--fk-font-body);      /* app default body font        */
+  --font-display: var(--fk-font-display);
+  --font-body:    var(--fk-font-body);
+  --font-mono:    var(--fk-font-mono);
+
+  --text-display: var(--fk-text-display);
+  --text-h1:      var(--fk-text-h1);
+  --text-h2:      var(--fk-text-h2);
+  --text-h3:      var(--fk-text-h3);
+  --text-body:    var(--fk-text-body);
+
+  /* --- Radius (overrides Tailwind's rounded-* — softer, on-brand) ------- */
+  --radius-sm:  var(--fk-radius-sm);
+  --radius-md:  var(--fk-radius-md);
+  --radius-lg:  var(--fk-radius-lg);
+  --radius-xl:  var(--fk-radius-xl);
+  --radius-2xl: var(--fk-radius-2xl);
+
+  /* --- Shadows (overrides Tailwind's shadow-*) -------------------------- */
+  --shadow-xs: var(--fk-shadow-xs);
+  --shadow-sm: var(--fk-shadow-sm);
+  --shadow-md: var(--fk-shadow-md);
+  --shadow-lg: var(--fk-shadow-lg);
+
+  /* --- Motion ----------------------------------------------------------- */
+  --ease-soft: var(--fk-ease);
+}

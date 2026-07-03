@@ -53,7 +53,7 @@ export function ImportDataset() {
           type="checkbox"
           checked={replaceAll}
           onChange={(e) => setReplaceAll(e.target.checked)}
-          className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
+          className="fk-check"
         />
         Replace all current recipes (clear first)
       </label>

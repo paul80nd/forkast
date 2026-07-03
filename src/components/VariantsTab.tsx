@@ -142,7 +142,7 @@ function VariantCandidateCard({
               type="checkbox"
               checked={included.has(m.id)}
               onChange={() => toggle(m.id)}
-              className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
+              className="fk-check"
               aria-label={`Include ${m.title}`}
             />
             <label className="flex cursor-pointer items-center gap-1.5">
@@ -152,7 +152,7 @@ function VariantCandidateCard({
                 checked={lead === m.id}
                 disabled={!included.has(m.id)}
                 onChange={() => setLeadId(m.id)}
-                className="accent-orange-500 focus:ring-orange-400"
+                className="fk-radio"
                 aria-label={`Make ${m.title} the original`}
               />
               <span className="text-xs text-stone-600">lead</span>
@@ -266,7 +266,7 @@ function VariantCreate({
                   name="create-lead"
                   checked={lead === id}
                   onChange={() => setLeadId(id)}
-                  className="accent-orange-500 focus:ring-orange-400"
+                  className="fk-radio"
                 />
                 <span className="text-xs text-stone-600">lead</span>
               </label>

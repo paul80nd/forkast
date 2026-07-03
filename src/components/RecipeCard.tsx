@@ -67,7 +67,7 @@ export function RecipeCard({
             checked={selected}
             onChange={onToggleSelect}
             aria-label={`Select ${recipe.title}`}
-            className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
+            className="fk-check"
           />
         </label>
       )}

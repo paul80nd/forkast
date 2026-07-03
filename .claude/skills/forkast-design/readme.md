@@ -169,7 +169,10 @@ new logo was invented.
 
 ## Index / manifest
 
-- **`styles.css`** — the one file consumers link. `@import` manifest only.
+- **`styles.css`** — the one file non-Tailwind consumers link. `@import` manifest only.
+- **`tailwind-theme.css`** — Tailwind v4 bridge. Maps every `--fk-*` token to
+  utilities via `@theme inline`, so `.dark` re-themes all utilities automatically.
+  In a Tailwind app import THIS instead of `styles.css`.
 - **`tokens/`** — `colors.css`, `typography.css`, `spacing.css` (all custom
   properties; dark mode lives in `colors.css`).
 - **`assets/`** — `forkast-mark.svg` (green), `forkast-original.svg` (orange
