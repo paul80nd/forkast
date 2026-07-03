@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
+import { Select, fieldBoxClass } from '../components/Select'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { deleteRecipes } from '../app/cleanup'
 import { resolveDishes, dishSizeByRecipe } from '../lib/variants'
@@ -132,9 +133,6 @@ export function BrowsePage() {
     return <p className="text-stone-600">Loading recipes…</p>
   }
 
-  const selectClass =
-    'rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none'
-
   return (
     <section>
       <div className="flex items-end justify-between gap-3">
@@ -150,12 +148,11 @@ export function BrowsePage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search title or ingredient…"
-          className={`${selectClass} min-w-56 flex-1`}
+          className={`${fieldBoxClass} min-w-56 flex-1 px-2.5`}
         />
-        <select
+        <Select
           value={cuisine}
           onChange={(e) => setCuisine(e.target.value)}
-          className={selectClass}
           aria-label="Filter by cuisine"
         >
           <option value="all">All cuisines</option>
@@ -164,22 +161,20 @@ export function BrowsePage() {
               {c}
             </option>
           ))}
-        </select>
-        <select
+        </Select>
+        <Select
           value={maxTime}
           onChange={(e) => setMaxTime(Number(e.target.value))}
-          className={selectClass}
           aria-label="Filter by maximum cooking time"
         >
           <option value={0}>Any time</option>
           <option value={20}>≤ 20 min</option>
           <option value={30}>≤ 30 min</option>
           <option value={45}>≤ 45 min</option>
-        </select>
-        <select
+        </Select>
+        <Select
           value={rating}
           onChange={(e) => setRating(e.target.value as RatingFilter)}
-          className={selectClass}
           aria-label="Filter by rating"
         >
           <option value="all">Any rating</option>
@@ -187,23 +182,22 @@ export function BrowsePage() {
           <option value="5">★5 only</option>
           <option value="4plus">★4+</option>
           <option value="3plus">★3+</option>
-        </select>
-        <select
+        </Select>
+        <Select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className={selectClass}
           aria-label="Sort recipes"
         >
           <option value="rating">Top rated (your ★)</option>
           <option value="time">Quickest</option>
           <option value="name">A–Z</option>
-        </select>
+        </Select>
         <label className="flex cursor-pointer items-center gap-1.5 text-sm text-stone-600 select-none">
           <input
             type="checkbox"
             checked={groupVariants}
             onChange={(e) => setGroupVariants(e.target.checked)}
-            className="size-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+            className="size-4 rounded border-stone-300 accent-orange-500 focus:ring-orange-400"
           />
           Group variants
         </label>
