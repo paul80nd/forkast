@@ -1,0 +1,16 @@
+{
+  "name": "Forkast",
+  "short_name": "Forkast",
+  "description": "An opinionated, local-first meal planner: curate recipes, plan a varied week, and build a merged shopping list.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fafaf7",
+  "theme_color": "#296038",
+  "icons": [
+    { "src": "icons/forkast-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/forkast-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/forkast-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/forkast-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

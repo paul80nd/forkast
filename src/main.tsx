@@ -17,6 +17,15 @@ if (navigator.storage?.persist) {
     .catch(() => {})
 }
 
+// Register the service worker (makes the app installable + basic offline). Production only —
+// in dev it would fight Vite HMR and the private-images middleware. BASE_URL keeps the scope
+// correct under the /forkast/ sub-path on Pages. Best-effort; failure is non-fatal.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {})
+  })
+}
+
 // Load the bundled demo dataset + seed the ingredient dictionary on first run (both no-op
 // once data exists).
 seedDemoIfEmpty().catch((err) => console.error('Demo seed failed:', err))
