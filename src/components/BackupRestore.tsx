@@ -1,5 +1,26 @@
 import { useRef, useState } from 'react'
 import { exportBackup, importBackup, type RestoreResult } from '../app/backup'
+import { usePersistentState } from '../hooks/usePersistentState'
+import { todayISO, daysSince } from '../lib/plan'
+
+// How old (days) a backup can get before we nudge. A week: long enough not to nag after a
+// quiet spell, short enough to bound how much curation Safari eviction could cost you.
+const STALE_DAYS = 7
+
+function backupStatus(lastAt: string | null): { tone: 'warn' | 'ok'; text: string } {
+  if (!lastAt) {
+    return {
+      tone: 'warn',
+      text: "You haven't saved a backup on this device yet. Safari can clear the app's data — save one to be safe.",
+    }
+  }
+  const days = daysSince(lastAt)
+  const ago = days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`
+  if (days >= STALE_DAYS) {
+    return { tone: 'warn', text: `Last backup was ${ago}. Save a fresh one to protect recent changes.` }
+  }
+  return { tone: 'ok', text: `Last backup: ${ago}.` }
+}
 
 // Save / Open: a self-contained snapshot of every table (recipes + all curation) to a
 // JSON file, and a wipe-and-restore back from one. Safari has no File System Access API,
@@ -10,6 +31,11 @@ export function BackupRestore() {
   const [busy, setBusy] = useState<'save' | 'open' | null>(null)
   const [restored, setRestored] = useState<RestoreResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Device-local record of the last successful Save — drives the staleness nudge. Kept in
+  // localStorage (not the backup itself): it's about this browser's habit, and a restored
+  // machine having no record correctly prompts a fresh local backup.
+  const [lastBackupAt, setLastBackupAt] = usePersistentState<string | null>('backup.lastAt', null)
+  const status = backupStatus(lastBackupAt)
 
   async function onSave() {
     setBusy('save')
@@ -26,6 +52,7 @@ export function BackupRestore() {
       a.click()
       a.remove()
       URL.revokeObjectURL(url)
+      setLastBackupAt(todayISO())
     } catch (err) {
       setError(`Save failed: ${(err as Error).message}`)
     } finally {
@@ -97,6 +124,16 @@ export function BackupRestore() {
           {busy === 'open' ? 'Restoring…' : 'Open backup…'}
         </button>
       </div>
+
+      <p
+        className={`mt-3 text-sm ${
+          status.tone === 'warn'
+            ? 'rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800'
+            : 'text-stone-500'
+        }`}
+      >
+        {status.text}
+      </p>
 
       {restored && (
         <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
