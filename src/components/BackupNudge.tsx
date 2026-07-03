@@ -18,11 +18,16 @@ export function BackupNudge() {
         <span aria-hidden>⚠</span>
         <span className="hidden text-xs font-medium sm:inline">{status.short}</span>
       </Link>
-      <div
-        role="tooltip"
-        className="pointer-events-none absolute right-0 top-full z-20 mt-1 hidden w-64 rounded-lg border border-amber-200 bg-white dark:bg-stone-100 p-2.5 text-xs text-stone-600 shadow-md group-hover:block"
-      >
-        {status.text} <span className="font-medium text-orange-600">Open Config →</span>
+      {/* Positioned wrapper with a transparent pt-1 bridge so moving the mouse from the pill
+          onto the popover never crosses a dead gap (which would drop the hover and close it).
+          No pointer-events-none, so the popover itself stays hoverable. */}
+      <div className="absolute right-0 top-full z-20 hidden pt-1 group-hover:block group-focus-within:block">
+        <div
+          role="tooltip"
+          className="w-64 rounded-lg border border-amber-200 bg-white dark:bg-stone-100 p-2.5 text-xs text-stone-600 shadow-md"
+        >
+          {status.text} <span className="font-medium text-orange-600">Open Config →</span>
+        </div>
       </div>
     </div>
   )
