@@ -5,6 +5,7 @@ import { INGREDIENTS, pluralOf } from '../data/ingredients'
 import { getUnit } from '../lib/units'
 import { ImportDataset } from '../components/ImportDataset'
 import { BackupRestore } from '../components/BackupRestore'
+import { StorageUsage } from '../components/StorageUsage'
 
 export function ConfigPage() {
   // The live dictionary + bindings (both small); no need to load every recipe. Ingredients are
@@ -36,6 +37,7 @@ export function ConfigPage() {
       <div className="mt-5 space-y-4">
         <ImportDataset />
         <BackupRestore />
+        <StorageUsage />
       </div>
 
       <h2 className="mt-5 text-lg font-semibold">Ingredients</h2>
