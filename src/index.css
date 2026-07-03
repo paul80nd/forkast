@@ -6,12 +6,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Fresh Organic design system, wired into Tailwind's palette. The app styles against the
- * stock Tailwind ramps conventionally (stone = warm-paper neutral, orange = green brand,
- * amber = honey stars/warnings, sky = harbour proposals/rotation, rose = destructive,
- * green/emerald = confirmed/positive). Here we re-point those ramps to the `--fk-*` oklch
- * values so the whole app re-themes without touching markup. All values are oklch so hues
- * stay true when lightened/darkened. See .claude/skills/forkast-design/tokens/ for the source.
+ * Fresh Organic design system — the semantic bridge. Exposes utilities like bg-brand,
+ * text-muted, bg-card, text-star, bg-info-wash, font-display, mapped (via @theme inline) to
+ * live --fk-* tokens, so the .dark alias swap in theme/tokens/colors.css re-themes everything
+ * with no dark: variants. This is the app's colour source of truth.
+ */
+@import "./theme/tailwind-theme.css";
+
+/*
+ * TRANSITIONAL: the old ramp-remap (stone→neutral, orange→green, amber→honey, sky→harbour).
+ * Kept only until every screen has migrated to the semantic utilities above, so un-migrated
+ * markup still renders in-brand. Removed (with the .dark mirror-swap below) once migration is
+ * complete. All values are oklch so hues stay true.
  */
 @theme {
   /* Type — Bricolage Grotesque (display) + Figtree (body/UI). */

@@ -1,0 +1,46 @@
+/* ==========================================================================
+   Forkast — Typography tokens
+   Display: Bricolage Grotesque (characterful grotesque, tight tracking).
+   Body/UI: Figtree (clean, friendly, highly legible at small sizes).
+   Mono: system mono — used only for the parsed ingredient breakdown.
+
+   Fonts are Google-hosted for now (see readme "Fonts" caveat); the @import
+   below travels to every consumer of styles.css. Weights: 400/500/600/700.
+   ========================================================================== */
+
+
+:root {
+  /* Families */
+  --fk-font-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fk-font-body:    'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fk-font-mono:    ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+
+  /* Weights */
+  --fk-weight-regular:  400;
+  --fk-weight-medium:   500;
+  --fk-weight-semibold: 600;
+  --fk-weight-bold:     700;
+
+  /* Type scale — px, tuned for a dense-but-comfortable planning UI.
+     Display sizes pair with --fk-font-display + tight tracking. */
+  --fk-text-display: 34px;   /* page-defining hero / brand moments   */
+  --fk-text-h1:      26px;   /* page titles (Browse, Plan, Shop…)    */
+  --fk-text-h2:      19px;   /* section titles / card titles         */
+  --fk-text-h3:      16px;   /* sub-section, recipe card title       */
+  --fk-text-body:    15px;   /* default body / controls              */
+  --fk-text-sm:      13.5px; /* secondary text, meta rows            */
+  --fk-text-xs:      12px;   /* labels, chips, captions              */
+  --fk-text-2xs:     11px;   /* the smallest micro-label             */
+
+  /* Line heights */
+  --fk-leading-tight:  1.15;
+  --fk-leading-snug:   1.3;
+  --fk-leading-normal: 1.5;
+  --fk-leading-relaxed:1.65;
+
+  /* Letter spacing */
+  --fk-tracking-display: -0.02em;  /* display headings                 */
+  --fk-tracking-tight:   -0.01em;  /* h1/h2                            */
+  --fk-tracking-normal:  0;
+  --fk-tracking-caps:    0.08em;    /* uppercase eyebrow labels        */
+}
