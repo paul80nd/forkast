@@ -123,6 +123,21 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
   })
 
+  Scenario('Deleting the lead promotes a remaining member to lead', ({ Given, When, Then, And }) => {
+    Given('I set a variant override for {string} led by {string}', async (_, m, l) => {
+      await setVariantOverride(ids(m), l)
+    })
+    When('I delete recipe {string}', async (_, id: string) => {
+      await deleteRecipe(id)
+    })
+    Then('recipe {string} no longer exists', async (_, id: string) => {
+      expect(await db.recipes.get(id)).toBeUndefined()
+    })
+    And('the dish for {string} has members {string} led by {string}', async (_, id, m, l) => {
+      await expectDish(id, ids(m), l)
+    })
+  })
+
   Scenario('Dissolving an override reverts to the import grouping', ({ Given, When, Then }) => {
     Given('I set a variant override for {string} led by {string}', async (_, m, l) => {
       await setVariantOverride(ids(m), l)

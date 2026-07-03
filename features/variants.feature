@@ -36,6 +36,12 @@ Feature: Curate recipe variants
     Then recipe "cauli" no longer exists
     And the dish for "white" has members "white, brown" led by "white"
 
+  Scenario: Deleting the lead promotes a remaining member to lead
+    Given I set a variant override for "white, brown, cauli" led by "white"
+    When I delete recipe "white"
+    Then recipe "white" no longer exists
+    And the dish for "brown" has members "brown, cauli" led by "brown"
+
   Scenario: Dissolving an override reverts to the import grouping
     Given I set a variant override for "white, brown" led by "brown"
     When I dissolve that dish
