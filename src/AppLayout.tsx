@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { ThemeToggle } from './components/ThemeToggle'
+import { BackupNudge } from './components/BackupNudge'
 
 const tabs = [
   { to: '/browse', label: 'Browse' },
@@ -35,7 +36,8 @@ export function AppLayout() {
               </NavLink>
             ))}
           </nav>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <BackupNudge />
             <ThemeToggle />
           </div>
         </div>
