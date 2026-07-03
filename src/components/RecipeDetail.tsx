@@ -6,6 +6,9 @@ import { RotationRating, StarRating } from './RatingScale'
 import { clearCuration, setRotation, setStars } from '../app/curation'
 import { dishForRecipe } from '../app/variants'
 import { ingredientDelta, variantLabel } from '../lib/variants'
+import { formatScaledQty, scaledIngredientLabel, servingFactor } from '../lib/scaleServings'
+import { SegmentedControl } from './SegmentedControl'
+import { CheckItem } from './CheckItem'
 import type { Recipe } from '../schema/recipe'
 
 // The shared recipe body — image + facts + editable ★/◆ rating panel + nutrition on the left,
@@ -39,6 +42,26 @@ export function RecipeDetail({
 
   const delta = recipe.id === lead.id ? null : ingredientDelta(lead, recipe)
 
+  // Cook-along state: serving scaler + ingredient/step check-offs. All ephemeral (a cook aid,
+  // not curation) and reset when the shown variant changes. Quantities recompute live off the
+  // factor; nutrition is per-serving and stays put.
+  const [serves, setServes] = useState(recipe.serves)
+  const [checkedIng, setCheckedIng] = useState<Set<number>>(new Set())
+  const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set())
+  const [showParsed, setShowParsed] = useState(false)
+  useEffect(() => {
+    setServes(recipe.serves)
+    setCheckedIng(new Set())
+    setCheckedSteps(new Set())
+  }, [recipe.id])
+  const factor = servingFactor(serves, recipe.serves)
+  const serveOptions = Array.from(new Set([recipe.serves, 2, 4, 6])).sort((a, b) => a - b)
+  const toggle = (set: Set<number>, key: number) => {
+    const next = new Set(set)
+    next.has(key) ? next.delete(key) : next.add(key)
+    return next
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-[2fr_3fr]">
       {/* Left: image + at-a-glance facts */}
@@ -52,7 +75,19 @@ export function RecipeDetail({
           <Fact label="Cuisine" value={recipe.cuisine} />
           <Fact label="Time" value={`${recipe.prepTime} min`} />
           {recipe.mainProtein && <Fact label="Main" value={recipe.mainProtein} capitalize />}
-          <Fact label="Serves" value={`${recipe.serves}`} />
+          {/* Serving scaler — recomputes the ingredient quantities below live. */}
+          <div className="flex items-center justify-between gap-3">
+            <dt className="text-muted">Serves</dt>
+            <dd className="m-0">
+              <SegmentedControl
+                size="sm"
+                ariaLabel="Scale servings"
+                options={serveOptions}
+                value={serves}
+                onChange={setServes}
+              />
+            </dd>
+          </div>
           {recipe.recipeCode && <Fact label="Card" value={recipe.recipeCode} />}
         </dl>
 
@@ -95,11 +130,12 @@ export function RecipeDetail({
             <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">
               Allergens
             </h3>
+            {/* Warn (honey) tone so these read as "contains", not just another descriptive label. */}
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {recipe.allergens.map((a) => (
                 <span
                   key={a}
-                  className="rounded bg-sunken px-1.5 py-0.5 text-xs font-medium text-muted"
+                  className="rounded bg-warn-tint px-1.5 py-0.5 text-xs font-medium text-warn-ink"
                 >
                   {a}
                 </span>
@@ -127,21 +163,32 @@ export function RecipeDetail({
         {recipe.nutrition && (
           <div className="mt-4 rounded-lg border border-line bg-surface p-3">
             <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">
-              Nutrition <span className="font-normal normal-case">(per serving)</span>
+              Nutrition{' '}
+              <span className="font-normal tracking-normal text-subtle normal-case">
+                · per serving
+              </span>
             </h3>
-            <dl className="mt-1.5 space-y-1 text-sm">
-              <Fact label="Energy" value={`${Math.round(recipe.nutrition.kcal)} kcal`} />
-              <Fact label="Protein" value={`${recipe.nutrition.protein} g`} />
-              <Fact
+            {/* Energy leads as the headline; macros read as quieter label/value rows below. */}
+            <div className="mt-2 flex items-baseline justify-between gap-2 border-b border-divider pb-2">
+              <span className="text-sm text-muted">Energy</span>
+              <span className="font-display text-lg font-semibold whitespace-nowrap text-ink">
+                {Math.round(recipe.nutrition.kcal)} kcal
+              </span>
+            </div>
+            <dl className="mt-1.5 space-y-0.5 text-sm">
+              <NutriRow label="Protein" main={`${recipe.nutrition.protein} g`} />
+              <NutriRow
                 label="Fat"
-                value={`${recipe.nutrition.fat} g (${recipe.nutrition.saturates} g sat)`}
+                main={`${recipe.nutrition.fat} g`}
+                detail={`(${recipe.nutrition.saturates} g sat)`}
               />
-              <Fact
+              <NutriRow
                 label="Carbs"
-                value={`${recipe.nutrition.carbs} g (${recipe.nutrition.sugars} g sugar)`}
+                main={`${recipe.nutrition.carbs} g`}
+                detail={`(${recipe.nutrition.sugars} g sugar)`}
               />
-              <Fact label="Fibre" value={`${recipe.nutrition.fibre} g`} />
-              <Fact label="Salt" value={`${recipe.nutrition.salt} g`} />
+              <NutriRow label="Fibre" main={`${recipe.nutrition.fibre} g`} />
+              <NutriRow label="Salt" main={`${recipe.nutrition.salt} g`} />
             </dl>
           </div>
         )}
@@ -216,19 +263,41 @@ export function RecipeDetail({
         )}
 
 
-        <h2 className="mt-6 text-sm font-semibold tracking-wide text-muted uppercase">
-          Ingredients
-        </h2>
+        <div className="mt-6 flex items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold tracking-wide text-muted uppercase">
+            Ingredients
+            {factor !== 1 && (
+              <span className="ml-2 text-xs font-normal tracking-normal text-brand-ink normal-case">
+                · scaled for {serves}
+              </span>
+            )}
+          </h2>
+          {/* The parsed qty·name breakdown is dev-facing (import proof-reading) — off by default. */}
+          <button
+            type="button"
+            onClick={() => setShowParsed((v) => !v)}
+            className="shrink-0 text-xs text-muted hover:text-ink"
+          >
+            {showParsed ? 'Hide parsed' : 'Show parsed'}
+          </button>
+        </div>
         <ul className="mt-2 divide-y divide-divider">
           {recipe.ingredients.map((ing, i) => (
-            <li key={i} className="flex items-baseline justify-between gap-3 py-1.5">
-              <span className="text-ink">{ing.rawLabel}</span>
-              {/* Parsed breakdown — for proof-reading imports */}
-              <span className="shrink-0 font-mono text-xs text-muted">
-                {ing.qty != null ? ing.qty : '—'}
-                {ing.unit ? ` ${ing.unit}` : ''} · {ing.name}
-              </span>
-            </li>
+            <CheckItem
+              key={i}
+              checked={checkedIng.has(i)}
+              onToggle={() => setCheckedIng((s) => toggle(s, i))}
+              trailing={
+                showParsed && (
+                  <span className="shrink-0 font-mono text-xs whitespace-nowrap text-subtle">
+                    {ing.qty != null ? formatScaledQty(ing.qty * factor) : '—'}
+                    {ing.unit ? ` ${ing.unit}` : ''} · {ing.name}
+                  </span>
+                )
+              }
+            >
+              {scaledIngredientLabel(ing, factor)}
+            </CheckItem>
           ))}
         </ul>
 
@@ -240,16 +309,20 @@ export function RecipeDetail({
         )}
 
         <h2 className="mt-6 text-sm font-semibold tracking-wide text-muted uppercase">Method</h2>
-        <ol className="mt-2 space-y-3">
+        {/* Tick steps off as you cook — the number becomes a ✓ and the step dims. */}
+        <ol className="mt-2 divide-y divide-divider">
           {[...recipe.instructions]
             .sort((a, b) => a.order - b.order)
             .map((step) => (
-              <li key={step.order} className="flex gap-3">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-tint text-sm font-semibold text-brand-ink">
-                  {step.order}
-                </span>
-                <span className="text-ink">{step.text}</span>
-              </li>
+              <CheckItem
+                key={step.order}
+                marker="step"
+                index={step.order}
+                checked={checkedSteps.has(step.order)}
+                onToggle={() => setCheckedSteps((s) => toggle(s, step.order))}
+              >
+                {step.text}
+              </CheckItem>
             ))}
         </ol>
       </div>
@@ -271,6 +344,19 @@ function Fact({
       <dt className="text-muted">{label}</dt>
       <dd className={`text-right font-medium text-ink ${capitalize ? 'capitalize' : ''}`}>
         {value}
+      </dd>
+    </div>
+  )
+}
+
+// One macro row: bold amount, with an optional muted detail (sat/sugar) — amounts never wrap.
+function NutriRow({ label, main, detail }: { label: string; main: string; detail?: string }) {
+  return (
+    <div className="flex justify-between gap-2.5">
+      <dt className="text-muted">{label}</dt>
+      <dd className="m-0 text-right">
+        <span className="font-medium whitespace-nowrap text-ink">{main}</span>
+        {detail && <span className="whitespace-nowrap text-muted"> {detail}</span>}
       </dd>
     </div>
   )

@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x270" name="Buttons & controls" subtitle="Button variants, split, icon, segmented" -->
+<!-- @dsCard group="Components" viewport="700x320" name="Buttons & controls" subtitle="Button variants, split (with menu), icon, segmented" -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="../../styles.css">
@@ -18,7 +18,7 @@
 .seg{display:inline-flex;border:1px solid var(--fk-border-strong);border-radius:var(--fk-radius-md);overflow:hidden;}
 .seg button{font-family:var(--fk-font-body);font-weight:500;font-size:var(--fk-text-sm);padding:5px 14px;border:none;background:var(--fk-surface-card);color:var(--fk-text-muted);cursor:pointer;}
 .seg button+button{border-left:1px solid var(--fk-border);} .seg .on{background:var(--fk-brand);color:#fff;}
-.split{display:inline-flex;} .split .m{background:var(--fk-brand);color:#fff;border:none;border-radius:var(--fk-radius-md) 0 0 var(--fk-radius-md);padding:7px 15px;font-weight:500;font-family:var(--fk-font-body);font-size:var(--fk-text-body);cursor:pointer;} .split .c{background:var(--fk-brand);color:#fff;border:none;border-left:1px solid rgba(255,255,255,.3);border-radius:0 var(--fk-radius-md) var(--fk-radius-md) 0;padding:0 9px;cursor:pointer;}
+.split{display:inline-flex;position:relative;} .split .m{background:var(--fk-brand);color:#fff;border:none;border-radius:var(--fk-radius-md) 0 0 var(--fk-radius-md);padding:7px 15px;font-weight:500;font-family:var(--fk-font-body);font-size:var(--fk-text-body);cursor:pointer;} .split .c{background:var(--fk-brand);color:#fff;border:none;border-left:1px solid rgba(255,255,255,.3);border-radius:0 var(--fk-radius-md) var(--fk-radius-md) 0;padding:0 9px;cursor:pointer;} .split .menu{position:absolute;top:100%;right:0;margin-top:4px;min-width:170px;background:var(--fk-surface-card);border:1px solid var(--fk-border);border-radius:var(--fk-radius-md);box-shadow:var(--fk-shadow-lg);overflow:hidden;z-index:5;} .split .menu span{display:block;padding:9px 13px;font-size:var(--fk-text-sm);font-weight:500;color:var(--fk-danger-ink);}
 </style></head><body><div class="wrap">
 <div class="stack">
   <div><p class="eye">Variants</p><div class="row">
@@ -33,7 +33,7 @@
     <button class="btn b-primary sm">Small</button>
     <button class="btn b-primary">Medium</button>
     <button class="btn b-primary dis">Disabled</button>
-    <span class="split"><button class="m">+ Add to week</button><button class="c">▾</button></span>
+    <span class="split"><button class="m">+ Add to week</button><button class="c">▾</button><span class="menu"><span>Delete recipe</span></span></span>
     <button class="ib">🌙</button>
     <button class="ib">✕</button>
     <span class="seg"><button class="on">2</button><button>4</button><button>6</button></span>

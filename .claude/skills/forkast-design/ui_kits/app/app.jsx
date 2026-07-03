@@ -213,7 +213,7 @@ function SkeletonCard() {
     </div>
   )
 }
-function Browse({ ratings, onOpen }) {
+function Browse({ ratings, onOpen, removed, onRemove }) {
   const [query, setQuery] = useState('')
   const [cuisine, setCuisine] = useState('all')
   const [sort, setSort] = useState('rating')
@@ -222,7 +222,6 @@ function Browse({ ratings, onOpen }) {
   const [rating, setRating] = useState('all')
   const [selectMode, setSelectMode] = useState(false)
   const [selected, setSelected] = useState([])
-  const [removed, setRemoved] = useState([])
   const [loading, setLoading] = useState(true)
   const toggleSel = (id) => setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id])
   const exitSelect = () => { setSelectMode(false); setSelected([]) }
@@ -303,7 +302,7 @@ function Browse({ ratings, onOpen }) {
           <span style={{ fontSize: 'var(--fk-text-sm)', fontWeight: 500, color: 'var(--fk-text)' }}>{selected.length ? selected.length + ' selected' : 'Tap cards to select'}</span>
           <div style={{ display: 'flex', gap: 6 }}>
             <Btn variant="ghost" size="sm" onClick={() => setSelected([])} disabled={!selected.length}>Clear</Btn>
-            <Btn variant="danger" size="sm" onClick={() => { setRemoved((r) => [...r, ...selected]); setSelected([]) }} disabled={!selected.length}>Delete selected</Btn>
+            <Btn variant="danger" size="sm" onClick={() => { onRemove(selected); setSelected([]) }} disabled={!selected.length}>Delete selected</Btn>
           </div>
         </div>
       )}
@@ -331,19 +330,55 @@ function Browse({ ratings, onOpen }) {
 }
 
 /* ================================================================ Recipe === */
-function Recipe({ r, ratings, setRating, inPlan, togglePlan, onBack }) {
+function MenuItem({ children, onClick, tone }) {
+  const [h, setH] = useState(false)
+  const danger = tone === 'danger'
+  return <button type="button" role="menuitem" onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', border: 'none', cursor: 'pointer', fontFamily: 'var(--fk-font-body)', fontSize: 'var(--fk-text-sm)', fontWeight: 500,
+      color: danger ? 'var(--fk-danger-ink)' : 'var(--fk-text)', background: h ? (danger ? 'var(--fk-danger-wash)' : 'var(--fk-surface-sunken)') : 'transparent' }}>{children}</button>
+}
+function Recipe({ r, ratings, setRating, inPlan, togglePlan, onBack, onDelete }) {
   const rt = ratings[r.id] || {}
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [serves, setServes] = useState(r.serves)
+  const [checkedIng, setCheckedIng] = useState([])
+  const [checkedStep, setCheckedStep] = useState([])
+  const [showParsed, setShowParsed] = useState(false)
+  const factor = serves / r.serves
+  const scaleQty = (q) => { const v = q * factor; return Number.isInteger(v) ? v : Math.round(v * 10) / 10 }
+  const ingLabel = (i) => (factor === 1 || i.qty == null) ? i.rawLabel : scaleQty(i.qty) + (i.unit ? ' ' + i.unit : '') + ' ' + i.name
+  const toggleIng = (k) => setCheckedIng((s) => s.includes(k) ? s.filter((x) => x !== k) : [...s, k])
+  const toggleStep = (k) => setCheckedStep((s) => s.includes(k) ? s.filter((x) => x !== k) : [...s, k])
   return (
     <div>
       <button type="button" onClick={onBack} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--fk-font-body)', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-brand-ink)' }}>← Back to Browse</button>
-      <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'minmax(220px, 2fr) 3fr', gap: 24 }}>
-        {/* left */}
+      <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'minmax(220px, 2fr) 3fr', gap: 24, alignItems: 'start' }}>
+        {/* left column */}
         <div>
           <img src={r.image} alt="" style={{ aspectRatio: '4 / 3', width: '100%', borderRadius: 'var(--fk-radius-xl)', objectFit: 'cover' }} />
+          {/* Primary action fused to a menu (⋯) — Add-to-week + Delete, per the app. */}
+          <div style={{ position: 'relative', marginTop: 12, display: 'flex' }}>
+            <button type="button" onClick={() => togglePlan(r.id)} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--fk-font-body)', fontWeight: 500, fontSize: 'var(--fk-text-body)', padding: '9px 15px', border: 'none', borderRadius: 'var(--fk-radius-md) 0 0 var(--fk-radius-md)', cursor: 'pointer', background: inPlan ? 'var(--fk-positive-tint)' : 'var(--fk-brand)', color: inPlan ? 'var(--fk-positive-ink)' : '#fff' }}>
+              <span aria-hidden>{inPlan ? '✓' : '+'}</span>{inPlan ? 'In this week' : 'Add to week'}
+            </button>
+            <button type="button" aria-label="More actions" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)} style={{ padding: '0 11px', border: 'none', borderLeft: '1px solid ' + (inPlan ? 'var(--fk-green-200)' : 'rgba(255,255,255,.3)'), borderRadius: '0 var(--fk-radius-md) var(--fk-radius-md) 0', cursor: 'pointer', background: inPlan ? 'var(--fk-positive-tint)' : 'var(--fk-brand)', color: inPlan ? 'var(--fk-positive-ink)' : '#fff', fontSize: 'var(--fk-text-body)' }}>▾</button>
+            {menuOpen && <React.Fragment>
+              <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 10 }} />
+              <div role="menu" style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 20, minWidth: 184, background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-md)', boxShadow: 'var(--fk-shadow-lg)', overflow: 'hidden' }}>
+                <MenuItem tone="danger" onClick={() => { setMenuOpen(false); if (window.confirm('Delete “' + r.title + '”?\n\nThis removes it and its rating for good (re-import to restore).')) onDelete() }}>Delete recipe</MenuItem>
+              </div>
+            </React.Fragment>}
+          </div>
           <dl style={{ margin: '16px 0 0', fontSize: 'var(--fk-text-sm)' }}>
-            {[['Cuisine', r.cuisine], ['Time', r.prepTime + ' min'], ['Main', r.mainProtein], ['Serves', r.serves]].map(([k, v]) =>
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--fk-divider)' }}>
-                <dt style={{ color: 'var(--fk-text-muted)' }}>{k}</dt><dd style={{ margin: 0, fontWeight: 500, textTransform: k === 'Main' ? 'capitalize' : 'none' }}>{v}</dd></div>)}
+            {[['Cuisine', r.cuisine], ['Time', r.prepTime + ' min'], ['Main', r.mainProtein]].map(([k, v]) =>
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--fk-divider)' }}>
+                <dt style={{ color: 'var(--fk-text-muted)' }}>{k}</dt><dd style={{ margin: 0, fontWeight: 500, whiteSpace: 'nowrap', textTransform: k === 'Main' ? 'capitalize' : 'none' }}>{v}</dd></div>)}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--fk-divider)' }}>
+              <dt style={{ color: 'var(--fk-text-muted)' }}>Serves</dt>
+              <span style={{ display: 'inline-flex', overflow: 'hidden', border: '1px solid var(--fk-border-strong)', borderRadius: 'var(--fk-radius-md)' }}>
+                {[2, 4, 6].map((n, i) => <button key={n} type="button" onClick={() => setServes(n)} style={{ fontFamily: 'var(--fk-font-body)', fontWeight: 500, fontSize: 'var(--fk-text-sm)', padding: '3px 11px', border: 'none', borderLeft: i ? '1px solid var(--fk-border)' : 'none', background: serves === n ? 'var(--fk-brand)' : 'var(--fk-surface-card)', color: serves === n ? '#fff' : 'var(--fk-text-muted)', cursor: 'pointer' }}>{n}</button>)}
+              </span>
+            </div>
           </dl>
           <div style={{ marginTop: 16, background: 'var(--fk-surface-sunken)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-lg)', padding: 14 }}>
             <Eyebrow>Your rating</Eyebrow>
@@ -353,28 +388,55 @@ function Recipe({ r, ratings, setRating, inPlan, togglePlan, onBack }) {
               <Stars value={rt.rotation} onChange={(v) => setRating(r.id, 'rotation', v)} glyph="◆" color="var(--fk-info)" labels={ROTATION_LABELS} showLabel /></div>}
           </div>
           {r.allergens.length > 0 && <div style={{ marginTop: 16 }}><Eyebrow>Allergens</Eyebrow>
-            <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>{r.allergens.map((a) => <Tag key={a} square>{a}</Tag>)}</div></div>}
+            <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>{r.allergens.map((a) => <Tag key={a} tone="warn" square>{a}</Tag>)}</div></div>}
+          {r.tags && r.tags.length > 0 && <div style={{ marginTop: 16 }}><Eyebrow>Tags</Eyebrow>
+            <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>{r.tags.map((t) => <Tag key={t}>{t}</Tag>)}</div></div>}
+          {r.nutrition && <div style={{ marginTop: 16, border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-lg)', padding: 14 }}>
+            <Eyebrow>Nutrition <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 400, color: 'var(--fk-text-subtle)' }}>· per serving</span></Eyebrow>
+            <div style={{ marginTop: 8, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', paddingBottom: 8, borderBottom: '1px solid var(--fk-divider)' }}>
+              <span style={{ color: 'var(--fk-text-muted)', fontSize: 'var(--fk-text-sm)' }}>Energy</span>
+              <span style={{ fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h3)', color: 'var(--fk-text)', whiteSpace: 'nowrap' }}>{Math.round(r.nutrition.kcal)} kcal</span>
+            </div>
+            {[['Protein', r.nutrition.protein + ' g'], ['Fat', r.nutrition.fat + ' g', '(' + r.nutrition.saturates + ' g sat)'], ['Carbs', r.nutrition.carbs + ' g', '(' + r.nutrition.sugars + ' g sugar)'], ['Fibre', r.nutrition.fibre + ' g'], ['Salt', r.nutrition.salt + ' g']].map(([k, main, detail]) =>
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '5px 0', fontSize: 'var(--fk-text-sm)' }}>
+                <span style={{ color: 'var(--fk-text-muted)' }}>{k}</span>
+                <span style={{ textAlign: 'right' }}><span style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{main}</span>{detail && <span style={{ color: 'var(--fk-text-muted)', whiteSpace: 'nowrap' }}> {detail}</span>}</span></div>)}
+          </div>}
         </div>
         {/* right */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-            <h1 style={{ margin: 0, fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h1)', letterSpacing: 'var(--fk-tracking-tight)' }}>{r.title}</h1>
-            {inPlan ? <Btn variant="positive" glyph="✓" onClick={() => togglePlan(r.id)}>In week</Btn> : <Btn variant="primary" glyph="+" onClick={() => togglePlan(r.id)}>Add to week</Btn>}
-          </div>
+          <h1 style={{ margin: 0, fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h1)', letterSpacing: 'var(--fk-tracking-tight)' }}>{r.title}</h1>
           <p style={{ marginTop: 8, color: 'var(--fk-text-muted)', fontSize: 'var(--fk-text-body)', lineHeight: 'var(--fk-leading-normal)' }}>{r.description}</p>
-          <div style={{ marginTop: 20 }}><Eyebrow>Ingredients</Eyebrow>
+
+          <div style={{ marginTop: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 8 }}>
+                <Eyebrow>Ingredients</Eyebrow>
+                {factor !== 1 && <span style={{ fontSize: 'var(--fk-text-xs)', color: 'var(--fk-brand-ink)', whiteSpace: 'nowrap' }}>· scaled for {serves}</span>}
+              </span>
+              <button type="button" onClick={() => setShowParsed((v) => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--fk-font-body)', fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)', padding: 0 }}>{showParsed ? 'Hide parsed' : 'Show parsed'}</button>
+            </div>
             <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none' }}>
-              {r.ingredients.map((i, k) => <li key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--fk-divider)' }}>
-                <span style={{ color: 'var(--fk-text)' }}>{i.rawLabel}</span>
-                <span style={{ fontFamily: 'var(--fk-font-mono)', fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)' }}>{i.qty ?? '—'}{i.unit ? ' ' + i.unit : ''} · {i.name}</span></li>)}
+              {r.ingredients.map((i, k) => {
+                const on = checkedIng.includes(k)
+                return <li key={k} onClick={() => toggleIng(k)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid var(--fk-divider)', cursor: 'pointer' }}>
+                  <span style={{ flex: 'none', width: 18, height: 18, borderRadius: 'var(--fk-radius-sm)', border: '1px solid ' + (on ? 'var(--fk-brand)' : 'var(--fk-border-strong)'), background: on ? 'var(--fk-brand)' : 'transparent', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11 }}>{on ? '✓' : ''}</span>
+                  <span style={{ flex: 1, color: on ? 'var(--fk-text-muted)' : 'var(--fk-text)', textDecoration: on ? 'line-through' : 'none' }}>{ingLabel(i)}</span>
+                  {showParsed && <span style={{ fontFamily: 'var(--fk-font-mono)', fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-subtle)', whiteSpace: 'nowrap' }}>{i.qty != null ? scaleQty(i.qty) : '—'}{i.unit ? ' ' + i.unit : ''} · {i.name}</span>}
+                </li>
+              })}
             </ul>
             <p style={{ marginTop: 10, fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}><b style={{ color: 'var(--fk-text)' }}>Store cupboard:</b> {r.basics.join(', ')}</p>
           </div>
+
           <div style={{ marginTop: 20 }}><Eyebrow>Method</Eyebrow>
-            <ol style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {r.instructions.map((s, k) => <li key={k} style={{ display: 'flex', gap: 12 }}>
-                <span style={{ flex: 'none', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 999, background: 'var(--fk-brand-tint)', color: 'var(--fk-brand-ink)', fontSize: 'var(--fk-text-sm)', fontWeight: 600 }}>{k + 1}</span>
-                <span style={{ color: 'var(--fk-text)', lineHeight: 'var(--fk-leading-normal)' }}>{s}</span></li>)}
+            <ol style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {r.instructions.map((s, k) => {
+                const on = checkedStep.includes(k)
+                return <li key={k} onClick={() => toggleStep(k)} style={{ display: 'flex', gap: 12, padding: '8px 0', cursor: 'pointer', borderBottom: k < r.instructions.length - 1 ? '1px solid var(--fk-divider)' : 'none' }}>
+                  <span style={{ flex: 'none', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 999, background: on ? 'var(--fk-brand)' : 'var(--fk-brand-tint)', color: on ? '#fff' : 'var(--fk-brand-ink)', fontSize: 'var(--fk-text-sm)', fontWeight: 600 }}>{on ? '✓' : k + 1}</span>
+                  <span style={{ color: on ? 'var(--fk-text-muted)' : 'var(--fk-text)', textDecoration: on ? 'line-through' : 'none', lineHeight: 'var(--fk-leading-normal)' }}>{s}</span></li>
+              })}
             </ol>
           </div>
         </div>
@@ -643,15 +705,18 @@ function App() {
   const [planIds, setPlanIds] = useState(['lemongrass-chicken-bowls', 'golden-chickpea-curry'])
   const [portions, setPortions] = useState(2)
   const [ticks, setTicks] = useState({})
+  const [removedIds, setRemovedIds] = useState([])
 
   const setRating = (id, key, v) => setRatings((m) => ({ ...m, [id]: { ...m[id], [key]: v } }))
   const togglePlan = (id) => setPlanIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id])
   const toggleTick = (k) => setTicks((t) => ({ ...t, [k]: !t[k] }))
+  const removeRecipes = (ids) => setRemovedIds((s) => [...new Set([...s, ...ids])])
   const open = (id) => { setOpenId(id); window.scrollTo && window.scrollTo(0, 0) }
+  const deleteRecipe = (id) => { removeRecipes([id]); setPlanIds((p) => p.filter((x) => x !== id)); setOpenId(null) }
 
   let screen
-  if (openId) screen = <Recipe r={byId[openId]} ratings={ratings} setRating={setRating} inPlan={planIds.includes(openId)} togglePlan={togglePlan} onBack={() => setOpenId(null)} />
-  else if (tab === 'browse') screen = <Browse ratings={ratings} onOpen={open} />
+  if (openId) screen = <Recipe r={byId[openId]} ratings={ratings} setRating={setRating} inPlan={planIds.includes(openId)} togglePlan={togglePlan} onBack={() => setOpenId(null)} onDelete={() => deleteRecipe(openId)} />
+  else if (tab === 'browse') screen = <Browse ratings={ratings} onOpen={open} removed={removedIds} onRemove={removeRecipes} />
   else if (tab === 'curate') screen = <Curate ratings={ratings} setRating={setRating} onOpen={open} />
   else if (tab === 'plan') screen = <Plan ratings={ratings} planIds={planIds} togglePlan={togglePlan} portions={portions} setPortions={setPortions} onOpen={open} />
   else if (tab === 'shop') screen = <Shop planIds={planIds} portions={portions} ticks={ticks} toggleTick={toggleTick} onGoPlan={() => setTab('plan')} />

@@ -21,6 +21,7 @@ import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
 import { Select } from '../components/Select'
 import { Switch } from '../components/Switch'
+import { SegmentedControl } from '../components/SegmentedControl'
 import type { Suggestion } from '../lib/suggest'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
@@ -255,22 +256,12 @@ export function PlanPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Plan</h1>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted">Cooking for</span>
-          <div className="inline-flex overflow-hidden rounded-md border border-line-strong">
-            {PORTION_OPTIONS.map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setPortions(n)}
-                className={`px-3 py-1 font-medium transition ${
-                  portions === n
-                    ? 'bg-brand-700 text-white'
-                    : 'bg-card text-muted hover:bg-sunken'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            ariaLabel="Cooking for"
+            options={PORTION_OPTIONS}
+            value={portions}
+            onChange={setPortions}
+          />
         </div>
       </div>
 

@@ -181,7 +181,7 @@ new logo was invented.
   sibling `.d.ts` (props contract) and `.prompt.md` (usage):
   - `core/` — **Button** (+ **SplitButton**), **IconButton**, **SegmentedControl**
   - `forms/` — **Input**, **Select**, **Checkbox**, **Switch**
-  - `display/` — **Tag**, **Chip**, **RecipeCard**, **Panel**, **EmptyState**, **ListRow**
+  - `display/` — **Tag**, **Chip**, **RecipeCard**, **Panel**, **EmptyState**, **ListRow**, **CheckItem**
   - `rating/` — **RatingScale** + **StarRating** / **RotationRating** presets
   - `navigation/` — **NavTabs**
   - `overlays/` — **FilterPopover** (calms a busy toolbar)

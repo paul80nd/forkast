@@ -131,6 +131,17 @@ window.FK_RECIPES = [
   },
 ]
 
+// Per-serving nutrition (grams except kcal), attached by id.
+const FK_NUTRITION = {
+  'sunset-tomato-orzo':       { kcal: 420, protein: 14, fat: 11, saturates: 5, carbs: 62, sugars: 8, fibre: 5, salt: 1.1 },
+  'golden-chickpea-curry':    { kcal: 480, protein: 16, fat: 22, saturates: 12, carbs: 48, sugars: 9, fibre: 12, salt: 0.9 },
+  'lemongrass-chicken-bowls': { kcal: 491, protein: 37.5, fat: 7, saturates: 1.2, carbs: 64.3, sugars: 14.5, fibre: 4.8, salt: 1.0 },
+  'smoky-black-bean-tacos':   { kcal: 380, protein: 14, fat: 9, saturates: 1.5, carbs: 58, sugars: 6, fibre: 14, salt: 1.0 },
+  'garden-herb-fish-pie':     { kcal: 520, protein: 32, fat: 24, saturates: 13, carbs: 40, sugars: 6, fibre: 4, salt: 1.4 },
+  'gochujang-beef-noodles':   { kcal: 610, protein: 34, fat: 22, saturates: 8, carbs: 68, sugars: 10, fibre: 5, salt: 2.1 },
+}
+window.FK_RECIPES.forEach((r) => { r.nutrition = FK_NUTRITION[r.id] })
+
 window.FK_AISLE_ORDER = ['Fruit & veg', 'Meat & fish', 'Chilled & dairy', 'Bakery', 'Tins & packets', 'Pasta, rice & grains', 'Condiments', 'Herbs & spices', 'Baking']
 window.FK_STAR_LABELS = { 1: 'Yuk', 2: 'Rather not', 3: "I'd eat it", 4: 'Like it', 5: 'Yum Yum' }
 window.FK_ROTATION_LABELS = { 1: 'Rarely', 2: 'Occasionally', 3: 'Now & then', 4: 'Often', 5: 'On repeat' }
