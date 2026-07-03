@@ -183,6 +183,13 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('the line {string} combines {int} recipes', lineCombines)
   })
 
+  Scenario('With nothing planned the list is empty, not stuck', ({ When, Then }) => {
+    // No plan row exists after the clean background — the list must still resolve to 0 meals
+    // (the Shop page shows an empty state; it must not gate loading on the missing plan row).
+    When('I build the shopping list', build)
+    Then('the list has {int} meals', hasMeals)
+  })
+
   Scenario("A stale plan id doesn't count as a meal", ({ Given, And, When, Then }) => {
     Given('a recipe {string} with {string} bound to {string}', boundRecipe)
     And('recipes {string} are on the plan for {int}', onPlan)

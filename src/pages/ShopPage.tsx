@@ -50,7 +50,10 @@ export function ShopPage() {
 
   const portions = plan?.portions ?? 2
 
-  if (plan === undefined || list === undefined) return <p className="text-muted">Loading…</p>
+  // Gate loading on the derived list only. `plan` resolves to `undefined` both while loading AND
+  // when there's simply no plan row yet (never planned a week) — gating on it would wedge the page
+  // on "Loading…" forever. `list` always resolves to a real object (mealCount 0 when empty).
+  if (list === undefined) return <p className="text-muted">Loading…</p>
 
   // Meals = recipes actually on the list; a plan can hold stale ids (e.g. recipes deleted by a
   // re-import) that no longer resolve, so count what the list is built from, not the raw ids.

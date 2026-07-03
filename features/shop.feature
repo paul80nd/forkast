@@ -68,6 +68,10 @@ Feature: Shopping list
     When I build the shopping list
     Then the line "soy sauce · 45 ml" combines 2 recipes
 
+  Scenario: With nothing planned the list is empty, not stuck
+    When I build the shopping list
+    Then the list has 0 meals
+
   Scenario: A stale plan id doesn't count as a meal
     Given a recipe "r1" with "1 lime" bound to "lime"
     And recipes "r1, ghost" are on the plan for 2
