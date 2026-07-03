@@ -18,7 +18,7 @@ import {
   updateIngredient,
 } from '../app/shopping'
 import { matchIngredient } from '../lib/ingredientMatch'
-import { shoppingListToText } from '../lib/shoppingExport'
+import { shoppingListToText, shoppingListToHtml } from '../lib/shoppingExport'
 import { AISLE_ORDER, DENSITY_PRESETS, type IngredientDef } from '../data/ingredients'
 import type { ShopLine } from '../lib/shopping'
 import type { Binding } from '../schema/userData'
@@ -80,6 +80,7 @@ export function ShopPage() {
     month: 'short',
   })}`
   const shareText = shoppingListToText(list, checked, extras, { title: shareTitle })
+  const shareHtml = shoppingListToHtml(list, checked, extras, { title: shareTitle })
 
   return (
     <section>
@@ -101,7 +102,7 @@ export function ShopPage() {
         </div>
       </div>
 
-      {itemCount + extras.length > 0 && <ShareList text={shareText} />}
+      {itemCount + extras.length > 0 && <ShareList text={shareText} html={shareHtml} />}
 
       <div className="mt-4 space-y-6">
         {/* Aisle buy-list: on wide screens the cards flow into two columns so the
@@ -225,19 +226,40 @@ export function ShopPage() {
   )
 }
 
-// Copy/paste-or-email the shopping list as a plain-text checklist. A collapsible panel with
-// a live preview (also the reliable manual-copy fallback), a Copy button, and an Email link.
-function ShareList({ text }: { text: string }) {
+// Copy or email the shopping list. A collapsible panel with a live text preview (also the
+// reliable manual-copy fallback), a plain-text copy tuned for Apple Notes' checklist, a
+// rich-text copy for a styled email, and a plain mailto email link.
+function ShareList({ text, html }: { text: string; html: string }) {
   const [open, setOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState<'text' | 'rich' | null>(null)
 
-  async function copy() {
+  function flash(which: 'text' | 'rich') {
+    setCopied(which)
+    setTimeout(() => setCopied(null), 1500)
+  }
+
+  async function copyText() {
     try {
       await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
+      flash('text')
     } catch {
       // Clipboard blocked (permissions / insecure context) — the textarea below is selectable.
+    }
+  }
+
+  // Put both HTML and a plain fallback on the clipboard so a paste into an email keeps the
+  // styling but a plain target still gets text. Falls back to plain if rich isn't supported.
+  async function copyRich() {
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+        }),
+      ])
+      flash('rich')
+    } catch {
+      await navigator.clipboard.writeText(text).then(() => flash('rich')).catch(() => {})
     }
   }
 
@@ -255,24 +277,27 @@ function ShareList({ text }: { text: string }) {
       </button>
       {open && (
         <div className="mt-2 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
-          <p className="text-xs text-stone-600">
-            Paste into a notes app, or send by email. Ticked items stay ticked; unit
-            conversions are included.
-          </p>
           <textarea
             readOnly
             value={text}
             onFocus={(e) => e.currentTarget.select()}
             rows={Math.min(16, text.split('\n').length + 1)}
-            className="mt-2 w-full rounded-md border border-stone-300 bg-stone-50 p-2 font-mono text-xs text-stone-800"
+            className="w-full rounded-md border border-stone-300 bg-stone-50 p-2 font-mono text-xs text-stone-800"
           />
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={copy}
+              onClick={copyText}
               className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412]"
             >
-              {copied ? 'Copied ✓' : 'Copy'}
+              {copied === 'text' ? 'Copied ✓' : 'Copy text'}
+            </button>
+            <button
+              type="button"
+              onClick={copyRich}
+              className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            >
+              {copied === 'rich' ? 'Copied ✓' : 'Copy rich'}
             </button>
             <a
               href={mailto}
@@ -281,6 +306,12 @@ function ShareList({ text }: { text: string }) {
               Email
             </a>
           </div>
+          <p className="mt-2 text-xs text-stone-600">
+            <span className="font-medium">Apple Notes:</span> paste, select all, then tap the
+            checklist button for tickable boxes.{' '}
+            <span className="font-medium">Email:</span> use “Copy rich”, then paste into a new
+            message for a styled list.
+          </p>
         </div>
       )}
     </div>

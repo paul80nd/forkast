@@ -86,7 +86,7 @@ Feature: Shopping list
     And recipes "r1" are on the plan for 2
     And I tick off "lime|each"
     When I export the shopping list as text
-    Then the export contains "[x] Lime x1"
+    Then the export contains "Lime x1 ✓"
 
   Scenario: A manual extra can be added and removed
     When I add the extra "birthday candles"
