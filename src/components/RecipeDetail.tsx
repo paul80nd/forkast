@@ -184,7 +184,7 @@ export function RecipeDetail({
                     onClick={() => setShownId(m.id)}
                     className={`rounded-full border px-2.5 py-1 text-sm transition ${
                       isShown
-                        ? 'border-orange-500 bg-[#c2410c] text-white'
+                        ? 'border-orange-500 bg-[#2a673a] text-white'
                         : 'border-stone-200 bg-white dark:bg-stone-100 text-stone-700 hover:border-orange-300 hover:text-orange-700'
                     }`}
                   >

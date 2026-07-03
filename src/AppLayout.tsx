@@ -16,7 +16,7 @@ export function AppLayout() {
     <div className="min-h-screen bg-stone-50 text-stone-900">
       <header className="border-b border-stone-200 bg-white dark:bg-stone-100">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-          <span className="text-lg font-semibold tracking-tight">
+          <span className="font-display text-lg font-semibold tracking-tight">
             Forkast <span aria-hidden>🍴</span>
           </span>
           {/* On narrow screens the nav drops to its own full-width row (order-last + w-full)

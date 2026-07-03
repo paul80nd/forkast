@@ -19,7 +19,7 @@ import { CompareView } from './CompareView'
 const card = 'mt-5 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4'
 const chip = 'rounded-full border px-2.5 py-1 text-sm transition'
 const primaryBtn =
-  'rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412] disabled:opacity-50'
+  'rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50'
 
 /** The override (if any) that governs a dish — the one pinning its lead. */
 const overrideFor = (dish: Dish, overrides: VariantOverride[]) =>
@@ -420,7 +420,7 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
                   <img src={resolveAsset(m.image)} alt="" className="size-9 shrink-0 rounded object-cover" />
                   <span className="flex-1 truncate text-stone-800">{m.title}</span>
                   <span
-                    className={`${chip} ${isLead ? 'border-orange-500 bg-[#c2410c] text-white' : 'border-stone-200 text-stone-600'}`}
+                    className={`${chip} ${isLead ? 'border-orange-500 bg-[#2a673a] text-white' : 'border-stone-200 text-stone-600'}`}
                   >
                     {isLead ? 'Original' : variantLabel(m.title, lead.title)}
                   </span>

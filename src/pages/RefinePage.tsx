@@ -125,7 +125,7 @@ function DuplicatesSection({
           type="button"
           disabled={finding}
           onClick={run}
-          className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412] disabled:opacity-50"
+          className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50"
         >
           {finding ? 'Finding…' : candidates ? 'Refresh' : 'Find duplicates'}
         </button>

@@ -61,7 +61,7 @@ export function RecipePage() {
                 <button
                   type="button"
                   onClick={() => addToPlan(shown.id)}
-                  className="rounded-l-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#9a3412]"
+                  className="rounded-l-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#245330]"
                 >
                   + Add to week
                 </button>
@@ -75,7 +75,7 @@ export function RecipePage() {
                 className={`rounded-r-md border-l px-2 py-1.5 text-sm font-medium ${
                   inPlan
                     ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                    : 'border-orange-400 bg-[#c2410c] text-white hover:bg-[#9a3412]'
+                    : 'border-orange-400 bg-[#2a673a] text-white hover:bg-[#245330]'
                 }`}
               >
                 ▾

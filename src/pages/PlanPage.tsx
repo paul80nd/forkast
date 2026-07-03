@@ -220,7 +220,7 @@ export function PlanPage() {
                 onClick={() => setPortions(n)}
                 className={`px-3 py-1 font-medium transition ${
                   portions === n
-                    ? 'bg-[#c2410c] text-white'
+                    ? 'bg-[#2a673a] text-white'
                     : 'bg-white dark:bg-stone-100 text-stone-600 hover:bg-stone-100'
                 }`}
               >
@@ -237,7 +237,7 @@ export function PlanPage() {
           type="button"
           disabled={suggesting}
           onClick={runSuggest}
-          className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412] disabled:opacity-50"
+          className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50"
         >
           {suggesting ? 'Thinking…' : 'Suggest a varied week'}
         </button>
@@ -410,7 +410,7 @@ export function PlanPage() {
                       aria-expanded={versionsOpen}
                       className={`rounded-md px-2.5 py-1 text-sm font-medium ${
                         versionsOpen
-                          ? 'bg-[#c2410c] text-white hover:bg-[#9a3412]'
+                          ? 'bg-[#2a673a] text-white hover:bg-[#245330]'
                           : 'text-orange-700 hover:bg-orange-50'
                       }`}
                       title="Swap this dish for another version"
@@ -453,7 +453,7 @@ export function PlanPage() {
                             }}
                             className={`rounded-full border px-2.5 py-1 text-sm transition ${
                               isCurrent
-                                ? 'border-orange-500 bg-[#c2410c] text-white'
+                                ? 'border-orange-500 bg-[#2a673a] text-white'
                                 : 'border-stone-200 bg-white dark:bg-stone-100 text-stone-700 hover:border-orange-300 hover:text-orange-700'
                             }`}
                           >
@@ -694,7 +694,7 @@ function PickerStrip({
                 alt=""
                 className="aspect-[4/3] w-full object-cover"
               />
-              <span className="absolute top-1.5 right-1.5 rounded-full bg-[#c2410c] px-1.5 text-lg leading-6 font-bold text-white opacity-0 transition group-hover:opacity-100">
+              <span className="absolute top-1.5 right-1.5 rounded-full bg-[#2a673a] px-1.5 text-lg leading-6 font-bold text-white opacity-0 transition group-hover:opacity-100">
                 +
               </span>
               <div className="p-2">

@@ -179,7 +179,7 @@ export function ShopPage() {
             />
             <button
               type="submit"
-              className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#9a3412]"
+              className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#245330]"
             >
               Add
             </button>
@@ -285,7 +285,7 @@ function ShareList({ text, html }: { text: string; html: string }) {
             <button
               type="button"
               onClick={copyText}
-              className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412]"
+              className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330]"
             >
               {copied === 'text' ? 'Copied ✓' : 'Copy text'}
             </button>
@@ -546,7 +546,7 @@ function BindPanel({
           <button
             type="button"
             onClick={() => void create()}
-            className="rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#9a3412]"
+            className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#245330]"
           >
             Create &amp; bind
           </button>

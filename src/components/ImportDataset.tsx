@@ -76,7 +76,7 @@ export function ImportDataset() {
         type="button"
         disabled={busy}
         onClick={() => inputRef.current?.click()}
-        className="mt-3 rounded-md bg-[#c2410c] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#9a3412] disabled:opacity-50"
+        className="mt-3 rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50"
       >
         {busy ? 'Importing…' : replaceAll ? 'Replace all…' : 'Import dataset…'}
       </button>
