@@ -7,13 +7,16 @@ export function RecipeCard({
   recipe,
   stars,
   selected = false,
+  selectMode = false,
   onToggleSelect,
   variantCount,
 }: {
   recipe: Recipe
   stars?: Stars
   selected?: boolean
-  /** When provided, a selection tickbox is shown (for bulk actions in Browse). */
+  /** In select mode the card shows a tickbox and clicking it toggles selection
+      instead of opening the recipe (Browse bulk actions). */
+  selectMode?: boolean
   onToggleSelect?: () => void
   /** Total versions of this dish; when > 1, a "swaps" badge marks the card as a lead. */
   variantCount?: number
@@ -24,7 +27,18 @@ export function RecipeCard({
         selected ? 'border-brand-400 ring-2 ring-brand-300' : 'border-line'
       }`}
     >
-      <Link to={`/recipe/${recipe.id}`} className="flex flex-1 flex-col">
+      <Link
+        to={`/recipe/${recipe.id}`}
+        className="flex flex-1 flex-col"
+        onClick={
+          selectMode && onToggleSelect
+            ? (e) => {
+                e.preventDefault()
+                onToggleSelect()
+              }
+            : undefined
+        }
+      >
         <div className="relative">
           <img
             src={resolveAsset(recipe.image)}
@@ -58,14 +72,10 @@ export function RecipeCard({
         </div>
       </Link>
 
-      {/* Selection tickbox — a sibling of the Link (not nested in the anchor), so ticking
-          never navigates. Reveals on hover/focus; stays put once the card is selected. */}
-      {onToggleSelect && (
-        <label
-          className={`absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-card/90 p-1 shadow-sm transition-opacity ${
-            selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
-          }`}
-        >
+      {/* Selection tickbox — shown only in select mode, and a sibling of the Link (not
+          nested in the anchor) so ticking never navigates. */}
+      {selectMode && onToggleSelect && (
+        <label className="absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-card/90 p-1 shadow-sm">
           <input
             type="checkbox"
             checked={selected}

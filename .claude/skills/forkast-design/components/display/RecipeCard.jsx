@@ -46,7 +46,7 @@ export function RecipeCard({ recipe, stars, variantCount, selected = false, onTo
             <span style={{ fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)', whiteSpace: 'nowrap' }}>
               ⏱ {recipe.prepTime} min{recipe.mainProtein && <span style={{ textTransform: 'capitalize' }}> · {recipe.mainProtein}</span>}
             </span>
-            <span style={{ fontSize: 'var(--fk-text-sm)', fontWeight: 'var(--fk-weight-medium)', color: 'var(--fk-text)', whiteSpace: 'nowrap' }}>{recipe.cuisine}</span>
+            <span style={{ fontSize: 'var(--fk-text-sm)', fontWeight: 'var(--fk-weight-regular)', color: 'var(--fk-text)', whiteSpace: 'nowrap' }}>{recipe.cuisine}</span>
           </div>
         </div>
       </button>

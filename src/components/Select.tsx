@@ -18,16 +18,21 @@ const SIZES = {
 // Omit the native numeric `size` attribute so we can repurpose it for sm/md.
 type Props = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> & {
   size?: keyof typeof SIZES
+  /** Full-width block (e.g. stacked inside a popover), rather than inline. */
+  block?: boolean
 }
 
 // A select styled to match a text input, with a custom ▾ chevron. Native selects
 // render at their own (taller) height and draw a platform chevron, which breaks
 // row alignment — appearance-none + our own chevron keeps them a matching box.
-export function Select({ className = '', size = 'md', children, ...props }: Props) {
+export function Select({ className = '', size = 'md', block = false, children, ...props }: Props) {
   const s = SIZES[size]
   return (
-    <span className="relative inline-block">
-      <select {...props} className={`${fieldBoxClass} ${s.box} cursor-pointer ${className}`}>
+    <span className={`relative ${block ? 'block' : 'inline-block'}`}>
+      <select
+        {...props}
+        className={`${fieldBoxClass} ${s.box} cursor-pointer ${block ? 'w-full' : ''} ${className}`}
+      >
         {children}
       </select>
       <span

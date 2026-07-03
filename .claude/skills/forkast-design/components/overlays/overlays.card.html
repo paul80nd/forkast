@@ -1,0 +1,54 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Filter popover" subtitle="Calms a busy toolbar: tuck secondary filters away, surface active ones as chips" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+*{box-sizing:border-box;} body{margin:0;font-family:var(--fk-font-body);color:var(--fk-text);background:var(--fk-surface-page);-webkit-font-smoothing:antialiased;}
+.wrap{padding:22px 24px;}
+.eye{font-size:var(--fk-text-2xs);letter-spacing:var(--fk-tracking-caps);text-transform:uppercase;color:var(--fk-text-subtle);font-weight:600;margin:0 0 10px;}
+.eye2{font-size:var(--fk-text-2xs);letter-spacing:var(--fk-tracking-caps);text-transform:uppercase;color:var(--fk-text-muted);font-weight:600;}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.inp{font-family:var(--fk-font-body);font-size:var(--fk-text-sm);color:var(--fk-text-muted);background:var(--fk-surface-card);padding:7px 11px;border-radius:var(--fk-radius-md);border:1px solid var(--fk-border-strong);flex:1;min-width:180px;}
+.sel{position:relative;display:inline-block;} .sel select{appearance:none;font-family:var(--fk-font-body);font-size:var(--fk-text-sm);color:var(--fk-text);background:var(--fk-surface-card);padding:7px 30px 7px 11px;border-radius:var(--fk-radius-md);border:1px solid var(--fk-border-strong);cursor:pointer;width:100%;} .sel.full{display:block;} .sel .car{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--fk-text-muted);font-size:11px;pointer-events:none;}
+.fbtn{display:inline-flex;align-items:center;gap:7px;font-family:var(--fk-font-body);font-weight:500;font-size:var(--fk-text-sm);padding:7px 13px;border-radius:var(--fk-radius-md);cursor:pointer;color:var(--fk-brand-ink);background:var(--fk-brand-tint);border:1px solid var(--fk-green-300);}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--fk-brand);color:#fff;font-size:var(--fk-text-2xs);font-weight:600;}
+.divider{width:1px;align-self:stretch;min-height:26px;background:var(--fk-divider);margin:0 2px;}
+.sw{width:38px;height:22px;flex:none;border-radius:999px;padding:2px;background:var(--fk-brand);display:inline-flex;align-items:center;} .sw .knob{width:18px;height:18px;border-radius:999px;background:#fff;box-shadow:var(--fk-shadow-xs);transform:translateX(16px);}
+.cbx{display:inline-flex;align-items:center;gap:8px;font-size:var(--fk-text-sm);color:var(--fk-text-muted);}
+.obtn{font-family:var(--fk-font-body);font-weight:500;font-size:var(--fk-text-sm);padding:5px 11px;border-radius:var(--fk-radius-md);background:var(--fk-surface-card);color:var(--fk-text);border:1px solid var(--fk-border-strong);cursor:pointer;}
+.panel{margin-top:8px;width:250px;background:var(--fk-surface-card);border:1px solid var(--fk-border);border-radius:var(--fk-radius-lg);box-shadow:var(--fk-shadow-lg);padding:14px;}
+.field+.field{margin-top:12px;}
+.chips{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:var(--fk-text-xs);font-weight:500;padding:4px 10px;border-radius:999px;border:none;background:var(--fk-brand-tint);color:var(--fk-brand-ink);}
+.clear{background:none;border:none;font-size:var(--fk-text-xs);color:var(--fk-text-muted);}
+</style></head><body><div class="wrap">
+<p class="eye">Toolbar · search + sort inline, the rest behind “Filters”</p>
+<div class="bar">
+  <span class="inp">Search title or ingredient…</span>
+  <span class="sel"><select><option>Top rated (your ★)</option></select><span class="car">▾</span></span>
+  <span class="fbtn">Filters <span class="badge">2</span> <span style="font-size:11px">▾</span></span>
+  <span class="divider"></span>
+  <label class="cbx"><span class="sw"><span class="knob"></span></span> Group variants</label>
+  <span class="obtn">Select</span>
+</div>
+
+<div style="display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:14px;">
+  <div>
+    <p class="eye2">Open panel</p>
+    <div class="panel">
+      <div class="field"><div class="eye2">Cuisine</div><div style="margin-top:6px"><span class="sel full"><select><option>Indian</option></select><span class="car">▾</span></span></div></div>
+      <div class="field"><div class="eye2">Max time</div><div style="margin-top:6px"><span class="sel full"><select><option>≤ 30 min</option></select><span class="car">▾</span></span></div></div>
+      <div class="field"><div class="eye2">Rating</div><div style="margin-top:6px"><span class="sel full"><select><option>Any rating</option></select><span class="car">▾</span></span></div></div>
+      <div style="margin-top:12px"><span style="font-family:var(--fk-font-body);font-weight:500;font-size:var(--fk-text-sm);color:var(--fk-text-muted);">Clear all filters</span></div>
+    </div>
+  </div>
+  <div style="flex:1;min-width:220px;">
+    <p class="eye2">Active-filter chips (below the bar)</p>
+    <div class="chips">
+      <span class="chip">Indian <span style="opacity:.65">✕</span></span>
+      <span class="chip">≤ 30 min <span style="opacity:.65">✕</span></span>
+      <span class="clear">Clear all</span>
+    </div>
+  </div>
+</div>
+</div></body></html>

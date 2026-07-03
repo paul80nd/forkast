@@ -4,7 +4,7 @@
    Plan, Shop, Curate — composed from token-driven primitives. Not production
    logic; it demonstrates the visual system in motion. Mounts into #root.
    ============================================================================ */
-const { useState, useMemo } = React
+const { useState, useMemo, useRef, useEffect } = React
 const RECIPES = window.FK_RECIPES
 const STAR_LABELS = window.FK_STAR_LABELS
 const ROTATION_LABELS = window.FK_ROTATION_LABELS
@@ -136,25 +136,62 @@ function Eyebrow({ children, color = 'var(--fk-text-muted)' }) {
 function H1({ children }) {
   return <h1 style={{ margin: 0, fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h1)', letterSpacing: 'var(--fk-tracking-tight)', color: 'var(--fk-text)' }}>{children}</h1>
 }
+/* A button that opens a popover of secondary controls, with an active-count badge.
+   Closes on outside click. Powers the Browse "Filters" pattern. */
+function FilterPopover({ label = 'Filters', count = 0, children }) {
+  const [open, setOpen] = useState(false)
+  const [h, setH] = useState(false)
+  const ref = useRef(null)
+  useEffect(() => {
+    if (!open) return
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [open])
+  const active = count > 0 || open
+  return (
+    <span ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'var(--fk-font-body)', fontWeight: 500, fontSize: 'var(--fk-text-sm)',
+          padding: '7px 13px', borderRadius: 'var(--fk-radius-md)', cursor: 'pointer',
+          color: active ? 'var(--fk-brand-ink)' : 'var(--fk-text-muted)',
+          background: active ? 'var(--fk-brand-tint)' : (h ? 'var(--fk-surface-sunken)' : 'var(--fk-surface-card)'),
+          border: '1px solid ' + (active ? 'var(--fk-green-300)' : 'var(--fk-border-strong)'), transition: 'all var(--fk-duration) var(--fk-ease)' }}>
+        {label}
+        {count > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, background: 'var(--fk-brand)', color: '#fff', fontSize: 'var(--fk-text-2xs)', fontWeight: 600 }}>{count}</span>}
+        <span aria-hidden style={{ fontSize: 11 }}>▾</span>
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30, width: 250,
+          background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-lg)', boxShadow: 'var(--fk-shadow-lg)', padding: 14 }}>
+          {children}
+        </div>
+      )}
+    </span>
+  )
+}
 
 /* ============================================================ RecipeCard === */
-function RecipeCard({ r, stars, onOpen }) {
+function RecipeCard({ r, stars, onOpen, selectMode, selected, onToggleSelect }) {
   const [h, setH] = useState(false)
   return (
-    <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)} onClick={onOpen}
-      style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)',
-        borderRadius: 'var(--fk-radius-lg)', boxShadow: h ? 'var(--fk-shadow-md)' : 'var(--fk-shadow-sm)',
-        transform: h ? 'translateY(var(--fk-lift))' : 'none', transition: 'transform var(--fk-duration) var(--fk-ease), box-shadow var(--fk-duration) var(--fk-ease)' }}>
+    <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)} onClick={selectMode ? onToggleSelect : onOpen}
+      style={{ cursor: 'pointer', position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--fk-surface-card)',
+        border: '1px solid ' + (selected ? 'var(--fk-brand)' : 'var(--fk-border)'),
+        borderRadius: 'var(--fk-radius-lg)', boxShadow: selected ? 'var(--fk-shadow-focus)' : h ? 'var(--fk-shadow-md)' : 'var(--fk-shadow-sm)',
+        transform: h && !selectMode ? 'translateY(var(--fk-lift))' : 'none', transition: 'transform var(--fk-duration) var(--fk-ease), box-shadow var(--fk-duration) var(--fk-ease)' }}>
       <div style={{ position: 'relative' }}>
         <img src={r.image} alt="" style={{ aspectRatio: '4 / 3', width: '100%', objectFit: 'cover', display: 'block' }} />
         {stars != null && <span style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(255,255,255,.92)', color: 'var(--fk-star-ink)', fontSize: 'var(--fk-text-xs)', fontWeight: 600, padding: '2px 8px', borderRadius: 999, boxShadow: 'var(--fk-shadow-xs)' }}>{'★'.repeat(stars)}</span>}
+        {selectMode && <label onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 8, right: 8, display: 'flex', background: 'rgba(255,255,255,.92)', padding: 4, borderRadius: 'var(--fk-radius-sm)', boxShadow: 'var(--fk-shadow-xs)', cursor: 'pointer' }}>
+          <input type="checkbox" checked={!!selected} onChange={onToggleSelect} aria-label={'Select ' + r.title} style={{ width: 16, height: 16, accentColor: 'var(--fk-brand)' }} /></label>}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 12 }}>
         <h3 style={{ margin: 0, fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h3)', lineHeight: 'var(--fk-leading-snug)', color: 'var(--fk-text)' }}>{r.title}</h3>
         <p style={{ margin: '4px 0 0', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)', lineHeight: 'var(--fk-leading-snug)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{r.description}</p>
         <div style={{ marginTop: 'auto', paddingTop: 10, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
           <span style={{ fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)', whiteSpace: 'nowrap' }}>⏱ {r.prepTime} min <span style={{ textTransform: 'capitalize' }}>· {r.mainProtein}</span></span>
-          <span style={{ fontSize: 'var(--fk-text-sm)', fontWeight: 500, color: 'var(--fk-text)', whiteSpace: 'nowrap' }}>{r.cuisine}</span>
+          <span style={{ fontSize: 'var(--fk-text-sm)', fontWeight: 400, color: 'var(--fk-text)', whiteSpace: 'nowrap' }}>{r.cuisine}</span>
         </div>
       </div>
     </div>
@@ -162,36 +199,133 @@ function RecipeCard({ r, stars, onOpen }) {
 }
 
 /* ================================================================ Browse === */
+function SkeletonCard() {
+  const block = (s) => <div style={{ background: 'var(--fk-surface-sunken)', borderRadius: 'var(--fk-radius-sm)', animation: 'fk-pulse 1.2s var(--fk-ease) infinite', ...s }} />
+  return (
+    <div style={{ overflow: 'hidden', background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-lg)', boxShadow: 'var(--fk-shadow-sm)' }}>
+      {block({ aspectRatio: '4 / 3', width: '100%', borderRadius: 0 })}
+      <div style={{ padding: 12 }}>
+        {block({ height: 15, width: '72%' })}
+        {block({ height: 11, width: '95%', marginTop: 9 })}
+        {block({ height: 11, width: '55%', marginTop: 6 })}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14 }}>{block({ height: 10, width: 74 })}{block({ height: 10, width: 42 })}</div>
+      </div>
+    </div>
+  )
+}
 function Browse({ ratings, onOpen }) {
   const [query, setQuery] = useState('')
   const [cuisine, setCuisine] = useState('all')
   const [sort, setSort] = useState('rating')
   const [group, setGroup] = useState(true)
+  const [maxTime, setMaxTime] = useState('any')
+  const [rating, setRating] = useState('all')
+  const [selectMode, setSelectMode] = useState(false)
+  const [selected, setSelected] = useState([])
+  const [removed, setRemoved] = useState([])
+  const [loading, setLoading] = useState(true)
+  const toggleSel = (id) => setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id])
+  const exitSelect = () => { setSelectMode(false); setSelected([]) }
   const cuisines = [...new Set(RECIPES.map((r) => r.cuisine))].sort()
   const list = useMemo(() => {
-    let l = RECIPES.slice()
+    let l = RECIPES.filter((r) => !removed.includes(r.id))
     const q = query.trim().toLowerCase()
     if (q) l = l.filter((r) => r.title.toLowerCase().includes(q) || r.ingredients.some((i) => i.name.includes(q)))
     if (cuisine !== 'all') l = l.filter((r) => r.cuisine === cuisine)
+    if (maxTime !== 'any') l = l.filter((r) => r.prepTime <= Number(maxTime))
+    if (rating !== 'all') l = l.filter((r) => {
+      const s = ratings[r.id]?.stars
+      if (rating === 'unrated') return s == null
+      if (rating === '5') return s === 5
+      if (rating === '4plus') return s >= 4
+      return s >= 3
+    })
     l.sort((a, b) => sort === 'name' ? a.title.localeCompare(b.title) : sort === 'time' ? a.prepTime - b.prepTime
       : (ratings[b.id]?.stars ?? 0) - (ratings[a.id]?.stars ?? 0))
     return l
-  }, [query, cuisine, sort, ratings])
+  }, [query, cuisine, maxTime, rating, sort, ratings, removed])
+
+  const timeLabels = { 20: '≤ 20 min', 30: '≤ 30 min', 45: '≤ 45 min' }
+  const ratingLabels = { unrated: 'Unrated', '5': '★5 only', '4plus': '★4+', '3plus': '★3+' }
+  const chips = []
+  if (cuisine !== 'all') chips.push({ label: cuisine, clear: () => setCuisine('all') })
+  if (maxTime !== 'any') chips.push({ label: timeLabels[maxTime], clear: () => setMaxTime('any') })
+  if (rating !== 'all') chips.push({ label: ratingLabels[rating], clear: () => setRating('all') })
+  const clearAll = () => { setCuisine('all'); setMaxTime('any'); setRating('all') }
+  const clearEverything = () => { clearAll(); setQuery('') }
+  // Brief skeleton pass whenever the query changes — stands in for a paged fetch.
+  useEffect(() => {
+    setLoading(true)
+    const t = setTimeout(() => setLoading(false), 420)
+    return () => clearTimeout(t)
+  }, [query, cuisine, maxTime, rating, sort, removed])
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
         <H1>Browse</H1>
-        <span style={{ fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>{list.length} dishes of {RECIPES.length}</span>
+        <span style={{ fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>{list.length} {list.length === 1 ? 'dish' : 'dishes'} of {RECIPES.length}</span>
       </div>
-      <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-        <Field type="search" value={query} placeholder="Search title or ingredient…" onChange={(e) => setQuery(e.target.value)} style={{ flex: 1, minWidth: 220 }} />
-        <Sel value={cuisine} onChange={(e) => setCuisine(e.target.value)}><option value="all">All cuisines</option>{cuisines.map((c) => <option key={c}>{c}</option>)}</Sel>
+      <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'var(--fk-surface-page)', margin: '12px -16px 0', padding: '6px 16px 12px', borderBottom: '1px solid var(--fk-divider)' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+        <Field type="search" value={query} placeholder="Search title or ingredient…" onChange={(e) => setQuery(e.target.value)} style={{ flex: 1, minWidth: 200 }} />
         <Sel value={sort} onChange={(e) => setSort(e.target.value)}><option value="rating">Top rated (your ★)</option><option value="time">Quickest</option><option value="name">A–Z</option></Sel>
+        <FilterPopover label="Filters" count={chips.length}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div><Eyebrow>Cuisine</Eyebrow><div style={{ marginTop: 6 }}><Sel value={cuisine} onChange={(e) => setCuisine(e.target.value)} style={{ width: '100%' }}><option value="all">All cuisines</option>{cuisines.map((c) => <option key={c}>{c}</option>)}</Sel></div></div>
+            <div><Eyebrow>Max time</Eyebrow><div style={{ marginTop: 6 }}><Sel value={maxTime} onChange={(e) => setMaxTime(e.target.value)} style={{ width: '100%' }}><option value="any">Any time</option><option value="20">≤ 20 min</option><option value="30">≤ 30 min</option><option value="45">≤ 45 min</option></Sel></div></div>
+            <div><Eyebrow>Rating</Eyebrow><div style={{ marginTop: 6 }}><Sel value={rating} onChange={(e) => setRating(e.target.value)} style={{ width: '100%' }}><option value="all">Any rating</option><option value="unrated">Unrated</option><option value="5">★5 only</option><option value="4plus">★4+</option><option value="3plus">★3+</option></Sel></div></div>
+            {chips.length > 0 && <Btn variant="ghost" size="sm" onClick={clearAll}>Clear all filters</Btn>}
+          </div>
+        </FilterPopover>
+        <span aria-hidden style={{ width: 1, alignSelf: 'stretch', minHeight: 26, background: 'var(--fk-divider)', margin: '0 2px' }} />
         <Switch checked={group} onChange={setGroup} label="Group variants" />
+        <Btn variant={selectMode ? 'soft' : 'outline'} size="sm" onClick={() => selectMode ? exitSelect() : setSelectMode(true)}>{selectMode ? 'Done' : 'Select'}</Btn>
       </div>
-      <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 16 }}>
-        {list.map((r) => <RecipeCard key={r.id} r={r} stars={ratings[r.id]?.stars} onOpen={() => onOpen(r.id)} />)}
+
+      {chips.length > 0 && (
+        <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+          {chips.map((c, i) => (
+            <button key={i} type="button" onClick={c.clear} title={'Remove ' + c.label}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--fk-font-body)', fontSize: 'var(--fk-text-xs)', fontWeight: 500,
+                padding: '4px 10px', borderRadius: 'var(--fk-radius-full)', border: 'none', cursor: 'pointer', background: 'var(--fk-brand-tint)', color: 'var(--fk-brand-ink)' }}>
+              {c.label} <span aria-hidden style={{ opacity: .65 }}>✕</span>
+            </button>
+          ))}
+          <button type="button" onClick={clearAll} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--fk-font-body)', fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)', padding: '4px 6px' }}>Clear all</button>
+        </div>
+      )}
       </div>
+      {selectMode && (
+        <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          background: selected.length ? 'var(--fk-brand-wash)' : 'var(--fk-surface-sunken)',
+          border: '1px solid ' + (selected.length ? 'var(--fk-green-200)' : 'var(--fk-border)'), borderRadius: 'var(--fk-radius-md)', padding: '8px 12px' }}>
+          <span style={{ fontSize: 'var(--fk-text-sm)', fontWeight: 500, color: 'var(--fk-text)' }}>{selected.length ? selected.length + ' selected' : 'Tap cards to select'}</span>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <Btn variant="ghost" size="sm" onClick={() => setSelected([])} disabled={!selected.length}>Clear</Btn>
+            <Btn variant="danger" size="sm" onClick={() => { setRemoved((r) => [...r, ...selected]); setSelected([]) }} disabled={!selected.length}>Delete selected</Btn>
+          </div>
+        </div>
+      )}
+      {loading ? (
+        <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 16 }}>
+          {[0, 1, 2, 3, 4, 5].map((i) => <SkeletonCard key={i} />)}
+        </div>
+      ) : list.length === 0 ? (
+        <div style={{ marginTop: 24, background: 'var(--fk-surface-card)', border: '1px dashed var(--fk-border-strong)', borderRadius: 'var(--fk-radius-2xl)', padding: '44px 24px', textAlign: 'center' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fk-text-h3)', fontWeight: 600, color: 'var(--fk-text)' }}>No recipes match those filters</p>
+          <p style={{ margin: '4px 0 14px', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>Try widening your search or clearing a filter.</p>
+          <Btn variant="soft" size="sm" onClick={clearEverything}>Clear all filters</Btn>
+        </div>
+      ) : (
+        <>
+          <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 16 }}>
+            {list.map((r) => <RecipeCard key={r.id} r={r} stars={ratings[r.id]?.stars} onOpen={() => onOpen(r.id)}
+              selectMode={selectMode} selected={selected.includes(r.id)} onToggleSelect={() => toggleSel(r.id)} />)}
+          </div>
+          <p style={{ marginTop: 24, textAlign: 'center', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-subtle)' }}>That's everything · {list.length} {list.length === 1 ? 'dish' : 'dishes'}</p>
+        </>
+      )}
     </div>
   )
 }
