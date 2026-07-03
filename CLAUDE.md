@@ -70,9 +70,12 @@ npm run test:features  # feature (Gherkin) tests only
   evict idle IDB, Safari most eagerly). Keep user-facing copy browser-neutral (don't name Safari).
 - CLI/scripts run on **native Node ≥22** (strips TS types — no build step, no `tsx`).
 - **Design:** the **`forkast-design`** skill (`.claude/skills/forkast-design/`) is the brand +
-  design-system source of truth — "Fresh Organic": a **green** brand (replacing the current
-  orange), `--fk-*` oklch tokens, named primitives. **Not yet wired into the app** (the UI still
-  uses the orange/inline-Tailwind look) — invoke `/forkast-design` for any UI/design work.
+  design-system source of truth — **"Fresh Organic"**: a green brand, `--fk-*` oklch tokens, named
+  primitives. **Wired into the app** via the semantic bridge: `src/theme/tailwind-theme.css`
+  (`@theme inline`) exposes semantic utilities — **style against `bg-brand`, `text-muted`, `bg-card`,
+  `border-line`, `text-star`, `bg-info-wash`, `font-display` etc., NOT raw Tailwind ramps** (stone/
+  orange/… are gone). Dark mode = the `.dark` alias swap in `src/theme/tokens/colors.css` (no `dark:`
+  variants). Tokens live in `src/theme/` (copied from the skill). Invoke `/forkast-design` for UI work.
 
 ## Architecture
 

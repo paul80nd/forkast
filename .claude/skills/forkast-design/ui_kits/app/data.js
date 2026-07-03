@@ -26,7 +26,7 @@ window.FK_RECIPES = [
   {
     id: 'golden-chickpea-curry', title: 'Golden Chickpea Curry', cuisine: 'Indian',
     image: '../../assets/recipes/golden-chickpea-curry.svg', prepTime: 30, serves: 2, mainProtein: 'chickpea',
-    seedStars: 4,
+    seedStars: undefined,
     description: 'Turmeric-stained chickpeas in a creamy coconut sauce with spinach. Hearty, gently spiced, and entirely plant-based.',
     tags: ['vegan', 'batch-friendly', 'freezer'], allergens: [],
     ingredients: [
@@ -69,7 +69,7 @@ window.FK_RECIPES = [
   {
     id: 'smoky-black-bean-tacos', title: 'Smoky Black Bean Tacos', cuisine: 'Mexican',
     image: '../../assets/recipes/smoky-black-bean-tacos.svg', prepTime: 20, serves: 2, mainProtein: 'beans',
-    seedStars: 3,
+    seedStars: undefined,
     description: 'Chipotle-spiced black beans piled into warm tortillas with charred sweetcorn and a squeeze of lime. Big flavour, ten ingredients.',
     tags: ['vegan', 'quick', 'crowd-pleaser'], allergens: ['gluten'],
     ingredients: [

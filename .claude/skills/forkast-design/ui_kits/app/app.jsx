@@ -516,38 +516,95 @@ function Shop({ planIds, portions, ticks, toggleTick, onGoPlan }) {
 
 /* ================================================================ Curate === */
 function Curate({ ratings, setRating, onOpen }) {
-  const queue = RECIPES.filter((r) => ratings[r.id]?.stars == null)
+  // Freeze the triage queue at mount so a card stays put through the ★ → ◆ phases
+  // (rating it doesn't yank it out of the list mid-rate). Advance is explicit.
+  const [queue] = useState(() => RECIPES.filter((r) => ratings[r.id]?.stars == null).map((r) => r.id))
   const [idx, setIdx] = useState(0)
-  const current = queue[idx]
+  const [toast, setToast] = useState(null)
+  const timer = useRef(null)
+  const fireToast = (node) => { setToast(node); clearTimeout(timer.current); timer.current = setTimeout(() => setToast(null), 3600) }
+
+  const total = queue.length
+  const triaged = queue.filter((id) => ratings[id]?.stars != null).length
+  const current = idx < queue.length ? byId[queue[idx]] : null
+  const cur = current ? (ratings[current.id] || {}) : {}
+  const phase = !current ? null : cur.stars == null ? 'stars' : (cur.stars >= 3 && cur.rotation == null ? 'rotation' : 'done')
+  const pct = total ? Math.round((triaged / total) * 100) : 100
+  const hint = phase === 'rotation' ? 'Now — how often would you cook it?' : 'Press 1–5 to rate'
+
+  const advance = () => setIdx((i) => Math.min(i + 1, queue.length))
+  const back = () => setIdx((i) => Math.max(0, i - 1))
+  const undo = (id) => { setRating(id, 'stars', undefined); setRating(id, 'rotation', undefined); setToast(null); back() }
+  const undoToast = (r, stars) => fireToast(
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+      <span>Rated <span style={{ color: 'var(--fk-star)' }}>{'★'.repeat(stars)}</span> · {r.title}</span>
+      <button type="button" onClick={() => undo(r.id)} style={{ background: 'none', border: 'none', color: 'var(--fk-brand)', fontWeight: 600, cursor: 'pointer', font: 'inherit' }}>Undo</button>
+    </span>
+  )
+  const rateStars = (v) => {
+    if (!current) return
+    setRating(current.id, 'stars', v)
+    if (v == null) return
+    if (v <= 2) { undoToast(current, v); advance() }   // binned → done, move on
+  }
+  const rateRotation = (v) => {
+    if (!current || v == null) return
+    setRating(current.id, 'rotation', v)
+    undoToast(current, cur.stars)
+    advance()
+  }
+
   const rated = RECIPES.filter((r) => ratings[r.id]?.stars != null)
     .sort((a, b) => (ratings[b.id].stars) - (ratings[a.id].stars))
-  const advance = () => setIdx((i) => Math.min(i + 1, queue.length))
-  const rate = (id, v) => { setRating(id, 'stars', v); if (v != null && v <= 2) advance() }
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-        <H1>Curate</H1><span style={{ fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>{rated.length} rated · {queue.length} to triage</span>
+        <H1>Curate</H1><span style={{ fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>{rated.length} rated · {total - triaged} to triage</span>
       </div>
-      <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: '2px 12px', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>
+
+      {total > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)', marginBottom: 6 }}>
+            <span style={{ whiteSpace: 'nowrap' }}>Triage progress</span><span style={{ whiteSpace: 'nowrap' }}>{triaged} of {total}</span>
+          </div>
+          <div style={{ height: 6, borderRadius: 999, background: 'var(--fk-surface-sunken)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: pct + '%', background: 'var(--fk-brand)', borderRadius: 999, transition: 'width var(--fk-duration-lg) var(--fk-ease)' }} />
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: '2px 12px', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>
         {[5, 4, 3, 2, 1].map((n) => <span key={n} style={{ whiteSpace: 'nowrap' }}><b style={{ color: 'var(--fk-star-ink)' }}>★{n}</b> {STAR_LABELS[n]}</span>)}
       </div>
-      {current ? <div style={{ marginTop: 20, display: 'flex', overflow: 'hidden', background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-2xl)', boxShadow: 'var(--fk-shadow-sm)' }}>
+
+      {current ? <div style={{ marginTop: 18, display: 'flex', overflow: 'hidden', background: 'var(--fk-surface-card)', border: '1px solid var(--fk-border)', borderRadius: 'var(--fk-radius-2xl)', boxShadow: 'var(--fk-shadow-sm)' }}>
         <img src={current.image} alt="" onClick={() => onOpen(current.id)} style={{ width: '40%', objectFit: 'cover', cursor: 'pointer' }} />
         <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)' }}><Tag>{current.cuisine}</Tag><span>⏱ {current.prepTime} min</span><span style={{ textTransform: 'capitalize' }}>· {current.mainProtein}</span></div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)' }}><Tag>{current.cuisine}</Tag><span style={{ whiteSpace: 'nowrap' }}>⏱ {current.prepTime} min</span><span style={{ whiteSpace: 'nowrap', textTransform: 'capitalize' }}>· {current.mainProtein}</span></div>
           <h2 style={{ margin: '8px 0 0', fontFamily: 'var(--fk-font-display)', fontWeight: 600, fontSize: 'var(--fk-text-h1)', letterSpacing: 'var(--fk-tracking-tight)' }}>{current.title}</h2>
           <p style={{ margin: '6px 0 0', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)', lineHeight: 'var(--fk-leading-normal)' }}>{current.description}</p>
           <div style={{ marginTop: 'auto', paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><Eyebrow>Rating</Eyebrow><Stars value={ratings[current.id]?.stars} onChange={(v) => rate(current.id, v)} labels={STAR_LABELS} size="lg" showLabel /></div>
-            {ratings[current.id]?.stars >= 3 && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><Eyebrow>How often</Eyebrow><Stars value={ratings[current.id]?.rotation} onChange={(v) => { setRating(current.id, 'rotation', v); advance() }} glyph="◆" color="var(--fk-info)" labels={ROTATION_LABELS} size="lg" showLabel /></div>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: phase === 'stars' ? 1 : 0.55, transition: 'opacity var(--fk-duration) var(--fk-ease)' }}>
+              <Eyebrow>Rating</Eyebrow>
+              <Stars value={cur.stars} onChange={rateStars} labels={STAR_LABELS} size="lg" showLabel />
+              {cur.stars != null && <span style={{ fontSize: 'var(--fk-text-xs)', color: 'var(--fk-brand-ink)', fontWeight: 600 }}>✓ set</span>}
+            </div>
+            {cur.stars >= 3 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, transition: 'background var(--fk-duration) var(--fk-ease)',
+                ...(phase === 'rotation' ? { background: 'var(--fk-info-wash)', border: '1px solid var(--fk-harbour-200)', borderRadius: 'var(--fk-radius-md)', padding: '8px 10px', margin: '-4px 0' } : {}) }}>
+                <Eyebrow color={phase === 'rotation' ? 'var(--fk-info-ink)' : 'var(--fk-text-muted)'}>How often</Eyebrow>
+                <Stars value={cur.rotation} onChange={rateRotation} glyph="◆" color="var(--fk-info)" labels={ROTATION_LABELS} size="lg" showLabel />
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 6 }}>
-              <Btn variant="ghost" size="sm" onClick={() => setIdx((i) => Math.max(0, i - 1))}>← Back</Btn>
+              <Btn variant="ghost" size="sm" onClick={back}>← Back</Btn>
               <Btn variant="ghost" size="sm" onClick={advance}>Skip →</Btn>
-              <span style={{ marginLeft: 'auto', fontSize: 'var(--fk-text-xs)', color: 'var(--fk-text-muted)' }}>Press 1–5 to rate · {idx + 1}/{queue.length}</span>
+              <span style={{ marginLeft: 'auto', fontSize: 'var(--fk-text-xs)', color: phase === 'rotation' ? 'var(--fk-info-ink)' : 'var(--fk-text-muted)', fontWeight: phase === 'rotation' ? 600 : 400 }}>{hint} · {idx + 1}/{total}</span>
             </div>
           </div>
         </div>
-      </div> : <div style={{ marginTop: 20, background: 'var(--fk-surface-card)', border: '1px dashed var(--fk-border-strong)', borderRadius: 'var(--fk-radius-2xl)', padding: '40px 24px', textAlign: 'center' }}>
+      </div> : <div style={{ marginTop: 18, background: 'var(--fk-surface-card)', border: '1px dashed var(--fk-border-strong)', borderRadius: 'var(--fk-radius-2xl)', padding: '40px 24px', textAlign: 'center' }}>
         <p style={{ margin: 0, fontSize: 'var(--fk-text-h3)', fontWeight: 600 }}>All triaged 🎉</p>
         <p style={{ margin: '4px 0 0', fontSize: 'var(--fk-text-sm)', color: 'var(--fk-text-muted)' }}>Every recipe has a rating. Re-rate any below.</p></div>}
 
@@ -563,6 +620,14 @@ function Curate({ ratings, setRating, onOpen }) {
             </li></React.Fragment>)}
         </ul>
       </div>}
+
+      {toast && (
+        <div style={{ position: 'fixed', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 60, display: 'inline-flex', alignItems: 'center', maxWidth: '90vw',
+          background: 'var(--fk-text)', color: 'var(--fk-surface-card)', fontFamily: 'var(--fk-font-body)', fontSize: 'var(--fk-text-sm)',
+          padding: '10px 16px', borderRadius: 'var(--fk-radius-full)', boxShadow: 'var(--fk-shadow-lg)' }}>
+          {toast}
+        </div>
+      )}
     </div>
   )
 }

@@ -7,6 +7,8 @@ import { ROTATION_LABELS, STAR_LABELS } from '../lib/curation'
 import { RotationRating, StarRating } from '../components/RatingScale'
 import { Select, fieldBoxClass } from '../components/Select'
 import { Switch } from '../components/Switch'
+import { ProgressBar } from '../components/ProgressBar'
+import { Toast } from '../components/Toast'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { resolveAsset } from '../lib/assets'
 import type { Recipe } from '../schema/recipe'
@@ -86,6 +88,15 @@ export function CuratePage() {
   const [phase, setPhase] = useState<'stars' | 'rotation'>('stars')
   const starsRef = useRef(starsById)
   starsRef.current = starsById
+  // Undo toast: after a rating auto-advances, a bottom-centre pill lets you take it back. We
+  // snapshot exactly what changed — the rated card, any variants the rating cascaded onto, and
+  // the queue/index at that moment — so Undo restores the pre-rating state in full. `seq` keys
+  // the Toast so a fresh rating remounts it (and restarts its dismiss timer).
+  const [undo, setUndo] = useState<
+    | { ids: string[]; queue: string[]; index: number; title: string; stars: Stars; seq: number }
+    | null
+  >(null)
+  const seqRef = useRef(0)
 
   // Capture only once both tables have loaded (else an early recipes-only load would treat
   // already-rated recipes as unrated). `dataReady` flips false→true once, so this fires on
@@ -120,38 +131,72 @@ export function CuratePage() {
   const back = () => setIndex((i) => Math.max(i - 1, 0))
 
   // When the toggle is on, fan the current card's finalised rating out to its unrated variants
-  // and drop those (ahead of here) from the queue so they aren't triaged again. No-op otherwise.
-  async function cascadeToVariants() {
-    if (!applyToVariants || !isGrouped || !currentId) return
+  // and drop those (ahead of here) from the queue so they aren't triaged again. Returns the
+  // sibling ids actually written (for the undo snapshot); a no-op returns [].
+  async function cascadeToVariants(): Promise<string[]> {
+    if (!applyToVariants || !isGrouped || !currentId) return []
     const written = await applyRatingToGroup(currentId)
     if (written.length) {
       const siblings = new Set(written)
       setQueue((q) => q.filter((id, i) => i <= index || !siblings.has(id)))
     }
+    return written
+  }
+
+  // Snapshot the just-finalised rating so the toast can undo it — the card, the siblings the
+  // cascade wrote, and the pre-cascade queue/index (Undo restores all of them).
+  function offerUndo(recipe: Recipe, stars: Stars, cascaded: string[], queueBefore: string[]) {
+    seqRef.current += 1
+    setUndo({
+      ids: [recipe.id, ...cascaded],
+      queue: queueBefore,
+      index,
+      title: recipe.title,
+      stars,
+      seq: seqRef.current,
+    })
   }
 
   async function rateStars(v: Stars | undefined) {
-    if (!currentId) return
+    if (!current) return
+    const recipe = current
     if (v === undefined) {
-      void clearCuration(currentId) // clears rotation too — no orphan rotation on an unrated card
+      void clearCuration(recipe.id) // clears rotation too — no orphan rotation on an unrated card
       setPhase('stars')
       return
     }
-    await setStars(currentId, v)
+    await setStars(recipe.id, v)
     if (v <= 2) {
-      await cascadeToVariants() // bin is final → fan out, then move on (rotation is moot)
+      const queueBefore = queue
+      const cascaded = await cascadeToVariants() // bin is final → fan out, then move on (rotation moot)
+      offerUndo(recipe, v, cascaded, queueBefore)
       advance()
     } else {
       setPhase('rotation') // keeper → await the ◆ rotation, which finalises and cascades
     }
   }
   async function rateRotation(v: Rotation | undefined) {
-    if (!currentId) return
-    await setRotation(currentId, v)
+    if (!current) return
+    const recipe = current
+    const stars = currentStars ?? (3 as Stars) // ◆ only shows for keepers (★3+); stars is set
+    await setRotation(recipe.id, v)
     if (v !== undefined) {
-      await cascadeToVariants() // keeper now complete (stars + rotation) → fan out, then move on
+      const queueBefore = queue
+      const cascaded = await cascadeToVariants() // keeper complete (stars + rotation) → fan out, move on
+      offerUndo(recipe, stars, cascaded, queueBefore)
       advance()
     }
+  }
+
+  // Revert the last auto-advanced rating: clear the card and any cascaded variants back to
+  // unrated, restore the queue (bringing pruned variants back) and step to the rated card.
+  async function undoLast() {
+    if (!undo) return
+    await Promise.all(undo.ids.map((id) => clearCuration(id)))
+    setQueue(undo.queue)
+    setIndex(undo.index)
+    setPhase('stars')
+    setUndo(null)
   }
 
   // Keyboard: digit sets ★ then ◆ (advancing as it goes), ←/→ (or S) navigate, Backspace clears.
@@ -184,6 +229,10 @@ export function CuratePage() {
   // Counts reflect the active filter (the working set), not the whole collection.
   const ratedCount = scoped.filter((r) => starsById.has(r.id)).length
   const remaining = queue.filter((id) => !starsById.has(id)).length
+  // Progress across the frozen triage batch, so the pile feels finite. `triageTotal` is the
+  // batch size (it shrinks as cascaded variants leave the queue — cards you'll never see).
+  const triageTotal = queue.length
+  const triaged = triageTotal - remaining
 
   return (
     <section>
@@ -194,6 +243,17 @@ export function CuratePage() {
           {filterActive && ' (in filter)'}
         </span>
       </div>
+
+      {/* Triage progress — a finite pile to work down. Hidden once the batch is empty. */}
+      {triageTotal > 0 && (
+        <ProgressBar
+          className="mt-3"
+          label="Triage progress"
+          value={triaged}
+          max={triageTotal}
+          showValue
+        />
+      )}
 
       {/* Legend driven off the label maps so it can't drift: ★ = how good, ◆ = how often. */}
       <div className="mt-2 flex flex-wrap justify-between gap-x-6 gap-y-1 text-sm text-muted">
@@ -294,16 +354,35 @@ export function CuratePage() {
             <p className="mt-1 text-sm text-muted">{current.description}</p>
 
             <div className="mt-auto space-y-2 pt-5">
-              <div className="flex items-center gap-3">
+              {/* Phase 1: set ★. Once set, the row dims to a "✓ set" so focus moves to rotation. */}
+              <div
+                className={`flex items-center gap-3 transition-opacity ${
+                  phase === 'stars' ? '' : 'opacity-60'
+                }`}
+              >
                 <span className="w-16 shrink-0 text-xs font-medium tracking-wide text-muted uppercase">
                   Rating
                 </span>
                 <StarRating size="lg" showLabel value={currentStars} onChange={rateStars} />
+                {currentStars !== undefined && (
+                  <span className="text-xs font-semibold text-brand-ink">✓ set</span>
+                )}
               </div>
-              {/* Rotation appears once it's a keeper (★3+); set it to move on. */}
+              {/* Phase 2: rotation appears once it's a keeper (★3+) and lights up in the info wash
+                  while it's the live step. Set it to move on. */}
               {currentStars !== undefined && currentStars >= 3 && (
-                <div className="flex items-center gap-3">
-                  <span className="w-16 shrink-0 text-xs font-medium tracking-wide text-muted uppercase">
+                <div
+                  className={`flex items-center gap-3 transition-colors ${
+                    phase === 'rotation'
+                      ? '-mx-0.5 rounded-md border border-info-200 bg-info-wash px-2.5 py-2'
+                      : ''
+                  }`}
+                >
+                  <span
+                    className={`w-16 shrink-0 text-xs font-medium tracking-wide uppercase ${
+                      phase === 'rotation' ? 'text-info-ink' : 'text-muted'
+                    }`}
+                  >
                     How often
                   </span>
                   <RotationRating size="lg" showLabel value={currentRotation} onChange={rateRotation} />
@@ -375,11 +454,15 @@ export function CuratePage() {
                 >
                   Skip →
                 </button>
-                <span className="ml-auto text-right text-xs text-muted">
+                <span
+                  className={`ml-auto text-right text-xs ${
+                    phase === 'rotation' ? 'font-semibold text-info-ink' : 'text-muted'
+                  }`}
+                >
                   {phase === 'rotation'
-                    ? 'Now press 1–5 for how often'
+                    ? 'Now — how often would you cook it?'
                     : 'Press 1–5 to rate'}
-                  <span className="ml-1 text-muted">· {index + 1}/{queue.length}</span>
+                  <span className="ml-1 font-normal text-muted">· {index + 1}/{queue.length}</span>
                 </span>
               </div>
             </div>
@@ -416,6 +499,14 @@ export function CuratePage() {
       {/* Rated overview — scoped to the active filter, like the triage backlog. */}
       {ratedCount > 0 && (
         <RatedOverview recipes={scoped} starsById={starsById} rotationById={rotationById} />
+      )}
+
+      {/* Confirm-and-undo after a rating auto-advances. Keyed by seq so each rating restarts it. */}
+      {undo && (
+        <Toast key={undo.seq} action="Undo" onAction={undoLast} onClose={() => setUndo(null)}>
+          Rated <span className="font-semibold text-star">{'★'.repeat(undo.stars)}</span> ·{' '}
+          {undo.title}
+        </Toast>
       )}
     </section>
   )

@@ -1,0 +1,23 @@
+<!-- @dsCard group="Components" viewport="700x230" name="Progress & toast" subtitle="Triage progress bar · undo confirmation pill" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+*{box-sizing:border-box;} body{margin:0;font-family:var(--fk-font-body);color:var(--fk-text);background:var(--fk-surface-page);-webkit-font-smoothing:antialiased;}
+.wrap{padding:22px 24px;}
+.eye{font-size:var(--fk-text-2xs);letter-spacing:var(--fk-tracking-caps);text-transform:uppercase;color:var(--fk-text-subtle);font-weight:600;margin:0 0 10px;}
+.cap{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:var(--fk-text-xs);color:var(--fk-text-muted);}
+.track{height:6px;border-radius:999px;background:var(--fk-surface-sunken);overflow:hidden;}
+.fill{height:100%;border-radius:999px;}
+.pill{display:inline-flex;align-items:center;gap:14px;background:var(--fk-text);color:var(--fk-surface-card);font-size:var(--fk-text-sm);padding:10px 16px;border-radius:999px;box-shadow:var(--fk-shadow-lg);}
+.undo{background:none;border:none;color:var(--fk-brand);font-weight:600;cursor:pointer;font:inherit;}
+</style></head><body><div class="wrap">
+  <p class="eye">Progress bar — brand · info · star</p>
+  <div style="display:flex;flex-direction:column;gap:14px;max-width:420px;">
+    <div><div class="cap"><span>Triage progress</span><span>12 of 40</span></div><div class="track"><div class="fill" style="width:30%;background:var(--fk-brand);"></div></div></div>
+    <div><div class="track"><div class="fill" style="width:62%;background:var(--fk-info);"></div></div></div>
+    <div><div class="track"><div class="fill" style="width:85%;background:var(--fk-star);"></div></div></div>
+  </div>
+  <p class="eye" style="margin-top:22px;">Toast — undo confirmation</p>
+  <span class="pill">Rated <span style="color:var(--fk-star);">★★★★</span> · Golden Chickpea Curry <button class="undo">Undo</button></span>
+</div></body></html>

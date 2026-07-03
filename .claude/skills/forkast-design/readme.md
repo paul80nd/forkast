@@ -180,10 +180,12 @@ new logo was invented.
 - **`components/`** — reusable React primitives, grouped by concern. Each has a
   sibling `.d.ts` (props contract) and `.prompt.md` (usage):
   - `core/` — **Button** (+ **SplitButton**), **IconButton**, **SegmentedControl**
-  - `forms/` — **Input**, **Select**, **Checkbox**
+  - `forms/` — **Input**, **Select**, **Checkbox**, **Switch**
   - `display/` — **Tag**, **Chip**, **RecipeCard**, **Panel**, **EmptyState**, **ListRow**
   - `rating/` — **RatingScale** + **StarRating** / **RotationRating** presets
   - `navigation/` — **NavTabs**
+  - `overlays/` — **FilterPopover** (calms a busy toolbar)
+  - `feedback/` — **ProgressBar**, **Toast**
   - _Starting points:_ `Button`, `RatingScale` and the `RecipeCard` are marked as
     seedable starting points.
 - **`ui_kits/app/`** — interactive recreation of the Forkast planner in the new
