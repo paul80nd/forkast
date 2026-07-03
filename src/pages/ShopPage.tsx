@@ -263,9 +263,6 @@ function ShareList({ text, html }: { text: string; html: string }) {
     }
   }
 
-  const subject = text.split('\n', 1)[0]
-  const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`
-
   return (
     <div className="mt-3">
       <button
@@ -273,7 +270,7 @@ function ShareList({ text, html }: { text: string; html: string }) {
         onClick={() => setOpen((o) => !o)}
         className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
       >
-        {open ? 'Hide share' : 'Copy / email list'}
+        {open ? 'Hide share' : 'Copy / share list'}
       </button>
       {open && (
         <div className="mt-2 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
@@ -299,18 +296,12 @@ function ShareList({ text, html }: { text: string; html: string }) {
             >
               {copied === 'rich' ? 'Copied ✓' : 'Copy rich'}
             </button>
-            <a
-              href={mailto}
-              className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-            >
-              Email
-            </a>
           </div>
           <p className="mt-2 text-xs text-stone-600">
-            <span className="font-medium">Apple Notes:</span> paste, select all, then tap the
-            checklist button for tickable boxes.{' '}
-            <span className="font-medium">Email:</span> use “Copy rich”, then paste into a new
-            message for a styled list.
+            <span className="font-medium">Copy text</span> for Apple Notes — paste, select all,
+            then tap the checklist button for tickable boxes (already-ticked items are marked
+            ✓). <span className="font-medium">Copy rich</span> pastes a styled list into an
+            email or notes app.
           </p>
         </div>
       )}
