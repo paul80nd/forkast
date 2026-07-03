@@ -9,6 +9,7 @@ import {
   dissolveOverride,
   getOverrides,
 } from '../../src/app/variants'
+import { deleteRecipe } from '../../src/app/cleanup'
 
 const feature = await loadFeature('features/variants.feature')
 
@@ -101,6 +102,21 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     Then('the dish for {string} has members {string} led by {string}', async (_, id, m, l) => {
       await expectDish(id, ids(m), l)
+    })
+    And('the dish for {string} has members {string} led by {string}', async (_, id, m, l) => {
+      await expectDish(id, ids(m), l)
+    })
+  })
+
+  Scenario('Deleting a member removes it from the dish and the collection', ({ Given, When, Then, And }) => {
+    Given('I set a variant override for {string} led by {string}', async (_, m, l) => {
+      await setVariantOverride(ids(m), l)
+    })
+    When('I delete recipe {string}', async (_, id: string) => {
+      await deleteRecipe(id)
+    })
+    Then('recipe {string} no longer exists', async (_, id: string) => {
+      expect(await db.recipes.get(id)).toBeUndefined()
     })
     And('the dish for {string} has members {string} led by {string}', async (_, id, m, l) => {
       await expectDish(id, ids(m), l)

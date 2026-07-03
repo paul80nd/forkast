@@ -12,6 +12,7 @@ import {
   removeFromOverride,
   dissolveOverride,
 } from '../app/variants'
+import { deleteRecipe } from '../app/cleanup'
 import type { CandidateCluster } from '../lib/similarity'
 import { CompareView } from './CompareView'
 
@@ -384,6 +385,12 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
     if (override) await removeFromOverride(override.id, id)
     else await setVariantOverride([id], id)
   }
+  async function del(m: Recipe) {
+    // Delete the recipe outright (not just detach it) — for variants you never want, like
+    // the "with dessert" combos. deleteRecipe cascades the override cleanup.
+    if (!window.confirm(`Delete “${m.title}” for good? This can't be undone.`)) return
+    await deleteRecipe(m.id)
+  }
 
   return (
     <li className="rounded-lg border border-stone-200">
@@ -428,10 +435,18 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
                   <button
                     type="button"
                     onClick={() => void remove(m.id)}
-                    className="rounded-md px-2 py-1 text-xs font-medium text-stone-400 hover:bg-rose-50 hover:text-rose-600"
-                    title="Remove from this dish"
+                    className="rounded-md px-2 py-1 text-xs font-medium text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+                    title="Remove from this dish (keeps the recipe)"
                   >
                     Remove
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void del(m)}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-stone-400 hover:bg-rose-50 hover:text-rose-600"
+                    title="Delete this recipe for good"
+                  >
+                    Delete
                   </button>
                 </li>
               )
