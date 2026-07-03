@@ -345,6 +345,7 @@ function VariantDishList({
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
           className="rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm"
+          aria-label="Sort dishes"
         >
           <option value="size">Most versions</option>
           <option value="title">A–Z</option>

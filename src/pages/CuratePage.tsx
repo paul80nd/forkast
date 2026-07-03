@@ -270,7 +270,11 @@ export function CuratePage() {
       {/* Triage */}
       {current ? (
         <div className="mt-5 overflow-hidden rounded-2xl border border-stone-200 bg-white dark:bg-stone-100 shadow-sm sm:flex">
-          <Link to={`/recipe/${current.id}`} className="block sm:w-2/5">
+          <Link
+            to={`/recipe/${current.id}`}
+            aria-label={`Open ${current.title}`}
+            className="block sm:w-2/5"
+          >
             <img
               src={resolveAsset(current.image)}
               alt=""
@@ -380,7 +384,7 @@ export function CuratePage() {
                   {phase === 'rotation'
                     ? 'Now press 1–5 for how often'
                     : 'Press 1–5 to rate'}
-                  <span className="ml-1 text-stone-300">· {index + 1}/{queue.length}</span>
+                  <span className="ml-1 text-stone-500">· {index + 1}/{queue.length}</span>
                 </span>
               </div>
             </div>

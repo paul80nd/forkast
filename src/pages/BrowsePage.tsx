@@ -156,6 +156,7 @@ export function BrowsePage() {
           value={cuisine}
           onChange={(e) => setCuisine(e.target.value)}
           className={selectClass}
+          aria-label="Filter by cuisine"
         >
           <option value="all">All cuisines</option>
           {cuisines.map((c) => (
@@ -168,6 +169,7 @@ export function BrowsePage() {
           value={maxTime}
           onChange={(e) => setMaxTime(Number(e.target.value))}
           className={selectClass}
+          aria-label="Filter by maximum cooking time"
         >
           <option value={0}>Any time</option>
           <option value={20}>≤ 20 min</option>
@@ -178,6 +180,7 @@ export function BrowsePage() {
           value={rating}
           onChange={(e) => setRating(e.target.value as RatingFilter)}
           className={selectClass}
+          aria-label="Filter by rating"
         >
           <option value="all">Any rating</option>
           <option value="unrated">Unrated</option>
@@ -189,6 +192,7 @@ export function BrowsePage() {
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
           className={selectClass}
+          aria-label="Sort recipes"
         >
           <option value="rating">Top rated (your ★)</option>
           <option value="time">Quickest</option>

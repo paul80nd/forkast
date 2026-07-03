@@ -275,7 +275,7 @@ export function PlanPage() {
         <p className="mt-3 text-sm text-stone-500">
           Nothing to suggest — your week may be full, or there aren’t enough rated,
           not-recently-cooked recipes.{' '}
-          <Link to="/curate" className="text-orange-600 hover:underline">
+          <Link to="/curate" className="text-orange-600 underline">
             Rate more →
           </Link>
         </p>
@@ -499,7 +499,7 @@ export function PlanPage() {
         {favourites.length === 0 && variety.length === 0 && (
           <p className="mt-3 text-sm text-stone-500">
             No more shortlisted recipes to add.{' '}
-            <Link to="/curate" className="text-orange-600 hover:underline">
+            <Link to="/curate" className="text-orange-600 underline">
               Rate some more →
             </Link>
           </p>
