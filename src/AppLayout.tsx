@@ -16,8 +16,21 @@ export function AppLayout() {
     <div className="min-h-screen bg-stone-50 text-stone-900">
       <header className="border-b border-stone-200 bg-white dark:bg-stone-100">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-          <span className="font-display text-lg font-semibold tracking-tight">
-            Forkast <span aria-hidden>🍴</span>
+          <span className="inline-flex items-center gap-2">
+            {/* Brand mark: the green "F" rounded square (matches assets/forkast-mark.svg).
+                Decorative — the adjacent wordmark carries the accessible name. */}
+            <span
+              aria-hidden
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-orange-500 font-display text-base font-bold text-white"
+            >
+              F
+            </span>
+            <span className="font-display text-lg font-bold tracking-tight">
+              Forkast{' '}
+              <span aria-hidden className="font-sans font-normal">
+                🍴
+              </span>
+            </span>
           </span>
           {/* On narrow screens the nav drops to its own full-width row (order-last + w-full)
               so the header never overflows; on sm+ it sits inline after the logo. */}
