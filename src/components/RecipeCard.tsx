@@ -20,8 +20,8 @@ export function RecipeCard({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border bg-white dark:bg-stone-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
-        selected ? 'border-orange-400 ring-2 ring-orange-300' : 'border-stone-200'
+      className={`relative overflow-hidden rounded-xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+        selected ? 'border-brand-400 ring-2 ring-brand-300' : 'border-line'
       }`}
     >
       <Link to={`/recipe/${recipe.id}`} className="block">
@@ -33,25 +33,25 @@ export function RecipeCard({
             loading="lazy"
           />
           {stars && (
-            <span className="absolute top-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-amber-700 shadow-sm">
+            <span className="absolute top-2 left-2 rounded-full bg-card/90 px-2 py-0.5 text-xs font-semibold text-star-ink shadow-sm">
               {'★'.repeat(stars)}
             </span>
           )}
           {variantCount !== undefined && variantCount > 1 && (
-            <span className="absolute bottom-2 left-2 rounded-full bg-white/90 dark:bg-stone-900/90 px-2 py-0.5 text-xs font-semibold text-orange-700 shadow-sm">
+            <span className="absolute bottom-2 left-2 rounded-full bg-card/90 px-2 py-0.5 text-xs font-semibold text-brand-ink shadow-sm">
               ⇄ {variantCount} versions
             </span>
           )}
         </div>
         <div className="p-3">
           <div className="flex items-center justify-between gap-2">
-            <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
+            <span className="rounded-full bg-sunken px-2 py-0.5 text-xs font-medium text-muted">
               {recipe.cuisine}
             </span>
           </div>
           <h3 className="mt-1.5 leading-tight font-semibold">{recipe.title}</h3>
-          <p className="mt-1 line-clamp-2 text-sm text-stone-600">{recipe.description}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-600">
+          <p className="mt-1 line-clamp-2 text-sm text-muted">{recipe.description}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
             <span>⏱ {recipe.prepTime} min</span>
             {recipe.mainProtein && <span className="capitalize">· {recipe.mainProtein}</span>}
           </div>
@@ -61,7 +61,7 @@ export function RecipeCard({
       {/* Selection tickbox — a sibling of the Link (not nested in the anchor), so ticking
           never navigates. */}
       {onToggleSelect && (
-        <label className="absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-white/90 dark:bg-stone-900/90 p-1 shadow-sm">
+        <label className="absolute top-2 right-2 flex cursor-pointer items-center rounded-md bg-card/90 p-1 shadow-sm">
           <input
             type="checkbox"
             checked={selected}

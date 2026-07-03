@@ -39,16 +39,16 @@ export function ImportDataset() {
   }
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
+    <div className="rounded-xl border border-line bg-card p-4">
       <h2 className="text-lg font-semibold">Dataset</h2>
-      <p className="mt-1 text-sm text-stone-600">
-        Import a recipe dataset (<code className="text-stone-600">recipes.json</code>).
+      <p className="mt-1 text-sm text-muted">
+        Import a recipe dataset (<code className="text-muted">recipes.json</code>).
         By default this <span className="font-medium">adds new recipes and refreshes
         existing ones</span> by id — recipes already in your collection that aren’t in
         the file are kept. Your stars, plans and cooked history are always kept.
       </p>
 
-      <label className="mt-3 flex items-center gap-2 text-sm text-stone-700">
+      <label className="mt-3 flex items-center gap-2 text-sm text-ink">
         <input
           type="checkbox"
           checked={replaceAll}
@@ -58,7 +58,7 @@ export function ImportDataset() {
         Replace all current recipes (clear first)
       </label>
       {replaceAll && (
-        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p className="mt-2 rounded-lg border border-warn-tint bg-warn-wash px-3 py-2 text-sm text-warn-ink">
           <span className="font-semibold">Heads up:</span> this{' '}
           <span className="font-semibold">deletes every current recipe</span> before
           loading the file. Your stars, plans and cooked history are still kept.
@@ -76,13 +76,13 @@ export function ImportDataset() {
         type="button"
         disabled={busy}
         onClick={() => inputRef.current?.click()}
-        className="mt-3 rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50"
+        className="mt-3 rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800 disabled:opacity-50"
       >
         {busy ? 'Importing…' : replaceAll ? 'Replace all…' : 'Import dataset…'}
       </button>
 
       {result && (
-        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+        <div className="mt-3 rounded-lg border border-brand-200 bg-positive-tint p-3 text-sm text-positive-ink">
           Imported <span className="font-semibold">{result.imported}</span>{' '}
           {result.imported === 1 ? 'recipe' : 'recipes'}
           {result.skipped > 0 && (
@@ -93,7 +93,7 @@ export function ImportDataset() {
             </>
           )}
           {result.errors.length > 0 && (
-            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-emerald-900">
+            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-positive-ink">
               {result.errors.slice(0, 10).map((msg, i) => (
                 <li key={i}>{msg}</li>
               ))}
@@ -106,7 +106,7 @@ export function ImportDataset() {
       )}
 
       {error && (
-        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+        <div className="mt-3 rounded-lg border border-danger-100 bg-danger-50 p-3 text-sm text-danger-ink">
           Import failed: {error}
         </div>
       )}

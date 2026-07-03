@@ -65,9 +65,9 @@ export function BackupRestore() {
   }
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
+    <div className="rounded-xl border border-line bg-card p-4">
       <h2 className="text-lg font-semibold">Backup</h2>
-      <p className="mt-1 text-sm text-stone-600">
+      <p className="mt-1 text-sm text-muted">
         <span className="font-medium">Save</span> downloads a complete snapshot of your
         collection — recipes plus every refinement (stars, groups, plans, shopping). It's a
         true restore point: keep it somewhere safe.{' '}
@@ -88,7 +88,7 @@ export function BackupRestore() {
           type="button"
           disabled={busy !== null}
           onClick={onSave}
-          className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50"
+          className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800 disabled:opacity-50"
         >
           {busy === 'save' ? 'Saving…' : 'Save backup…'}
         </button>
@@ -96,7 +96,7 @@ export function BackupRestore() {
           type="button"
           disabled={busy !== null}
           onClick={() => inputRef.current?.click()}
-          className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-50"
+          className="rounded-md border border-line-strong px-3 py-1.5 text-sm font-medium text-ink transition hover:bg-surface disabled:opacity-50"
         >
           {busy === 'open' ? 'Restoring…' : 'Open backup…'}
         </button>
@@ -105,19 +105,19 @@ export function BackupRestore() {
       <p
         className={`mt-3 text-sm ${
           status.tone === 'warn'
-            ? 'rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800'
-            : 'text-stone-600'
+            ? 'rounded-lg border border-warn-tint bg-warn-wash p-3 text-warn-ink'
+            : 'text-muted'
         }`}
       >
         {status.text}
       </p>
 
       {restored && (
-        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+        <div className="mt-3 rounded-lg border border-brand-200 bg-positive-tint p-3 text-sm text-positive-ink">
           Restored <span className="font-semibold">{restored.recipes}</span>{' '}
           {restored.recipes === 1 ? 'recipe' : 'recipes'} and your curation.
           {restored.warnings.length > 0 && (
-            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-emerald-900">
+            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-positive-ink">
               {restored.warnings.slice(0, 10).map((msg, i) => (
                 <li key={i}>{msg}</li>
               ))}
@@ -130,7 +130,7 @@ export function BackupRestore() {
       )}
 
       {error && (
-        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+        <div className="mt-3 rounded-lg border border-danger-100 bg-danger-50 p-3 text-sm text-danger-ink">
           {error}
         </div>
       )}

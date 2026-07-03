@@ -40,18 +40,18 @@ export function RefinePage() {
   }, [recipes, starsById])
 
   if (recipes === undefined || userData === undefined) {
-    return <p className="text-stone-600">Loading…</p>
+    return <p className="text-muted">Loading…</p>
   }
 
   return (
     <section>
       <h1 className="text-2xl font-semibold tracking-tight">Refine</h1>
-      <p className="mt-1 text-sm text-stone-600">
+      <p className="mt-1 text-sm text-muted">
         Tidy your collection: group related recipes, weed out duplicates, or clear out the
         ones you’ve binned.
       </p>
 
-      <div className="mt-4 flex gap-1 border-b border-stone-200">
+      <div className="mt-4 flex gap-1 border-b border-line">
         {(['variants', 'duplicates', 'cleanup'] as const).map((t) => (
           <button
             key={t}
@@ -59,8 +59,8 @@ export function RefinePage() {
             onClick={() => setTab(t)}
             className={`-mb-px border-b-2 px-3 py-1.5 text-sm font-medium transition ${
               tab === t
-                ? 'border-orange-500 text-orange-700'
-                : 'border-transparent text-stone-600 hover:text-stone-700'
+                ? 'border-brand-500 text-brand-ink'
+                : 'border-transparent text-muted hover:text-ink'
             }`}
           >
             {t === 'variants'
@@ -80,7 +80,7 @@ export function RefinePage() {
 
       {tab === 'cleanup' && (
         <>
-          <p className="mt-4 text-sm text-stone-600">
+          <p className="mt-4 text-sm text-muted">
             Recipes you’ve binned, split by how you rated them. Deletion sticks across
             re-imports (the export is your backup).
           </p>
@@ -118,32 +118,32 @@ function DuplicatesSection({
   }
 
   return (
-    <div className="mt-5 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4">
+    <div className="mt-5 rounded-xl border border-line bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Duplicates</h2>
         <button
           type="button"
           disabled={finding}
           onClick={run}
-          className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50"
+          className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800 disabled:opacity-50"
         >
           {finding ? 'Finding…' : candidates ? 'Refresh' : 'Find duplicates'}
         </button>
       </div>
-      <p className="mt-1 text-sm text-stone-600">
+      <p className="mt-1 text-sm text-muted">
         Recipes that look like the same dish — near-identical title and ingredients (not a
         protein/carb swap; those belong in a group). Tick the ones to delete; the suggested
         keeper is badged.
       </p>
 
       {candidates && candidates.length === 0 && (
-        <p className="mt-3 text-sm text-stone-600">
+        <p className="mt-3 text-sm text-muted">
           No duplicates — nothing ungrouped looks near-identical.
         </p>
       )}
       {candidates && candidates.length > 0 && (
         <>
-          <p className="mt-3 text-xs text-stone-600">
+          <p className="mt-3 text-xs text-muted">
             Showing {Math.min(candidates.length, 25)} of {candidates.length}.
           </p>
           <ul className="mt-2 space-y-3">
@@ -227,16 +227,16 @@ function DuplicateCard({
   }
 
   return (
-    <li className="rounded-lg border border-stone-200 p-3">
+    <li className="rounded-lg border border-line p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium tracking-wide text-stone-600 uppercase">
+        <span className="text-xs font-medium tracking-wide text-muted uppercase">
           {Math.round(cluster.score * 100)}% similar
         </span>
         <div className="flex gap-1.5">
           <button
             type="button"
             onClick={() => setComparing((c) => !c)}
-            className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-600 hover:bg-stone-100"
+            className="rounded-md px-2.5 py-1 text-xs font-medium text-muted hover:bg-sunken"
           >
             {comparing ? 'Hide compare' : 'Compare'}
           </button>
@@ -244,14 +244,14 @@ function DuplicateCard({
             type="button"
             disabled={busy || count === 0}
             onClick={remove}
-            className="rounded-md bg-rose-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 disabled:opacity-50"
+            className="rounded-md bg-danger-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-danger-700 disabled:opacity-50"
           >
             Delete selected{count ? ` (${count})` : ''}
           </button>
           <button
             type="button"
             onClick={onDone}
-            className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-600 hover:bg-stone-100"
+            className="rounded-md px-2.5 py-1 text-xs font-medium text-muted hover:bg-sunken"
           >
             Dismiss
           </button>
@@ -271,7 +271,7 @@ function DuplicateCard({
                 className="fk-check fk-check--danger"
               />
               {stars ? (
-                <span className="w-12 shrink-0 truncate text-xs text-amber-700">
+                <span className="w-12 shrink-0 truncate text-xs text-warn-ink">
                   {'★'.repeat(stars)}
                 </span>
               ) : (
@@ -279,13 +279,13 @@ function DuplicateCard({
               )}
               <span
                 className={`min-w-0 truncate text-sm ${
-                  checked.has(r.id) ? 'text-rose-600 line-through' : 'text-stone-800'
+                  checked.has(r.id) ? 'text-danger-ink line-through' : 'text-ink'
                 }`}
               >
                 {r.title}
               </span>
               {isKeeper && (
-                <span className="shrink-0 rounded bg-emerald-50 px-1.5 py-0.5 text-xs font-medium text-emerald-700">
+                <span className="shrink-0 rounded bg-positive-tint px-1.5 py-0.5 text-xs font-medium text-positive-ink">
                   keep
                 </span>
               )}
@@ -304,7 +304,7 @@ function DuplicateCard({
 // in bulk) and ★2 ("bin it" — a chance to reconsider). Each list deletes independently.
 function CleanupSection({ binned }: { binned: { recipe: Recipe; stars: Stars }[] }) {
   if (binned.length === 0) {
-    return <p className="mt-2 text-sm text-stone-600">Nothing binned — nothing to clean up.</p>
+    return <p className="mt-2 text-sm text-muted">Nothing binned — nothing to clean up.</p>
   }
   const ones = binned.filter((b) => b.stars === 1)
   const twos = binned.filter((b) => b.stars === 2)
@@ -378,26 +378,26 @@ function CleanupList({
   }
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
+    <div className="rounded-xl border border-line bg-card p-3">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-semibold text-stone-700">
-            <span className="text-amber-700">{'★'.repeat(tier)}</span>{' '}
+          <h3 className="text-sm font-semibold text-ink">
+            <span className="text-warn-ink">{'★'.repeat(tier)}</span>{' '}
             {STAR_LABELS[tier]}{' '}
-            <span className="font-normal text-stone-600">· {items.length}</span>
+            <span className="font-normal text-muted">· {items.length}</span>
           </h3>
-          <p className="mt-0.5 text-xs text-stone-600">{prompt}</p>
+          <p className="mt-0.5 text-xs text-muted">{prompt}</p>
         </div>
         <button
           type="button"
           disabled={busy || count === 0}
           onClick={remove}
-          className="shrink-0 rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 disabled:opacity-50"
+          className="shrink-0 rounded-md bg-danger-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-danger-700 disabled:opacity-50"
         >
           Delete {count || ''} selected
         </button>
       </div>
-      <label className="mt-2 flex items-center gap-2 border-t border-stone-100 pt-2 text-sm text-stone-700">
+      <label className="mt-2 flex items-center gap-2 border-t border-line pt-2 text-sm text-ink">
         <input
           type="checkbox"
           checked={allSelected}
@@ -406,7 +406,7 @@ function CleanupList({
         />
         Select all
       </label>
-      <ul className="mt-1 divide-y divide-stone-100">
+      <ul className="mt-1 divide-y divide-divider">
         {items.map(({ recipe }) => (
           <li key={recipe.id} className="flex items-center gap-2 py-1.5">
             <input
@@ -415,7 +415,7 @@ function CleanupList({
               onChange={() => toggle(recipe.id)}
               className="fk-check"
             />
-            <Link to={`/recipe/${recipe.id}`} className="flex-1 truncate text-sm text-stone-800 hover:text-orange-700">
+            <Link to={`/recipe/${recipe.id}`} className="flex-1 truncate text-sm text-ink hover:text-brand-ink">
               {recipe.title}
             </Link>
           </li>

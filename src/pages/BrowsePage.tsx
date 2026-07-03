@@ -130,14 +130,14 @@ export function BrowsePage() {
   }, [cards.length, visible])
 
   if (recipes === undefined) {
-    return <p className="text-stone-600">Loading recipes…</p>
+    return <p className="text-muted">Loading recipes…</p>
   }
 
   return (
     <section>
       <div className="flex items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Browse</h1>
-        <span className="text-sm text-stone-600">
+        <span className="text-sm text-muted">
           {cards.length} {groupVariants ? 'dishes' : 'recipes'} of {recipes.length}
         </span>
       </div>
@@ -192,7 +192,7 @@ export function BrowsePage() {
           <option value="time">Quickest</option>
           <option value="name">A–Z</option>
         </Select>
-        <label className="flex cursor-pointer items-center gap-1.5 text-sm text-stone-600 select-none">
+        <label className="flex cursor-pointer items-center gap-1.5 text-sm text-muted select-none">
           <input
             type="checkbox"
             checked={groupVariants}
@@ -204,20 +204,20 @@ export function BrowsePage() {
       </div>
 
       {selected.size > 0 && (
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm">
-          <span className="font-medium text-stone-700">{selected.size} selected</span>
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-brand-wash px-3 py-2 text-sm">
+          <span className="font-medium text-ink">{selected.size} selected</span>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setSelected(new Set())}
-              className="rounded-md px-2.5 py-1 font-medium text-stone-600 hover:bg-white dark:bg-stone-100"
+              className="rounded-md px-2.5 py-1 font-medium text-muted hover:bg-card"
             >
               Clear
             </button>
             <button
               type="button"
               onClick={deleteSelected}
-              className="rounded-md bg-rose-600 px-3 py-1 font-medium text-white hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600"
+              className="rounded-md bg-danger-600 px-3 py-1 font-medium text-white hover:bg-danger-700"
             >
               Delete selected
             </button>
@@ -226,7 +226,7 @@ export function BrowsePage() {
       )}
 
       {cards.length === 0 ? (
-        <p className="mt-10 text-center text-stone-600">
+        <p className="mt-10 text-center text-muted">
           No recipes match those filters.
         </p>
       ) : (
@@ -244,7 +244,7 @@ export function BrowsePage() {
             ))}
           </div>
           {visible < cards.length && (
-            <div ref={sentinelRef} className="mt-6 text-center text-sm text-stone-600">
+            <div ref={sentinelRef} className="mt-6 text-center text-sm text-muted">
               Loading more…
             </div>
           )}

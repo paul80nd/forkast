@@ -6,9 +6,9 @@ import type { SelectHTMLAttributes } from 'react'
 // this means an input and a select render as the same box and line up in a row
 // (matches the forkast-design field primitive).
 export const fieldBoxClass =
-  'appearance-none rounded-md border border-stone-300 bg-white text-stone-900 ' +
-  'transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-200 ' +
-  'focus:outline-none dark:bg-stone-100'
+  'appearance-none rounded-md border border-line-strong bg-card text-ink ' +
+  'transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-200 ' +
+  'focus:outline-none'
 
 const SIZES = {
   md: { box: 'py-1.5 pr-8 pl-2.5 text-sm', chevron: 'right-2.5 text-[11px]' },
@@ -32,7 +32,7 @@ export function Select({ className = '', size = 'md', children, ...props }: Prop
       </select>
       <span
         aria-hidden
-        className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-stone-500 ${s.chevron}`}
+        className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-muted ${s.chevron}`}
       >
         ▾
       </span>

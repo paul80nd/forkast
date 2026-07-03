@@ -17,7 +17,7 @@ export function RatingScale({
   onChange,
   labels,
   glyph = '★',
-  filledClass = 'text-amber-600',
+  filledClass = 'text-star',
   size = 'md',
   showLabel = false,
   name = 'rating',
@@ -43,7 +43,7 @@ export function RatingScale({
       <div className="inline-flex items-center gap-0.5" onMouseLeave={() => setHover(null)}>
         {([1, 2, 3, 4, 5] as Level[]).map((n) => {
           const cls = `${SIZES[size]} leading-none transition ${
-            n <= shown ? filledClass : 'text-stone-300'
+            n <= shown ? filledClass : 'text-subtle'
           } ${readOnly ? '' : 'cursor-pointer hover:scale-110'}`
 
           if (readOnly) {
@@ -69,7 +69,7 @@ export function RatingScale({
         })}
       </div>
       {showLabel && (
-        <span className={`${LABEL_SIZES[size]} text-stone-600`}>
+        <span className={`${LABEL_SIZES[size]} text-muted`}>
           {labelFor ? labels[labelFor] : ''}
         </span>
       )}
@@ -84,7 +84,7 @@ export function StarRating(props: {
   size?: keyof typeof SIZES
   showLabel?: boolean
 }) {
-  return <RatingScale glyph="★" filledClass="text-amber-600" labels={STAR_LABELS} name="rating" {...props} />
+  return <RatingScale glyph="★" filledClass="text-star" labels={STAR_LABELS} name="rating" {...props} />
 }
 
 /** Frequency rating — sky diamonds, "how often you'd want it" (3 = neutral). */
@@ -95,6 +95,6 @@ export function RotationRating(props: {
   showLabel?: boolean
 }) {
   return (
-    <RatingScale glyph="◆" filledClass="text-sky-600" labels={ROTATION_LABELS} name="rotation" {...props} />
+    <RatingScale glyph="◆" filledClass="text-info-600" labels={ROTATION_LABELS} name="rotation" {...props} />
   )
 }

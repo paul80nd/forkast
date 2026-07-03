@@ -17,10 +17,10 @@ import { Select, fieldBoxClass } from './Select'
 import type { CandidateCluster } from '../lib/similarity'
 import { CompareView } from './CompareView'
 
-const card = 'mt-5 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-4'
+const card = 'mt-5 rounded-xl border border-line bg-card p-4'
 const chip = 'rounded-full border px-2.5 py-1 text-sm transition'
 const primaryBtn =
-  'rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50'
+  'rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800 disabled:opacity-50'
 
 /** The override (if any) that governs a dish — the one pinning its lead. */
 const overrideFor = (dish: Dish, overrides: VariantOverride[]) =>
@@ -70,18 +70,18 @@ function VariantSuggestions({ byId }: { byId: Map<string, Recipe> }) {
           {busy ? 'Finding…' : suggestions ? 'Refresh' : 'Find similar recipes'}
         </button>
       </div>
-      <p className="mt-1 text-sm text-stone-600">
+      <p className="mt-1 text-sm text-muted">
         Recipes that read like the same dish but weren’t grouped automatically (the photos
         differ). Untick any that don’t belong, choose the original, then confirm.
       </p>
       {suggestions && suggestions.length === 0 && (
-        <p className="mt-3 text-sm text-stone-600">
+        <p className="mt-3 text-sm text-muted">
           No suggestions — nothing looks like an ungrouped variant.
         </p>
       )}
       {suggestions && suggestions.length > 0 && (
         <>
-          <p className="mt-3 text-xs text-stone-600">
+          <p className="mt-3 text-xs text-muted">
             Showing {Math.min(suggestions.length, 25)} of {suggestions.length}.
           </p>
           <ul className="mt-2 space-y-3">
@@ -134,7 +134,7 @@ function VariantCandidateCard({
   }
 
   return (
-    <li className="rounded-lg border border-stone-200 p-3">
+    <li className="rounded-lg border border-line p-3">
       <div className="space-y-1.5">
         {members.map((m) => (
           <div key={m.id} className="flex items-center gap-2 text-sm">
@@ -155,9 +155,9 @@ function VariantCandidateCard({
                 className="fk-radio"
                 aria-label={`Make ${m.title} the original`}
               />
-              <span className="text-xs text-stone-600">lead</span>
+              <span className="text-xs text-muted">lead</span>
             </label>
-            <span className={`truncate ${included.has(m.id) ? 'text-stone-800' : 'text-stone-600 line-through'}`}>
+            <span className={`truncate ${included.has(m.id) ? 'text-ink' : 'text-muted line-through'}`}>
               {m.title}
             </span>
           </div>
@@ -170,18 +170,18 @@ function VariantCandidateCard({
         <button
           type="button"
           onClick={() => setComparing((c) => !c)}
-          className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
+          className="rounded-md px-2.5 py-1.5 text-sm font-medium text-muted hover:bg-sunken"
         >
           {comparing ? 'Hide compare' : 'Compare'}
         </button>
         <button
           type="button"
           onClick={onDone}
-          className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
+          className="rounded-md px-2.5 py-1.5 text-sm font-medium text-muted hover:bg-sunken"
         >
           Dismiss
         </button>
-        <span className="ml-auto text-xs text-stone-600">
+        <span className="ml-auto text-xs text-muted">
           {Math.round(cluster.score * 100)}% similar
         </span>
       </div>
@@ -228,7 +228,7 @@ function VariantCreate({
   return (
     <div className={card}>
       <h2 className="text-lg font-semibold">Create a variant group</h2>
-      <p className="mt-1 text-sm text-stone-600">
+      <p className="mt-1 text-sm text-muted">
         Pick the recipes that are the same dish, choose the original, and group them by hand.
       </p>
       <div className="relative mt-3">
@@ -237,16 +237,16 @@ function VariantCreate({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search recipes to add by title…"
-          className="w-full rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none"
+          className="w-full rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
         />
         {results.length > 0 && (
-          <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-stone-200 bg-white dark:bg-stone-100 shadow-md">
+          <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-line bg-card shadow-md">
             {results.map((r) => (
               <li key={r.id}>
                 <button
                   type="button"
                   onClick={() => add(r)}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-orange-50"
+                  className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-brand-wash"
                 >
                   <span className="truncate">{r.title}</span>
                 </button>
@@ -268,13 +268,13 @@ function VariantCreate({
                   onChange={() => setLeadId(id)}
                   className="fk-radio"
                 />
-                <span className="text-xs text-stone-600">lead</span>
+                <span className="text-xs text-muted">lead</span>
               </label>
-              <span className="flex-1 truncate text-stone-800">{byId.get(id)?.title ?? id}</span>
+              <span className="flex-1 truncate text-ink">{byId.get(id)?.title ?? id}</span>
               <button
                 type="button"
                 onClick={() => setDraft((d) => d.filter((x) => x !== id))}
-                className="rounded px-2 py-1 text-stone-600 hover:bg-stone-100 hover:text-stone-600"
+                className="rounded px-2 py-1 text-muted hover:bg-sunken hover:text-muted"
                 aria-label="Remove from draft"
               >
                 ✕
@@ -288,7 +288,7 @@ function VariantCreate({
         <button type="button" disabled={busy || draft.length < 2} onClick={create} className={primaryBtn}>
           Create variant group
         </button>
-        <span className="text-xs text-stone-600">
+        <span className="text-xs text-muted">
           {draft.length < 2 ? 'Add at least two recipes.' : `${draft.length} selected`}
         </span>
       </div>
@@ -329,7 +329,7 @@ function VariantDishList({
     <div className={card}>
       <div className="flex items-end justify-between gap-3">
         <h2 className="text-lg font-semibold">Existing variant groups</h2>
-        <span className="text-sm text-stone-600">{filtered.length} dishes</span>
+        <span className="text-sm text-muted">{filtered.length} dishes</span>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <input
@@ -361,7 +361,7 @@ function VariantDishList({
         <button
           type="button"
           onClick={() => setVisible((v) => v + 50)}
-          className="mt-3 w-full rounded-md border border-stone-200 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50"
+          className="mt-3 w-full rounded-md border border-line py-2 text-sm font-medium text-muted hover:bg-surface"
         >
           Show more ({filtered.length - visible} left)
         </button>
@@ -394,33 +394,33 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
   }
 
   return (
-    <li className="rounded-lg border border-stone-200">
+    <li className="rounded-lg border border-line">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-2 px-3 py-2 text-left"
       >
-        <span className="text-stone-600">{open ? '▾' : '▸'}</span>
-        <span className="flex-1 truncate font-medium text-stone-800">{lead.title}</span>
+        <span className="text-muted">{open ? '▾' : '▸'}</span>
+        <span className="flex-1 truncate font-medium text-ink">{lead.title}</span>
         {override && (
-          <span className="shrink-0 rounded-full bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700">
+          <span className="shrink-0 rounded-full bg-brand-tint px-1.5 py-0.5 text-xs font-medium text-brand-ink">
             edited
           </span>
         )}
-        <span className="shrink-0 text-sm text-stone-600">{variants.length} versions</span>
+        <span className="shrink-0 text-sm text-muted">{variants.length} versions</span>
       </button>
 
       {open && (
-        <div className="border-t border-stone-100 p-3">
+        <div className="border-t border-line p-3">
           <ul className="space-y-1.5">
             {variants.map((m) => {
               const isLead = m.id === lead.id
               return (
                 <li key={m.id} className="flex items-center gap-2 text-sm">
                   <img src={resolveAsset(m.image)} alt="" className="size-9 shrink-0 rounded object-cover" />
-                  <span className="flex-1 truncate text-stone-800">{m.title}</span>
+                  <span className="flex-1 truncate text-ink">{m.title}</span>
                   <span
-                    className={`${chip} ${isLead ? 'border-orange-500 bg-[#2a673a] text-white' : 'border-stone-200 text-stone-600'}`}
+                    className={`${chip} ${isLead ? 'border-brand-500 bg-brand-700 text-white' : 'border-line text-muted'}`}
                   >
                     {isLead ? 'Original' : variantLabel(m.title, lead.title)}
                   </span>
@@ -428,7 +428,7 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
                     <button
                       type="button"
                       onClick={() => void makeLead(m.id)}
-                      className="rounded-md px-2 py-1 text-xs font-medium text-orange-700 hover:bg-orange-50"
+                      className="rounded-md px-2 py-1 text-xs font-medium text-brand-ink hover:bg-brand-wash"
                     >
                       Make lead
                     </button>
@@ -436,7 +436,7 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
                   <button
                     type="button"
                     onClick={() => void remove(m.id)}
-                    className="rounded-md px-2 py-1 text-xs font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-600"
+                    className="rounded-md px-2 py-1 text-xs font-medium text-muted hover:bg-sunken hover:text-muted"
                     title="Remove from this dish (keeps the recipe)"
                   >
                     Remove
@@ -444,7 +444,7 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
                   <button
                     type="button"
                     onClick={() => void del(m)}
-                    className="rounded-md px-2 py-1 text-xs font-medium text-stone-600 hover:bg-rose-50 hover:text-rose-600"
+                    className="rounded-md px-2 py-1 text-xs font-medium text-muted hover:bg-danger-50 hover:text-danger-ink"
                     title="Delete this recipe for good"
                   >
                     Delete
@@ -457,7 +457,7 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
             <button
               type="button"
               onClick={() => setComparing((c) => !c)}
-              className="rounded-md px-2.5 py-1 text-sm font-medium text-stone-600 hover:bg-stone-100"
+              className="rounded-md px-2.5 py-1 text-sm font-medium text-muted hover:bg-sunken"
             >
               {comparing ? 'Hide compare' : 'Compare'}
             </button>
@@ -465,7 +465,7 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
               <button
                 type="button"
                 onClick={() => void dissolveOverride(override.id)}
-                className="rounded-md px-2.5 py-1 text-sm font-medium text-stone-600 hover:bg-rose-50 hover:text-rose-600"
+                className="rounded-md px-2.5 py-1 text-sm font-medium text-muted hover:bg-danger-50 hover:text-danger-ink"
                 title="Discard your edits and revert to the automatic grouping"
               >
                 Revert to auto

@@ -20,14 +20,14 @@ export function RecipePage() {
   )
 
   if (recipe === undefined) {
-    return <p className="text-stone-600">Loading…</p>
+    return <p className="text-muted">Loading…</p>
   }
 
   if (recipe === null) {
     return (
       <section>
-        <p className="text-stone-600">Recipe not found.</p>
-        <Link to="/browse" className="mt-2 inline-block text-orange-700 hover:underline">
+        <p className="text-muted">Recipe not found.</p>
+        <Link to="/browse" className="mt-2 inline-block text-brand-ink hover:underline">
           ← Back to Browse
         </Link>
       </section>
@@ -36,7 +36,7 @@ export function RecipePage() {
 
   return (
     <section>
-      <Link to="/browse" className="text-sm text-orange-700 hover:underline">
+      <Link to="/browse" className="text-sm text-brand-ink hover:underline">
         ← Back to Browse
       </Link>
 
@@ -53,7 +53,7 @@ export function RecipePage() {
                 <button
                   type="button"
                   onClick={() => removeFromPlan(shown.id)}
-                  className="rounded-l-md bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100"
+                  className="rounded-l-md bg-positive-tint px-3 py-1.5 text-sm font-medium text-positive-ink hover:bg-positive-tint"
                 >
                   ✓ In week
                 </button>
@@ -61,7 +61,7 @@ export function RecipePage() {
                 <button
                   type="button"
                   onClick={() => addToPlan(shown.id)}
-                  className="rounded-l-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#245330]"
+                  className="rounded-l-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800"
                 >
                   + Add to week
                 </button>
@@ -74,8 +74,8 @@ export function RecipePage() {
                 onClick={() => setMenuOpen((o) => !o)}
                 className={`rounded-r-md border-l px-2 py-1.5 text-sm font-medium ${
                   inPlan
-                    ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                    : 'border-orange-400 bg-[#2a673a] text-white hover:bg-[#245330]'
+                    ? 'border-brand-200 bg-positive-tint text-positive-ink hover:bg-positive-tint'
+                    : 'border-brand-400 bg-brand-700 text-white hover:bg-brand-800'
                 }`}
               >
                 ▾
@@ -92,7 +92,7 @@ export function RecipePage() {
                   />
                   <div
                     role="menu"
-                    className="absolute top-full right-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-stone-200 bg-white dark:bg-stone-100 shadow-lg"
+                    className="absolute top-full right-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-line bg-card shadow-lg"
                   >
                     <button
                       type="button"
@@ -108,7 +108,7 @@ export function RecipePage() {
                           navigate('/browse')
                         }
                       }}
-                      className="block w-full px-3 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50"
+                      className="block w-full px-3 py-2 text-left text-sm font-medium text-danger-ink hover:bg-danger-50"
                     >
                       Delete recipe
                     </button>

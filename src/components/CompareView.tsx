@@ -28,14 +28,14 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
   ]
 
   return (
-    <div className="mt-3 overflow-x-auto rounded-lg border border-stone-200 bg-stone-50">
+    <div className="mt-3 overflow-x-auto rounded-lg border border-line bg-surface">
       <table className="w-full min-w-[28rem] text-sm">
         <thead>
-          <tr className="border-b border-stone-200">
+          <tr className="border-b border-line">
             <td className="p-2" />
             {recipes.map((r) => (
-              <th key={r.id} className="p-2 text-left align-bottom font-semibold text-stone-700">
-                <Link to={`/recipe/${r.id}`} className="block hover:text-orange-700 hover:underline">
+              <th key={r.id} className="p-2 text-left align-bottom font-semibold text-ink">
+                <Link to={`/recipe/${r.id}`} className="block hover:text-brand-ink hover:underline">
                   {r.image ? (
                     <img
                       src={resolveAsset(r.image)}
@@ -44,7 +44,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
                       loading="lazy"
                     />
                   ) : (
-                    <div className="mb-1.5 flex aspect-[4/3] w-full max-w-40 items-center justify-center rounded-md bg-stone-100 text-xs text-stone-600">
+                    <div className="mb-1.5 flex aspect-[4/3] w-full max-w-40 items-center justify-center rounded-md bg-sunken text-xs text-muted">
                       no image
                     </div>
                   )}
@@ -54,21 +54,21 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-stone-100">
+        <tbody className="divide-y divide-divider">
           {metaRows.map((row) => (
             <tr key={row.label}>
-              <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-stone-600 uppercase">
+              <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-muted uppercase">
                 {row.label}
               </th>
               {recipes.map((r) => (
-                <td key={r.id} className="p-2 align-top text-stone-700">
+                <td key={r.id} className="p-2 align-top text-ink">
                   {row.value(r)}
                 </td>
               ))}
             </tr>
           ))}
           <tr>
-            <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-stone-600 uppercase">
+            <th className="p-2 text-left align-top text-xs font-medium tracking-wide text-muted uppercase">
               Ingredients
             </th>
             {recipes.map((r) => (
@@ -77,7 +77,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
                   {r.ingredients.map((ing, i) => (
                     <li
                       key={i}
-                      className={isShared(ing.name) ? 'text-stone-600' : 'font-medium text-orange-700'}
+                      className={isShared(ing.name) ? 'text-muted' : 'font-medium text-brand-ink'}
                     >
                       {ing.name}
                     </li>
@@ -88,7 +88,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
           </tr>
         </tbody>
       </table>
-      <p className="px-2 pb-2 text-xs text-stone-600">
+      <p className="px-2 pb-2 text-xs text-muted">
         Highlighted ingredients aren’t shared by every recipe.
       </p>
     </div>

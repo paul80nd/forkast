@@ -70,7 +70,10 @@
 
   /* Text */
   --fk-text:        var(--fk-neutral-900);
-  --fk-text-muted:  var(--fk-neutral-500);
+  /* App override: the design's muted is neutral-500, which misses strict AA on the
+     near-white surface. Forkast requires AA, so muted is a step darker (neutral-600,
+     what the app used pre-migration). Dark mode keeps the design's lighter muted. */
+  --fk-text-muted:  var(--fk-neutral-600);
   --fk-text-subtle: var(--fk-neutral-400);
   --fk-text-onbrand: #ffffff;
 

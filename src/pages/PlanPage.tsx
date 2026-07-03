@@ -204,7 +204,7 @@ export function PlanPage() {
   const variety = candidates.filter((r) => starsById.get(r.id) === 3)
 
   if (recipes === undefined || userData === undefined) {
-    return <p className="text-stone-600">Loading…</p>
+    return <p className="text-muted">Loading…</p>
   }
 
   return (
@@ -212,8 +212,8 @@ export function PlanPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Plan</h1>
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-stone-600">Cooking for</span>
-          <div className="inline-flex overflow-hidden rounded-md border border-stone-300">
+          <span className="text-muted">Cooking for</span>
+          <div className="inline-flex overflow-hidden rounded-md border border-line-strong">
             {PORTION_OPTIONS.map((n) => (
               <button
                 key={n}
@@ -221,8 +221,8 @@ export function PlanPage() {
                 onClick={() => setPortions(n)}
                 className={`px-3 py-1 font-medium transition ${
                   portions === n
-                    ? 'bg-[#2a673a] text-white'
-                    : 'bg-white dark:bg-stone-100 text-stone-600 hover:bg-stone-100'
+                    ? 'bg-brand-700 text-white'
+                    : 'bg-card text-muted hover:bg-sunken'
                 }`}
               >
                 {n}
@@ -238,23 +238,23 @@ export function PlanPage() {
           type="button"
           disabled={suggesting}
           onClick={runSuggest}
-          className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330] disabled:opacity-50"
+          className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800 disabled:opacity-50"
         >
           {suggesting ? 'Thinking…' : 'Suggest a varied week'}
         </button>
-        <label className="flex items-center gap-1.5 text-sm text-stone-600">
+        <label className="flex items-center gap-1.5 text-sm text-muted">
           <input
             type="number"
             min={1}
             max={14}
             value={suggestCount}
             onChange={(e) => setSuggestCount(Math.max(1, Math.min(14, Number(e.target.value) || 1)))}
-            className="w-16 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2 py-1 text-sm"
+            className="w-16 rounded-md border border-line-strong bg-card px-2 py-1 text-sm"
           />
           <span>meals a week</span>
         </label>
         <label
-          className="flex items-center gap-1.5 text-sm text-stone-600"
+          className="flex items-center gap-1.5 text-sm text-muted"
           title="Also draw from recipes you haven’t rated yet, treating them as a neutral ★3"
         >
           <input
@@ -266,28 +266,28 @@ export function PlanPage() {
           Include unrated
         </label>
         {plannedCount > 0 && (
-          <span className="text-xs text-stone-600">
+          <span className="text-xs text-muted">
             fills the {Math.max(0, suggestCount - plannedCount)} slots left after {plannedCount} planned
           </span>
         )}
       </div>
 
       {suggestedEmpty && shortlist.length === 0 && (
-        <p className="mt-3 text-sm text-stone-600">
+        <p className="mt-3 text-sm text-muted">
           Nothing to suggest — your week may be full, or there aren’t enough rated,
           not-recently-cooked recipes.{' '}
-          <Link to="/curate" className="text-orange-700 underline">
+          <Link to="/curate" className="text-brand-ink underline">
             Rate more →
           </Link>
         </p>
       )}
 
       {shortlist.length > 0 && (
-        <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+        <div className="mt-4 rounded-2xl border border-info-200 bg-info-50 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="text-lg font-semibold text-sky-900">Suggested week</h2>
-              <p className="text-xs text-sky-700">
+              <h2 className="text-lg font-semibold text-info-900">Suggested week</h2>
+              <p className="text-xs text-info-700">
                 A proposal — reroll, lock, or swap any, then accept. Nothing’s added yet.
               </p>
             </div>
@@ -295,7 +295,7 @@ export function PlanPage() {
               <button
                 type="button"
                 onClick={acceptShortlist}
-                className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-sky-700"
+                className="rounded-md bg-info-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-info-700"
               >
                 Accept {shortlist.length} → week
               </button>
@@ -303,14 +303,14 @@ export function PlanPage() {
                 type="button"
                 disabled={suggesting}
                 onClick={reSuggest}
-                className="rounded-md px-2.5 py-1.5 text-sm font-medium text-sky-700 hover:bg-sky-100 disabled:opacity-50"
+                className="rounded-md px-2.5 py-1.5 text-sm font-medium text-info-700 hover:bg-info-100 disabled:opacity-50"
               >
                 Re-suggest
               </button>
               <button
                 type="button"
                 onClick={() => setShortlist([])}
-                className="rounded-md px-2.5 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
+                className="rounded-md px-2.5 py-1.5 text-sm font-medium text-muted hover:bg-sunken"
               >
                 Clear
               </button>
@@ -354,13 +354,13 @@ export function PlanPage() {
 
       {/* The week */}
       {planned.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-8 text-center text-stone-600">
+        <div className="mt-4 rounded-2xl border border-dashed border-line-strong bg-card p-8 text-center text-muted">
           Nothing planned yet — add meals from your shortlist below.
         </div>
       ) : (
         <>
           {/* Variety summary */}
-          <div className="mt-4 flex flex-wrap gap-4 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3 text-sm">
+          <div className="mt-4 flex flex-wrap gap-4 rounded-xl border border-line bg-card p-3 text-sm">
             <VarietyGroup label="Cuisines" counts={cuisineCounts} />
             <VarietyGroup label="Proteins" counts={proteinCounts} capitalize />
           </div>
@@ -375,7 +375,7 @@ export function PlanPage() {
               return (
                 <li
                   key={r.id}
-                  className="rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-2.5"
+                  className="rounded-xl border border-line bg-card p-2.5"
                 >
                   <div className="flex items-center gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -390,15 +390,15 @@ export function PlanPage() {
                         type="button"
                         onClick={() => setModalRecipe(r)}
                         title="View recipe"
-                        className="block max-w-full truncate text-left font-medium text-stone-800 hover:text-orange-700 hover:underline"
+                        className="block max-w-full truncate text-left font-medium text-ink hover:text-brand-ink hover:underline"
                       >
                         {r.title}
                       </button>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-600">
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted">
                         <span>{r.cuisine}</span>
                         {r.mainProtein && <span className="capitalize">· {r.mainProtein}</span>}
                         <span>· ⏱ {r.prepTime} min</span>
-                        <span className={rec.warn ? 'text-amber-700' : 'text-stone-600'}>
+                        <span className={rec.warn ? 'text-warn-ink' : 'text-muted'}>
                           · {rec.text}
                         </span>
                       </div>
@@ -411,8 +411,8 @@ export function PlanPage() {
                       aria-expanded={versionsOpen}
                       className={`rounded-md px-2.5 py-1 text-sm font-medium ${
                         versionsOpen
-                          ? 'bg-[#2a673a] text-white hover:bg-[#245330]'
-                          : 'text-orange-700 hover:bg-orange-50'
+                          ? 'bg-brand-700 text-white hover:bg-brand-800'
+                          : 'text-brand-ink hover:bg-brand-wash'
                       }`}
                       title="Swap this dish for another version"
                     >
@@ -422,7 +422,7 @@ export function PlanPage() {
                   <button
                     type="button"
                     onClick={() => markCooked(r.id)}
-                    className="rounded-md bg-green-50 px-2.5 py-1 text-sm font-medium text-green-700 hover:bg-green-100"
+                    className="rounded-md bg-positive-tint px-2.5 py-1 text-sm font-medium text-positive-ink hover:bg-positive-tint"
                     title="Mark as cooked (stamps today, removes from week)"
                   >
                     ✓ Cooked
@@ -430,15 +430,15 @@ export function PlanPage() {
                   <button
                     type="button"
                     onClick={() => removeFromPlan(r.id)}
-                    className="rounded-md px-2 py-1 text-stone-600 hover:bg-stone-100 hover:text-stone-600"
+                    className="rounded-md px-2 py-1 text-muted hover:bg-sunken hover:text-muted"
                     title="Remove from week"
                   >
                     ✕
                   </button>
                   </div>
                   {hasVersions && versionsOpen && (
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-stone-100 pt-2">
-                      <span className="mr-1 text-xs font-medium tracking-wide text-stone-600 uppercase">
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-line pt-2">
+                      <span className="mr-1 text-xs font-medium tracking-wide text-muted uppercase">
                         Version
                       </span>
                       {siblings.map((m) => {
@@ -454,8 +454,8 @@ export function PlanPage() {
                             }}
                             className={`rounded-full border px-2.5 py-1 text-sm transition ${
                               isCurrent
-                                ? 'border-orange-500 bg-[#2a673a] text-white'
-                                : 'border-stone-200 bg-white dark:bg-stone-100 text-stone-700 hover:border-orange-300 hover:text-orange-700'
+                                ? 'border-brand-500 bg-brand-700 text-white'
+                                : 'border-line bg-card text-ink hover:border-brand-300 hover:text-brand-ink'
                             }`}
                           >
                             {m.id === lead.id ? 'Original' : variantLabel(m.title, lead.title)}
@@ -480,7 +480,7 @@ export function PlanPage() {
             value={pickerQuery}
             onChange={(e) => setPickerQuery(e.target.value)}
             placeholder="Search your shortlist…"
-            className="rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none"
+            className="rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
           />
         </div>
 
@@ -498,9 +498,9 @@ export function PlanPage() {
         />
 
         {favourites.length === 0 && variety.length === 0 && (
-          <p className="mt-3 text-sm text-stone-600">
+          <p className="mt-3 text-sm text-muted">
             No more shortlisted recipes to add.{' '}
-            <Link to="/curate" className="text-orange-700 underline">
+            <Link to="/curate" className="text-brand-ink underline">
               Rate some more →
             </Link>
           </p>
@@ -541,7 +541,7 @@ function SuggestionSlot({
 }) {
   const rec = recency(lastCooked)
   return (
-    <li className="overflow-hidden rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
+    <li className="overflow-hidden rounded-xl border border-line bg-card">
       <div className="flex items-center gap-3 p-2.5">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <img src={resolveAsset(recipe.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
@@ -551,24 +551,24 @@ function SuggestionSlot({
               type="button"
               onClick={onOpen}
               title="View recipe"
-              className="block max-w-full truncate text-left font-medium text-stone-800 hover:text-orange-700 hover:underline"
+              className="block max-w-full truncate text-left font-medium text-ink hover:text-brand-ink hover:underline"
             >
               {recipe.title}
             </button>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-600">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted">
               <span>{recipe.cuisine}</span>
               {recipe.mainProtein && <span className="capitalize">· {recipe.mainProtein}</span>}
               <span>· ⏱ {recipe.prepTime} min</span>
-              <span className={rec.warn ? 'text-amber-700' : 'text-stone-600'}>· {rec.text}</span>
+              <span className={rec.warn ? 'text-warn-ink' : 'text-muted'}>· {rec.text}</span>
             </div>
             <div className="mt-1 flex flex-wrap gap-1">
               {unrated && (
-                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
+                <span className="rounded-full bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-ink">
                   unrated
                 </span>
               )}
               {slot.reasons.map((why) => (
-                <span key={why} className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
+                <span key={why} className="rounded-full bg-info-100 px-1.5 py-0.5 text-[11px] font-medium text-info-700">
                   {why}
                 </span>
               ))}
@@ -582,7 +582,7 @@ function SuggestionSlot({
             value=""
             onChange={(e) => e.target.value && onSwap(e.target.value)}
             aria-label="Swap to a variant"
-            className="max-w-32 text-stone-600"
+            className="max-w-32 text-muted"
           >
             <option value="">Swap variant…</option>
             {siblings.map((m) => (
@@ -598,7 +598,7 @@ function SuggestionSlot({
           aria-pressed={slot.locked}
           title={slot.locked ? 'Locked — kept when re-suggesting' : 'Lock this slot'}
           className={`rounded-md px-2 py-1 text-sm transition ${
-            slot.locked ? 'bg-sky-100 text-sky-700' : 'text-stone-600 hover:bg-stone-100 hover:text-stone-600'
+            slot.locked ? 'bg-info-100 text-info-700' : 'text-muted hover:bg-sunken hover:text-muted'
           }`}
         >
           {slot.locked ? '🔒' : '🔓'}
@@ -607,7 +607,7 @@ function SuggestionSlot({
           type="button"
           onClick={onReroll}
           title="Reroll this slot"
-          className="rounded-md px-2 py-1 text-sm text-stone-600 hover:bg-stone-100 hover:text-stone-600"
+          className="rounded-md px-2 py-1 text-sm text-muted hover:bg-sunken hover:text-muted"
         >
           ↻
         </button>
@@ -615,7 +615,7 @@ function SuggestionSlot({
           type="button"
           onClick={onRemove}
           title="Remove from suggestion"
-          className="rounded-md px-2 py-1 text-stone-600 hover:bg-stone-100 hover:text-stone-600"
+          className="rounded-md px-2 py-1 text-muted hover:bg-sunken hover:text-muted"
         >
           ✕
         </button>
@@ -642,7 +642,7 @@ function VarietyGroup({
   if (counts.size === 0) return null
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
+      <span className="text-xs font-semibold tracking-wide text-muted uppercase">
         {label}
       </span>
       <div className="flex flex-wrap gap-1.5">
@@ -650,7 +650,7 @@ function VarietyGroup({
           <span
             key={key}
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-              n > 1 ? 'bg-amber-100 text-amber-700' : 'bg-stone-100 text-stone-600'
+              n > 1 ? 'bg-warn-tint text-warn-ink' : 'bg-sunken text-muted'
             } ${capitalize ? 'capitalize' : ''}`}
             title={n > 1 ? `${n}× — light on variety` : undefined}
           >
@@ -677,8 +677,8 @@ function PickerStrip({
   if (items.length === 0) return null
   return (
     <div className="mt-4">
-      <h3 className="text-sm font-medium text-stone-600">
-        {title} <span className="text-stone-600">{subtitle}</span>
+      <h3 className="text-sm font-medium text-muted">
+        {title} <span className="text-muted">{subtitle}</span>
       </h3>
       <div className="mt-2 flex gap-3 overflow-x-auto pb-2">
         {items.map((r) => {
@@ -688,7 +688,7 @@ function PickerStrip({
               key={r.id}
               type="button"
               onClick={() => addToPlan(r.id)}
-              className="group relative w-40 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-white dark:bg-stone-100 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="group relative w-40 shrink-0 overflow-hidden rounded-xl border border-line bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               title="Add to week"
             >
               <img
@@ -696,16 +696,16 @@ function PickerStrip({
                 alt=""
                 className="aspect-[4/3] w-full object-cover"
               />
-              <span className="absolute top-1.5 right-1.5 rounded-full bg-[#2a673a] px-1.5 text-lg leading-6 font-bold text-white opacity-0 transition group-hover:opacity-100">
+              <span className="absolute top-1.5 right-1.5 rounded-full bg-brand-700 px-1.5 text-lg leading-6 font-bold text-white opacity-0 transition group-hover:opacity-100">
                 +
               </span>
               <div className="p-2">
-                <div className="truncate text-sm font-medium text-stone-800">{r.title}</div>
-                <div className="mt-0.5 truncate text-xs text-stone-600">
+                <div className="truncate text-sm font-medium text-ink">{r.title}</div>
+                <div className="mt-0.5 truncate text-xs text-muted">
                   {r.cuisine}
                   {r.mainProtein ? ` · ${r.mainProtein}` : ''}
                 </div>
-                <div className={`mt-0.5 truncate text-xs ${rec.warn ? 'text-amber-700' : 'text-stone-600'}`}>
+                <div className={`mt-0.5 truncate text-xs ${rec.warn ? 'text-warn-ink' : 'text-muted'}`}>
                   {rec.text}
                 </div>
               </div>

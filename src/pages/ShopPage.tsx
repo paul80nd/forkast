@@ -47,7 +47,7 @@ export function ShopPage() {
 
   const portions = plan?.portions ?? 2
 
-  if (plan === undefined || list === undefined) return <p className="text-stone-600">Loading…</p>
+  if (plan === undefined || list === undefined) return <p className="text-muted">Loading…</p>
 
   // Meals = recipes actually on the list; a plan can hold stale ids (e.g. recipes deleted by a
   // re-import) that no longer resolve, so count what the list is built from, not the raw ids.
@@ -57,9 +57,9 @@ export function ShopPage() {
     return (
       <section>
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
-        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white dark:bg-stone-100 p-8 text-center text-stone-600">
+        <div className="mt-4 rounded-2xl border border-dashed border-line-strong bg-card p-8 text-center text-muted">
           No meals planned, so nothing to buy.{' '}
-          <Link to="/plan" className="text-orange-700 hover:underline">
+          <Link to="/plan" className="text-brand-ink hover:underline">
             Plan a week →
           </Link>
         </div>
@@ -86,7 +86,7 @@ export function ShopPage() {
     <section>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Shop</h1>
-        <div className="flex items-center gap-3 text-sm text-stone-600">
+        <div className="flex items-center gap-3 text-sm text-muted">
           <span>
             {itemCount} items · {mealCount} meals · for {portions}
           </span>
@@ -94,7 +94,7 @@ export function ShopPage() {
             <button
               type="button"
               onClick={() => clearChecked()}
-              className="rounded-md px-2 py-1 text-stone-600 hover:bg-stone-100"
+              className="rounded-md px-2 py-1 text-muted hover:bg-sunken"
             >
               Clear ticks
             </button>
@@ -110,10 +110,10 @@ export function ShopPage() {
         <div className="lg:columns-2 lg:gap-6">
           {list.aisles.map((group) => (
             <div key={group.aisle} className="mb-6 break-inside-avoid last:mb-0">
-              <h2 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
+              <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">
                 {group.aisle}
               </h2>
-              <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
+              <ul className="mt-1.5 divide-y divide-divider rounded-xl border border-line bg-card">
                 {group.lines.map((line) => (
                   <CheckRow
                     key={line.key}
@@ -131,10 +131,10 @@ export function ShopPage() {
 
         {list.unmatched.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold tracking-wide text-amber-700 uppercase">
-              Check these <span className="font-normal normal-case text-amber-700">· bind to merge across recipes</span>
+            <h2 className="text-xs font-semibold tracking-wide text-warn-ink uppercase">
+              Check these <span className="font-normal normal-case text-warn-ink">· bind to merge across recipes</span>
             </h2>
-            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-amber-200 bg-amber-50 lg:columns-2 lg:gap-6">
+            <ul className="mt-1.5 divide-y divide-divider rounded-xl border border-warn-tint bg-warn-wash lg:columns-2 lg:gap-6">
               {list.unmatched.map((line) => (
                 <UnmatchedRow
                   key={line.key}
@@ -152,15 +152,15 @@ export function ShopPage() {
         )}
 
         {list.unquantified.length > 0 && (
-          <p className="text-sm text-stone-600">
-            <span className="font-medium text-stone-600">Also (no quantity given):</span>{' '}
+          <p className="text-sm text-muted">
+            <span className="font-medium text-muted">Also (no quantity given):</span>{' '}
             {list.unquantified.join(', ')}
           </p>
         )}
 
         {/* Manual extras */}
         <div>
-          <h2 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
+          <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">
             Extras
           </h2>
           <form
@@ -175,17 +175,17 @@ export function ShopPage() {
               value={extraText}
               onChange={(e) => setExtraText(e.target.value)}
               placeholder="Add anything else…"
-              className="flex-1 rounded-md border border-stone-300 bg-white dark:bg-stone-100 px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none"
+              className="flex-1 rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
             />
             <button
               type="submit"
-              className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#245330]"
+              className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800"
             >
               Add
             </button>
           </form>
           {extras.length > 0 && (
-            <ul className="mt-2 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
+            <ul className="mt-2 divide-y divide-divider rounded-xl border border-line bg-card">
               {extras.map((e, i) => (
                 <CheckRow
                   key={i}
@@ -202,10 +202,10 @@ export function ShopPage() {
         {/* Store cupboard */}
         {list.basics.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold tracking-wide text-stone-600 uppercase">
-              Store cupboard <span className="font-normal text-stone-600">· assumed in</span>
+            <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">
+              Store cupboard <span className="font-normal text-muted">· assumed in</span>
             </h2>
-            <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-stone-50">
+            <ul className="mt-1.5 divide-y divide-divider rounded-xl border border-line bg-surface">
               {list.basics.map((b) => {
                 const key = `basic|${b}`
                 return (
@@ -268,36 +268,36 @@ function ShareList({ text, html }: { text: string; html: string }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+        className="rounded-md border border-line-strong px-3 py-1.5 text-sm font-medium text-ink transition hover:bg-surface"
       >
         {open ? 'Hide share' : 'Copy / share list'}
       </button>
       {open && (
-        <div className="mt-2 rounded-xl border border-stone-200 bg-white dark:bg-stone-100 p-3">
+        <div className="mt-2 rounded-xl border border-line bg-card p-3">
           <textarea
             readOnly
             value={text}
             onFocus={(e) => e.currentTarget.select()}
             rows={Math.min(16, text.split('\n').length + 1)}
-            className="w-full rounded-md border border-stone-300 bg-stone-50 p-2 font-mono text-xs text-stone-800"
+            className="w-full rounded-md border border-line-strong bg-surface p-2 font-mono text-xs text-ink"
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={copyText}
-              className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#245330]"
+              className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800"
             >
               {copied === 'text' ? 'Copied ✓' : 'Copy text'}
             </button>
             <button
               type="button"
               onClick={copyRich}
-              className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+              className="rounded-md border border-line-strong px-3 py-1.5 text-sm font-medium text-ink transition hover:bg-surface"
             >
               {copied === 'rich' ? 'Copied ✓' : 'Copy rich'}
             </button>
           </div>
-          <p className="mt-2 text-xs text-stone-600">
+          <p className="mt-2 text-xs text-muted">
             <span className="font-medium">Copy text</span> for Apple Notes — paste, select all,
             then tap the checklist button for tickable boxes (already-ticked items are marked
             ✓). <span className="font-medium">Copy rich</span> pastes a styled list into an
@@ -348,13 +348,13 @@ function CheckRow({
         <span className="min-w-0">
           <span
             className={`block ${
-              checked ? 'text-stone-600 line-through' : muted ? 'text-stone-600' : 'text-stone-800'
+              checked ? 'text-muted line-through' : muted ? 'text-muted' : 'text-ink'
             }`}
           >
             {label}
           </span>
           {subline && (
-            <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-600'}`}>
+            <span className={`block text-xs ${checked ? 'text-subtle' : 'text-muted'}`}>
               {subline}
             </span>
           )}
@@ -364,7 +364,7 @@ function CheckRow({
         <button
           type="button"
           onClick={onRemove}
-          className="rounded px-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-600"
+          className="rounded px-1.5 text-muted hover:bg-sunken hover:text-muted"
           title="Remove"
         >
           ✕
@@ -397,11 +397,11 @@ function UnmatchedRow({
             className="fk-check"
           />
           <span className="min-w-0">
-            <span className={checked ? 'text-stone-600 line-through' : 'text-stone-800'}>
+            <span className={checked ? 'text-muted line-through' : 'text-ink'}>
               {line.label}
             </span>
             {line.recipeCount != null && line.recipeCount > 1 && (
-              <span className={`block text-xs ${checked ? 'text-stone-300' : 'text-stone-600'}`}>
+              <span className={`block text-xs ${checked ? 'text-subtle' : 'text-muted'}`}>
                 from {line.recipeCount} recipes
               </span>
             )}
@@ -412,7 +412,7 @@ function UnmatchedRow({
             type="button"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className="shrink-0 rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 hover:bg-amber-200"
+            className="shrink-0 rounded bg-warn-tint px-2 py-0.5 text-xs font-medium text-warn-ink hover:bg-warn-tint"
           >
             {open ? 'Cancel' : 'Bind'}
           </button>
@@ -460,13 +460,13 @@ function BindPanel({
   }
 
   return (
-    <div className="mt-2 rounded-lg border border-amber-200 bg-white p-2 text-sm dark:bg-stone-100">
+    <div className="mt-2 rounded-lg border border-warn-tint bg-card p-2 text-sm">
       <input
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search or name the ingredient…"
-        className="w-full rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none dark:bg-stone-100"
+        className="w-full rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
       />
 
       {!creating ? (
@@ -478,11 +478,11 @@ function BindPanel({
                   <button
                     type="button"
                     onClick={() => void bindTo(c.def.id)}
-                    className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-sm text-stone-700 transition hover:border-orange-300 hover:text-orange-700"
+                    className="rounded-full border border-line bg-surface px-2.5 py-1 text-sm text-ink transition hover:border-brand-300 hover:text-brand-ink"
                     title={`Bind to “${c.def.name}”`}
                   >
                     {c.def.name}{' '}
-                    <span className="text-xs text-stone-600">· {c.def.aisle}</span>
+                    <span className="text-xs text-muted">· {c.def.aisle}</span>
                   </button>
                 </li>
               ))}
@@ -491,19 +491,19 @@ function BindPanel({
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="mt-2 text-xs font-medium text-orange-700 hover:underline"
+            className="mt-2 text-xs font-medium text-brand-ink hover:underline"
           >
             + Create “{query.trim() || name}” as a new ingredient…
           </button>
         </>
       ) : (
         <div className="mt-2 flex flex-wrap items-end gap-2">
-          <label className="text-xs text-stone-600">
+          <label className="text-xs text-muted">
             Aisle
             <select
               value={aisle}
               onChange={(e) => setAisle(e.target.value)}
-              className="mt-0.5 block rounded-md border border-stone-300 bg-white px-2 py-1 text-sm dark:bg-stone-100"
+              className="mt-0.5 block rounded-md border border-line-strong bg-card px-2 py-1 text-sm"
             >
               {AISLE_ORDER.map((a) => (
                 <option key={a} value={a}>
@@ -512,12 +512,12 @@ function BindPanel({
               ))}
             </select>
           </label>
-          <label className="text-xs text-stone-600">
+          <label className="text-xs text-muted">
             Bought in
             <select
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
-              className="mt-0.5 block rounded-md border border-stone-300 bg-white px-2 py-1 text-sm dark:bg-stone-100"
+              className="mt-0.5 block rounded-md border border-line-strong bg-card px-2 py-1 text-sm"
             >
               {PURCHASE_UNITS.map((u) => (
                 <option key={u} value={u}>
@@ -527,12 +527,12 @@ function BindPanel({
             </select>
           </label>
           {needsDensity(unit) && (
-            <label className="text-xs text-stone-600" title="Lets tbsp/tsp amounts convert to the buy unit">
+            <label className="text-xs text-muted" title="Lets tbsp/tsp amounts convert to the buy unit">
               Density
               <select
                 value={density}
                 onChange={(e) => setDensity(e.target.value)}
-                className="mt-0.5 block rounded-md border border-stone-300 bg-white px-2 py-1 text-sm dark:bg-stone-100"
+                className="mt-0.5 block rounded-md border border-line-strong bg-card px-2 py-1 text-sm"
               >
                 <option value="">— (don't convert spoons)</option>
                 {DENSITY_PRESETS.map((p) => (
@@ -546,14 +546,14 @@ function BindPanel({
           <button
             type="button"
             onClick={() => void create()}
-            className="rounded-md bg-[#2a673a] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#245330]"
+            className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800"
           >
             Create &amp; bind
           </button>
           <button
             type="button"
             onClick={() => setCreating(false)}
-            className="rounded-md px-2 py-1.5 text-sm text-stone-600 hover:bg-stone-100"
+            className="rounded-md px-2 py-1.5 text-sm text-muted hover:bg-sunken"
           >
             Back
           </button>
@@ -599,7 +599,7 @@ function BindingsPanel({ bindings, dict }: { bindings: Binding[]; dict: Ingredie
 
   return (
     <details className="text-sm">
-      <summary className="cursor-pointer text-xs font-semibold tracking-wide text-stone-600 uppercase">
+      <summary className="cursor-pointer text-xs font-semibold tracking-wide text-muted uppercase">
         Your bindings ({bindings.length})
       </summary>
       <input
@@ -607,14 +607,14 @@ function BindingsPanel({ bindings, dict }: { bindings: Binding[]; dict: Ingredie
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Filter bindings…"
-        className="mt-2 w-full rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-100 focus:outline-none dark:bg-stone-100"
+        className="mt-2 w-full rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
       />
-      <ul className="mt-1.5 divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white dark:bg-stone-100">
+      <ul className="mt-1.5 divide-y divide-divider rounded-xl border border-line bg-card">
         {filtered.slice(0, visible).map((b) => (
           <BindingRow key={b.name} binding={b} def={byId.get(b.ingredientId)} />
         ))}
         {filtered.length === 0 && (
-          <li className="px-3 py-2 text-stone-600">No bindings match.</li>
+          <li className="px-3 py-2 text-muted">No bindings match.</li>
         )}
       </ul>
       {visible < filtered.length && <div ref={sentinelRef} className="h-1" />}
@@ -625,15 +625,15 @@ function BindingsPanel({ bindings, dict }: { bindings: Binding[]; dict: Ingredie
 function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef }) {
   const [editing, setEditing] = useState(false)
   const selectClass =
-    'rounded-md border border-stone-300 bg-white px-1.5 py-0.5 text-xs text-stone-600 dark:bg-stone-100'
+    'rounded-md border border-line-strong bg-card px-1.5 py-0.5 text-xs text-muted'
   return (
     <li className="px-3 py-1.5">
       <div className="flex items-center justify-between gap-3">
-        <span className="min-w-0 text-stone-600">
+        <span className="min-w-0 text-muted">
           {binding.name}{' '}
-          <span className="text-stone-600">
+          <span className="text-muted">
             → {def?.name ?? binding.ingredientId}
-            {def && <span className="text-stone-300"> ({buyUnitLabel(def.purchaseUnit)})</span>}
+            {def && <span className="text-subtle"> ({buyUnitLabel(def.purchaseUnit)})</span>}
           </span>
         </span>
         <div className="flex shrink-0 items-center gap-2">
@@ -642,7 +642,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
               type="button"
               onClick={() => setEditing((e) => !e)}
               aria-expanded={editing}
-              className="rounded px-1.5 text-xs text-stone-600 hover:bg-stone-100 hover:text-stone-600"
+              className="rounded px-1.5 text-xs text-muted hover:bg-sunken hover:text-muted"
             >
               {editing ? 'Done' : 'Edit'}
             </button>
@@ -650,7 +650,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
           <button
             type="button"
             onClick={() => void unbind(binding.name)}
-            className="rounded px-1.5 text-xs text-stone-600 hover:bg-stone-100 hover:text-rose-600"
+            className="rounded px-1.5 text-xs text-muted hover:bg-sunken hover:text-danger-ink"
             title="Unbind — back to verbatim"
           >
             Unbind
@@ -660,7 +660,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
 
       {editing && def && (
         <div className="mt-2 flex flex-wrap items-end gap-2 pb-1">
-          <label className="text-xs text-stone-600">
+          <label className="text-xs text-muted">
             Aisle
             <select
               value={def.aisle}
@@ -674,7 +674,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
               ))}
             </select>
           </label>
-          <label className="text-xs text-stone-600">
+          <label className="text-xs text-muted">
             Bought in
             <select
               value={def.purchaseUnit}
@@ -689,7 +689,7 @@ function BindingRow({ binding, def }: { binding: Binding; def?: IngredientDef })
             </select>
           </label>
           {needsDensity(def.purchaseUnit) && (
-            <label className="text-xs text-stone-600" title="Lets tbsp/tsp convert to the buy unit">
+            <label className="text-xs text-muted" title="Lets tbsp/tsp convert to the buy unit">
               Density
               <select
                 value={def.densityGPerMl ?? ''}

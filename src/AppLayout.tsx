@@ -13,15 +13,15 @@ const tabs = [
 
 export function AppLayout() {
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
-      <header className="border-b border-stone-200 bg-white dark:bg-stone-100">
+    <div className="min-h-screen bg-surface text-ink">
+      <header className="border-b border-line bg-card">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <span className="inline-flex items-center gap-2">
             {/* Brand mark: the green "F" rounded square (matches assets/forkast-mark.svg).
                 Decorative — the adjacent wordmark carries the accessible name. */}
             <span
               aria-hidden
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-orange-500 font-display text-base font-bold text-white"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-brand font-display text-base font-bold text-white"
             >
               F
             </span>
@@ -42,8 +42,8 @@ export function AppLayout() {
                 className={({ isActive }) =>
                   `rounded-md px-3 py-1.5 text-sm font-medium transition ${
                     isActive
-                      ? 'bg-orange-100 text-orange-700'
-                      : 'text-stone-600 hover:bg-stone-100'
+                      ? 'bg-brand-tint text-brand-ink'
+                      : 'text-muted hover:bg-sunken'
                   }`
                 }
               >

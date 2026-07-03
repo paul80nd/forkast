@@ -30,7 +30,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={dark ? 'Light mode' : 'Dark mode'}
-      className="rounded-md p-2 text-stone-600 transition hover:bg-stone-100 hover:text-stone-700"
+      className="rounded-md p-2 text-muted transition hover:bg-sunken hover:text-ink"
     >
       {dark ? (
         // Sun

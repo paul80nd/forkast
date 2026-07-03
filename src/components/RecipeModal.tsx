@@ -24,7 +24,7 @@ export function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () =
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-900/50 p-4 sm:p-6"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/50 p-4 sm:p-6"
       onClick={onClose}
     >
       <div
@@ -32,12 +32,12 @@ export function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () =
         aria-modal="true"
         aria-label={recipe.title}
         onClick={(e) => e.stopPropagation()}
-        className="relative my-4 w-full max-w-4xl rounded-2xl bg-white p-5 shadow-xl sm:p-6 dark:bg-stone-100"
+        className="relative my-4 w-full max-w-4xl rounded-2xl bg-card p-5 shadow-xl sm:p-6"
       >
         <div className="mb-4 flex items-center justify-between gap-3">
           <Link
             to={`/recipe/${recipe.id}`}
-            className="text-sm text-orange-700 hover:underline"
+            className="text-sm text-brand-ink hover:underline"
           >
             Open full page →
           </Link>
@@ -45,7 +45,7 @@ export function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () =
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-md px-2 py-1 text-lg leading-none text-stone-600 hover:bg-stone-100 hover:text-stone-600"
+            className="rounded-md px-2 py-1 text-lg leading-none text-muted hover:bg-sunken hover:text-muted"
           >
             ✕
           </button>

@@ -13,7 +13,7 @@ export function BackupNudge() {
       <Link
         to="/config"
         aria-label={status.text}
-        className="flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-amber-700 transition hover:bg-amber-100"
+        className="flex items-center gap-1.5 rounded-md border border-warn-tint bg-warn-wash px-2 py-1 text-warn-ink transition hover:bg-warn-tint"
       >
         <span aria-hidden>⚠</span>
         <span className="hidden text-xs font-medium sm:inline">{status.short}</span>
@@ -24,9 +24,9 @@ export function BackupNudge() {
       <div className="absolute right-0 top-full z-20 hidden pt-1 group-hover:block group-focus-within:block">
         <div
           role="tooltip"
-          className="w-64 rounded-lg border border-amber-200 bg-white dark:bg-stone-100 p-2.5 text-xs text-stone-600 shadow-md"
+          className="w-64 rounded-lg border border-warn-tint bg-card p-2.5 text-xs text-muted shadow-md"
         >
-          {status.text} <span className="font-medium text-orange-700">Open Config →</span>
+          {status.text} <span className="font-medium text-brand-ink">Open Config →</span>
         </div>
       </div>
     </div>
