@@ -5,6 +5,7 @@ import { RecipeCard } from '../components/RecipeCard'
 import { Select, fieldBoxClass } from '../components/Select'
 import { Switch } from '../components/Switch'
 import { FilterPopover } from '../components/FilterPopover'
+import { SkeletonCard } from '../components/SkeletonCard'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { deleteRecipes } from '../app/cleanup'
 import { resolveDishes, dishSizeByRecipe } from '../lib/variants'
@@ -112,16 +113,46 @@ export function BrowsePage() {
     })
   }, [filtered, groupVariants, overrides, sort, starsById])
 
-  // Render incrementally — show a page of cards, load more as the user scrolls.
+  // Render incrementally — show a page of cards, load more as the user scrolls. The paging
+  // count + scroll position survive a trip into a recipe (sessionStorage), so returning from
+  // a recipe doesn't dump you back at the top of a long list.
   const PAGE = 50
-  const [visible, setVisible] = useState(PAGE)
+  const [visible, setVisible] = useState(() => {
+    const saved = Number(sessionStorage.getItem('browse.visible') || 0)
+    return saved > 0 ? saved : PAGE
+  })
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  // Back to the top of the list, and clear any selection, whenever the filters change.
+  // Reset paging + selection + scroll when the filters change — but NOT on the initial mount,
+  // so a Back from a recipe keeps the restored paging/scroll below.
+  const mounted = useRef(false)
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
     setVisible(PAGE)
     setSelected(new Set())
+    window.scrollTo(0, 0)
   }, [query, cuisine, maxTime, rating, sort, groupVariants])
+
+  useEffect(() => {
+    sessionStorage.setItem('browse.visible', String(visible))
+  }, [visible])
+
+  // Save the scroll position as you go; restore it once recipes have loaded (Back-from-recipe).
+  const restored = useRef(false)
+  useEffect(() => {
+    if (restored.current || recipes === undefined) return
+    restored.current = true
+    const y = Number(sessionStorage.getItem('browse.scrollY') || 0)
+    if (y) requestAnimationFrame(() => window.scrollTo(0, y))
+  }, [recipes])
+  useEffect(() => {
+    const onScroll = () => sessionStorage.setItem('browse.scrollY', String(window.scrollY))
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   // Grow the visible count when the bottom sentinel scrolls into view.
   useEffect(() => {
@@ -137,8 +168,20 @@ export function BrowsePage() {
     return () => obs.disconnect()
   }, [cards.length, visible])
 
+  // Real page-load sentinel: a skeleton grid while the store loads, so the grid doesn't jump.
   if (recipes === undefined) {
-    return <p className="text-muted">Loading recipes…</p>
+    return (
+      <section>
+        <div className="flex items-end justify-between gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">Browse</h1>
+        </div>
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </section>
+    )
   }
 
   // Applied secondary filters, as removable chips shown below the bar.
@@ -159,6 +202,10 @@ export function BrowsePage() {
     setMaxTime(0)
     setRating('all')
   }
+  const clearEverything = () => {
+    clearFilters()
+    setQuery('')
+  }
   const eyebrow = 'text-[11px] font-semibold tracking-wider text-muted uppercase'
 
   return (
@@ -170,9 +217,11 @@ export function BrowsePage() {
         </span>
       </div>
 
-      {/* Calm bar: search + sort inline; the rest tucked behind Filters; applied
-          filters shown as removable chips below. */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      {/* Calm bar: search + sort inline; the rest tucked behind Filters; applied filters
+          shown as removable chips below. The whole bar (+ chips) sticks to the top as you
+          scroll the list, so refining never means scrolling back up. */}
+      <div className="sticky top-0 z-20 -mx-4 mt-3 border-b border-divider bg-surface px-4 pt-1.5 pb-3">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           type="search"
           value={query}
@@ -287,6 +336,7 @@ export function BrowsePage() {
           </button>
         </div>
       )}
+      </div>
 
       {selectMode && (
         <div
@@ -319,9 +369,19 @@ export function BrowsePage() {
       )}
 
       {cards.length === 0 ? (
-        <p className="mt-10 text-center text-muted">
-          No recipes match those filters.
-        </p>
+        <div className="mt-6 rounded-2xl border border-dashed border-line-strong bg-card px-6 py-11 text-center">
+          <p className="text-base font-semibold text-ink">No recipes match those filters</p>
+          <p className="mt-1 mb-3.5 text-sm text-muted">
+            Try widening your search or clearing a filter.
+          </p>
+          <button
+            type="button"
+            onClick={clearEverything}
+            className="rounded-md bg-brand-tint px-3 py-1.5 text-sm font-medium text-brand-ink hover:bg-brand-200"
+          >
+            Clear all filters
+          </button>
+        </div>
       ) : (
         <>
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -337,10 +397,14 @@ export function BrowsePage() {
               />
             ))}
           </div>
-          {visible < cards.length && (
+          {visible < cards.length ? (
             <div ref={sentinelRef} className="mt-6 text-center text-sm text-muted">
               Loading more…
             </div>
+          ) : (
+            <p className="mt-6 text-center text-sm text-muted">
+              That's everything · {cards.length} {cards.length === 1 ? 'dish' : 'dishes'}
+            </p>
           )}
         </>
       )}
