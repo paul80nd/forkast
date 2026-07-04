@@ -52,7 +52,11 @@ npm test         # unit + feature (Gherkin) tests
 The live demo is the `npm run build` output, deployed to GitHub Pages on every push to
 `main` (see [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)). It ships the
 bundled demo recipes and their placeholder art; **images for recipes you import yourself
-aren't hosted** — they live only on your machine — so they won't appear on the hosted demo.
+aren't hosted** — they live only on your machine — so they won't appear on the public demo.
+For your own installed copy, an **image pack** (Config → Recipe images) loads your local
+image folder into the browser once, so the app shows real photos without a server; those
+images sit in a separate, re-importable cache and stay out of the JSON backup (see
+[`docs/image-pack-spec.md`](docs/image-pack-spec.md)).
 
 ## How this was built
 

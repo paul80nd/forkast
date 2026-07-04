@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStorageEstimate } from '../hooks/useStorageEstimate'
+import { imageStats } from '../app/images'
+import { formatBytes } from '../lib/storageEstimate'
 
 // Config → Storage: how much space the app is using in this browser and whether the browser
 // has promised (persisted) not to evict it. Thin shell over useStorageEstimate; the numbers
@@ -10,6 +12,13 @@ export function StorageUsage() {
   // Set only when a request was made and the browser declined — so the click always has a
   // visible result (granting flips the banner to calm; declining shows this note).
   const [declined, setDeclined] = useState(false)
+  // The estimate is origin-wide, so it already includes the recipe-image cache. Surface how
+  // much of it is that cache — it's re-importable and deliberately kept out of the backup, so
+  // it reads differently from your precious data.
+  const [imageBytes, setImageBytes] = useState<number | null>(null)
+  useEffect(() => {
+    void imageStats().then((s) => setImageBytes(s.bytes))
+  }, [])
 
   async function onRequest() {
     const granted = await requestPersist()
@@ -20,9 +29,9 @@ export function StorageUsage() {
     <div className="rounded-xl border border-line bg-card p-4">
       <h2 className="text-lg font-semibold">Storage</h2>
       <p className="mt-1 text-sm text-muted">
-        How much space this app is using in your browser, and whether the browser has
-        promised to keep it. This is the working store — your saved JSON backup is the
-        durable copy.
+        How much space this app is using in your browser (all of it — your data plus the
+        recipe-image cache), and whether the browser has promised to keep it. Your saved JSON
+        backup is the durable copy of the data.
       </p>
 
       {loading ? (
@@ -51,6 +60,12 @@ export function StorageUsage() {
                 style={{ width: `${display!.barPct}%` }}
               />
             </div>
+            {imageBytes != null && imageBytes > 0 && (
+              <p className="mt-1.5 text-xs text-muted">
+                Including {formatBytes(imageBytes)} of recipe images — a re-importable cache,
+                not part of your backup.
+              </p>
+            )}
           </div>
 
           <p
