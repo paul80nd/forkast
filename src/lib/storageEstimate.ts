@@ -29,6 +29,8 @@ export interface StorageInfo {
 export interface StorageDisplay {
   supported: boolean
   persisted: boolean
+  /** Raw origin usage in bytes (null when unknown) — for reconciling against measured caches. */
+  usageBytes: number | null
   usageLabel: string
   quotaLabel: string
   /** 0..100, or null when the quota is unknown. */
@@ -37,6 +39,30 @@ export interface StorageDisplay {
   /** Clamped 0..100 for the bar width. */
   barPct: number
   persist: { tone: 'ok' | 'warn'; text: string }
+}
+
+export interface ImageBreakdown {
+  /** Formatted size of the recipe-image cache, e.g. "1.0 GB". */
+  label: string
+  /**
+   * True when the measured cache is larger than the browser's reported total usage — i.e.
+   * the browser is under-counting (WebKit buckets/lags large IndexedDB writes). The card
+   * then reconciles the copy rather than claiming the cache is a subset of a smaller total.
+   */
+  underReported: boolean
+}
+
+/**
+ * The recipe-image slice of storage, for the Storage card. We measure the cache exactly (summed
+ * blob sizes), whereas the origin `usage` comes from the browser and can lag or bucket — so we
+ * flag the case where our figure exceeds it. Returns null when there's nothing cached.
+ */
+export function imageBreakdown(
+  imageBytes: number | null,
+  usage: number | null,
+): ImageBreakdown | null {
+  if (imageBytes == null || imageBytes <= 0) return null
+  return { label: formatBytes(imageBytes), underReported: usage != null && imageBytes > usage }
 }
 
 export function storageDisplay(info: StorageInfo): StorageDisplay {
@@ -57,6 +83,7 @@ export function storageDisplay(info: StorageInfo): StorageDisplay {
   return {
     supported,
     persisted,
+    usageBytes: hasUsage ? usage : null,
     usageLabel: hasUsage ? formatBytes(usage) : '—',
     quotaLabel: hasQuota ? formatBytes(quota) : '—',
     percent,

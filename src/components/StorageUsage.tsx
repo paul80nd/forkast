@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useStorageEstimate } from '../hooks/useStorageEstimate'
 import { imageStats } from '../app/images'
-import { formatBytes } from '../lib/storageEstimate'
+import { imageBreakdown } from '../lib/storageEstimate'
 
 // Config → Storage: how much space the app is using in this browser and whether the browser
 // has promised (persisted) not to evict it. Thin shell over useStorageEstimate; the numbers
@@ -60,12 +60,26 @@ export function StorageUsage() {
                 style={{ width: `${display!.barPct}%` }}
               />
             </div>
-            {imageBytes != null && imageBytes > 0 && (
-              <p className="mt-1.5 text-xs text-muted">
-                Including {formatBytes(imageBytes)} of recipe images — a re-importable cache,
-                not part of your backup.
-              </p>
-            )}
+            {(() => {
+              const images = imageBreakdown(imageBytes, display!.usageBytes)
+              if (!images) return null
+              return (
+                <p className="mt-1.5 text-xs text-muted">
+                  {images.underReported ? (
+                    <>
+                      Your recipe-image cache is {images.label} on its own — a re-importable
+                      cache, not part of your backup. This browser reports overall usage only
+                      roughly, so the total above can lag a large image load.
+                    </>
+                  ) : (
+                    <>
+                      Including {images.label} of recipe images — a re-importable cache, not
+                      part of your backup.
+                    </>
+                  )}
+                </p>
+              )
+            })()}
           </div>
 
           <p
