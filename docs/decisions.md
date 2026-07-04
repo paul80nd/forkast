@@ -8,6 +8,24 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-07-04 — Image pack: a separate, content-addressed cache database
+
+Recipe images live in their own IndexedDB database (`forkast-images`), **not** the main
+`forkast` store, and are **content-addressed** (blobs keyed by a SHA-256 of their bytes; a
+`names` table maps each recipe filename → hash). *Why separate:* the Save/Open backup
+enumerates the main store's tables explicitly, so a distinct DB is automatically excluded from
+the exported JSON — images are regenerable, so they stay out of the durable, precious backup;
+worst case (eviction / new machine) costs one re-import, never data loss. *Why
+content-addressed:* a dish's variant swaps share a byte-identical hero photo (the image hash is
+literally the variant group key at import), so keying on content stores each distinct image
+once — the on-disk hardlink dedup (`scripts/dedupe-images.ts`) carried into the browser. This is
+now safe because installing the app grants persistent storage and desktop quota runs to tens of
+GB (see [`image-pack-spec.md`](image-pack-spec.md)). Resolution: a `useRecipeImage` hook prefers
+a stored blob's object URL (reference-counted, not a fixed-cap LRU, since Browse accumulates
+mounted cards) and otherwise falls through to the existing dev/base route, degrading to a
+placeholder tile on error. *Supersedes nothing* — closes the gap where imported-recipe images
+404 on the hosted/installed build with no dev image server.
+
 ## 2026-07-02 — Variants supersede the manual Recipe Groups feature
 
 The import-seeded **variants** feature (`variantGroupKey`/`variantGroupLead`) plus a user

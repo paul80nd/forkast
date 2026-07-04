@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
-import { resolveAsset } from '../lib/assets'
+import { useRecipeImage } from '../hooks/useRecipeImage'
 import { RotationRating, StarRating } from './RatingScale'
 import { ImageLightbox } from './ImageLightbox'
 import { fieldBoxClass } from './Select'
@@ -53,6 +53,8 @@ export function RecipeDetail({
   const [showParsed, setShowParsed] = useState(false)
   // Click-to-enlarge: the thumbnail is cropped 4:3, so a lightbox shows the whole image bigger.
   const [zoomed, setZoomed] = useState(false)
+  // Prefer the image pack (falls back to the base/dev route); the enlarged view reuses it.
+  const imageSrc = useRecipeImage(recipe.image)
   useEffect(() => {
     setServes(recipe.serves)
     setCheckedIng(new Set())
@@ -77,14 +79,14 @@ export function RecipeDetail({
           className="block w-full cursor-zoom-in overflow-hidden rounded-xl"
         >
           <img
-            src={resolveAsset(recipe.image)}
+            src={imageSrc}
             alt=""
             className="aspect-[4/3] w-full object-cover transition hover:brightness-95"
           />
         </button>
         {zoomed && (
           <ImageLightbox
-            src={resolveAsset(recipe.image)}
+            src={imageSrc}
             label={`${recipe.title} — larger image`}
             onClose={() => setZoomed(false)}
           />

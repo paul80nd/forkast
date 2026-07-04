@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
-import { resolveAsset } from '../lib/assets'
+import { RecipeImage } from '../components/RecipeImage'
 import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
 import {
   addToPlan,
@@ -413,9 +413,8 @@ export function PlanPage() {
                 >
                   <div className="flex items-center gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <img
-                      src={resolveAsset(r.image)}
-                      alt=""
+                    <RecipeImage
+                      image={r.image}
                       className="size-14 shrink-0 rounded-lg object-cover"
                     />
                     <div className="min-w-0">
@@ -587,7 +586,7 @@ function SuggestionSlot({
     <li className="overflow-hidden rounded-xl border border-line bg-card">
       <div className="flex items-center gap-3 p-2.5">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <img src={resolveAsset(recipe.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
+          <RecipeImage image={recipe.image} className="size-14 shrink-0 rounded-lg object-cover" />
           <div className="min-w-0">
             {/* Only the title opens the detail pop-up — clearest affordance for "more detail". */}
             <button
@@ -734,9 +733,8 @@ function PickerStrip({
               className="group relative w-40 shrink-0 overflow-hidden rounded-xl border border-line bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               title="Add to week"
             >
-              <img
-                src={resolveAsset(r.image)}
-                alt=""
+              <RecipeImage
+                image={r.image}
                 className="aspect-[4/3] w-full object-cover"
               />
               <span className="absolute top-1.5 right-1.5 rounded-full bg-brand-700 px-1.5 text-lg leading-6 font-bold text-white opacity-0 transition group-hover:opacity-100">

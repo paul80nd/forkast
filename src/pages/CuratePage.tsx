@@ -11,7 +11,7 @@ import { ProgressBar } from '../components/ProgressBar'
 import { FilterPopover } from '../components/FilterPopover'
 import { useToast } from '../hooks/useToast'
 import { usePersistentState } from '../hooks/usePersistentState'
-import { resolveAsset } from '../lib/assets'
+import { RecipeImage } from '../components/RecipeImage'
 import type { Recipe } from '../schema/recipe'
 import type { Rotation, Stars } from '../schema/userData'
 import { resolveDishes, variantLabel } from '../lib/variants'
@@ -323,9 +323,8 @@ export function CuratePage() {
             aria-label={`Open ${current.title}`}
             className="block sm:w-2/5"
           >
-            <img
-              src={resolveAsset(current.image)}
-              alt=""
+            <RecipeImage
+              image={current.image}
               className="aspect-[4/3] h-full w-full object-cover"
             />
           </Link>
@@ -672,9 +671,8 @@ function RatedRow({
   return (
     <li className="flex items-center gap-3 px-3 py-2">
       <Link to={`/recipe/${recipe.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-        <img
-          src={resolveAsset(recipe.image)}
-          alt=""
+        <RecipeImage
+          image={recipe.image}
           className="size-10 shrink-0 rounded-md object-cover"
         />
         <span className="truncate font-medium text-ink">{recipe.title}</span>

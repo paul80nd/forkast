@@ -21,9 +21,11 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
   - [`docs/curate-spec.md`](docs/curate-spec.md) — Curate (★ rating + triage).
   - [`docs/shop-spec.md`](docs/shop-spec.md) — Shop (merged list + lazy ingredient binding at
     shopping time: dictionary, name bindings, match, density).
-  - [`docs/image-pack-spec.md`](docs/image-pack-spec.md) — **Image pack** (planned): load your own
+  - [`docs/image-pack-spec.md`](docs/image-pack-spec.md) — **Image pack** (built): load your own
     recipe images into IndexedDB once so the hosted/installed app shows them without the dev-only
-    image server; a separate, re-importable cache DB, excluded from the JSON backup.
+    image server; a separate, **content-addressed** (dedups variant duplicates) re-importable cache
+    DB (`forkast-images`), excluded from the JSON backup. `src/db/images.ts` + `src/app/images.ts` +
+    `useRecipeImage`; ingested via the Config → Recipe images card.
   - [`docs/plan-suggest-spec.md`](docs/plan-suggest-spec.md) — assisted "suggest a varied week"
     (**built**: propose-then-accept shortlist; `src/lib/suggest.ts` + `src/app/suggest.ts`).
   - [`docs/variants-spec.md`](docs/variants-spec.md) — **Variants** (built): one dish, many swaps —

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { resolveAsset } from '../lib/assets'
+import { RecipeImage } from './RecipeImage'
 import type { Recipe } from '../schema/recipe'
 
 // A side-by-side comparison of a set of recipes: metadata rows plus ingredients, with the
@@ -37,9 +37,8 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
               <th key={r.id} className="p-2 text-left align-bottom font-semibold text-ink">
                 <Link to={`/recipe/${r.id}`} className="block hover:text-brand-ink hover:underline">
                   {r.image ? (
-                    <img
-                      src={resolveAsset(r.image)}
-                      alt=""
+                    <RecipeImage
+                      image={r.image}
                       className="mb-1.5 aspect-[4/3] w-full max-w-40 rounded-md object-cover"
                       loading="lazy"
                     />

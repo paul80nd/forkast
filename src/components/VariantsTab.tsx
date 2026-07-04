@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
-import { resolveAsset } from '../lib/assets'
+import { RecipeImage } from './RecipeImage'
 import { resolveDishes, variantLabel, type Dish } from '../lib/variants'
 import type { Recipe } from '../schema/recipe'
 import type { VariantOverride } from '../schema/userData'
@@ -417,7 +417,7 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
               const isLead = m.id === lead.id
               return (
                 <li key={m.id} className="flex items-center gap-2 text-sm">
-                  <img src={resolveAsset(m.image)} alt="" className="size-9 shrink-0 rounded object-cover" />
+                  <RecipeImage image={m.image} className="size-9 shrink-0 rounded object-cover" />
                   <span className="flex-1 truncate text-ink">{m.title}</span>
                   <span
                     className={`${chip} ${isLead ? 'border-brand-500 bg-brand-700 text-white' : 'border-line text-muted'}`}

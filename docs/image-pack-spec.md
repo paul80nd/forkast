@@ -40,14 +40,20 @@ the main `forkast` store:
 - It signals intent: this is a **cache**, wiped and rebuilt freely, decoupled from the main
   store's schema versioning.
 
-One table, keyed by filename:
+**Content-addressed**, so a dish's variant swaps — which share a byte-identical hero photo (the
+image hash *is* the variant group key at import time) — are stored **once**, not once per
+filename. This is the on-disk hardlink dedup (`scripts/dedupe-images.ts`) carried into IndexedDB.
+Two tables (`src/db/images.ts`):
 
 ```ts
-images: 'name'   // { name: string; blob: Blob }
+blobs: 'hash'   // { hash: string; blob: Blob; size: number }  — one copy per distinct image
+names: 'name'   // { name: string; hash: string }              — filename → the hash it resolves to
 ```
 
-The key is the recipe's `image` value (a bare filename), so re-importing recipes never orphans a
-stored image — filenames are stable across imports.
+`names` is keyed by the recipe's `image` value (a bare filename), so re-importing recipes never
+orphans a stored image — filenames are stable across imports. Ingestion hashes each file
+(SHA-256), writes the blob only if that hash isn't already held, then maps the filename to it; so
+loading the whole folder collapses the variant duplicates automatically.
 
 ### Ingestion — a directory picker, no new dependency
 
@@ -56,10 +62,10 @@ Config gains a **Recipe images** card (beneath the Storage card). It uses a dire
 (`data/private/images`). This needs **no new dependency** and **no change to the import
 pipeline** — you point the app at the folder you already have.
 
-- On pick, each file is stored as `{ name, blob }` (deduped by filename), with progress
-  (`N / total`).
-- The card then shows a stored summary (count + bytes, from `imageStats()`) and a **Clear**
-  button.
+- On pick, non-image files are ignored and each image is stored (deduped by content), with
+  progress (`N / total`).
+- The card then shows a stored summary (`imageStats()`: filename count, distinct-image count when
+  it differs, deduplicated bytes) and a **Clear** button.
 - Images are stored **as-is** (their existing resolution) — no in-browser resize. Given persisted
   storage and ample quota, the simplicity and full sharpness are worth the ~1 GB. (An optional
   canvas-based downscale could be added later if footprint ever matters; explicitly out of scope
@@ -85,9 +91,11 @@ A new `useRecipeImage(ref)` hook (`src/hooks/`) replaces the `resolveAsset(...)`
 3. On image load error → a neutral **placeholder tile** (brand-tint), so a missing image degrades
    gracefully rather than showing a broken-image glyph.
 
-Object URLs come from a small module-level **LRU** (cap on the order of a few hundred), which
-revokes evicted URLs. That bounds memory and keeps a stable URL per filename, so scrolling back to
-a card doesn't re-create/flicker its image.
+Object URLs are **reference-counted** in a small module-level registry: the URL is created once
+per filename and revoked only when the last mounted user unmounts. (Not a fixed-cap LRU — Browse
+accumulates cards as you scroll rather than unmounting them, so a capped pool could revoke a URL
+still on screen.) That keeps a stable URL per filename, so re-rendering doesn't re-create/flicker
+its image, while freeing memory as you navigate away.
 
 Consequence: once the pack is imported, images resolve **entirely from IndexedDB**, bypassing the
 network — so no service-worker change is needed. In dev the cache is typically empty, so rendering

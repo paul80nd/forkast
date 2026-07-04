@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
-import { resolveAsset } from '../lib/assets'
+import { RecipeImage } from './RecipeImage'
 
 export function RecipeCard({
   recipe,
@@ -40,9 +40,8 @@ export function RecipeCard({
         }
       >
         <div className="relative">
-          <img
-            src={resolveAsset(recipe.image)}
-            alt=""
+          <RecipeImage
+            image={recipe.image}
             className="aspect-[4/3] w-full object-cover"
             loading="lazy"
           />
