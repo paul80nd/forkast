@@ -44,7 +44,7 @@ export function ImageLightbox({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex cursor-zoom-out items-center justify-center bg-ink/80 p-4 sm:p-8"
+      className="fixed inset-0 z-[60] flex cursor-zoom-out items-center justify-center bg-scrim/80 p-4 sm:p-8"
       onClick={(e) => {
         e.stopPropagation()
         onClose()

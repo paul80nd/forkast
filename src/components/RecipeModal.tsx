@@ -24,7 +24,7 @@ export function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () =
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/50 p-4 sm:p-6"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-scrim/60 p-4 sm:p-6"
       onClick={onClose}
     >
       <div

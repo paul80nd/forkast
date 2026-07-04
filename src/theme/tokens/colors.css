@@ -68,6 +68,11 @@
   --fk-surface-sunken: var(--fk-neutral-100);
   --fk-surface-inset:  var(--fk-neutral-150);
 
+  /* Scrim — the dark wash behind modals/lightboxes. Kept theme-stable-dark (NOT tied to
+     `--fk-text`, which inverts to near-white in dark mode); apply an opacity in the utility
+     (e.g. bg-scrim/70). Dark mode drops it to near-black so overlays stay properly dim. */
+  --fk-scrim:          var(--fk-neutral-900);
+
   /* Text */
   --fk-text:        var(--fk-neutral-900);
   /* App override: the design's muted is neutral-500, which misses strict AA on the
@@ -133,6 +138,9 @@
   --fk-surface-card:   oklch(22.0% 0.011 132);
   --fk-surface-sunken: oklch(25.5% 0.011 130);
   --fk-surface-inset:  oklch(28.5% 0.011 128);
+
+  /* Near-black, darker than the page — so an overlay dims the (already dark) UI beneath it. */
+  --fk-scrim:          oklch(8.0% 0.004 135);
 
   --fk-text:        oklch(96.0% 0.006 100);
   --fk-text-muted:  oklch(72.0% 0.010 105);

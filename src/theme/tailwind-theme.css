@@ -31,6 +31,7 @@
   --color-card:         var(--fk-surface-card);
   --color-sunken:       var(--fk-surface-sunken);
   --color-inset:        var(--fk-surface-inset);
+  --color-scrim:        var(--fk-scrim);
 
   --color-ink:          var(--fk-text);
   --color-muted:        var(--fk-text-muted);
