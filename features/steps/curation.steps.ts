@@ -1,7 +1,7 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
-import { applyRatingToGroup, clearCuration, setRotation, setStars } from '../../src/app/curation'
+import { applyRatingToGroup, clearCuration, setNotes, setRotation, setStars } from '../../src/app/curation'
 import { setVariantOverride } from '../../src/app/variants'
 import { makeRecipe } from '../../test/factories'
 import type { Rotation, Stars } from '../../src/schema/userData'
@@ -70,6 +70,81 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     But('recipe {string} still has the note {string}', async (_, id: string, note: string) => {
       expect((await db.userData.get(id))?.notes).toBe(note)
+    })
+  })
+
+  Scenario('Adding a note stores it', ({ When, Then }) => {
+    When('I set the note on recipe {string} to {string}', async (_, id: string, note: string) => {
+      await setNotes(id, note)
+    })
+    Then('recipe {string} has the note {string}', async (_, id: string, note: string) => {
+      expect((await db.userData.get(id))?.notes).toBe(note)
+    })
+  })
+
+  Scenario('Editing a note replaces the previous text', ({ Given, When, Then }) => {
+    Given('recipe {string} has the note {string}', async (_, id: string, note: string) => {
+      await setNotes(id, note)
+    })
+    When('I set the note on recipe {string} to {string}', async (_, id: string, note: string) => {
+      await setNotes(id, note)
+    })
+    Then('recipe {string} has the note {string}', async (_, id: string, note: string) => {
+      expect((await db.userData.get(id))?.notes).toBe(note)
+    })
+  })
+
+  Scenario('A note is trimmed of surrounding whitespace', ({ When, Then }) => {
+    When('I set the note on recipe {string} to {string}', async (_, id: string, note: string) => {
+      await setNotes(id, note)
+    })
+    Then('recipe {string} has the note {string}', async (_, id: string, note: string) => {
+      expect((await db.userData.get(id))?.notes).toBe(note)
+    })
+  })
+
+  Scenario('A note lives alongside a rating', ({ Given, When, Then, And }) => {
+    Given('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
+      await setStars(id, n as Stars)
+    })
+    When('I set the note on recipe {string} to {string}', async (_, id: string, note: string) => {
+      await setNotes(id, note)
+    })
+    Then('recipe {string} has {int} stars', async (_, id: string, n: number) => {
+      expect((await db.userData.get(id))?.stars).toBe(n)
+    })
+    And('recipe {string} has the note {string}', async (_, id: string, note: string) => {
+      expect((await db.userData.get(id))?.notes).toBe(note)
+    })
+  })
+
+  Scenario('Clearing the only note on a recipe removes its row', ({ Given, When, Then }) => {
+    Given('recipe {string} has the note {string}', async (_, id: string, note: string) => {
+      await setNotes(id, note)
+    })
+    When('I clear the note on recipe {string}', async (_, id: string) => {
+      await setNotes(id, '')
+    })
+    Then('recipe {string} has no curation row', async (_, id: string) => {
+      expect(await db.userData.get(id)).toBeUndefined()
+    })
+  })
+
+  Scenario('Clearing a note keeps the row when the recipe is rated', ({ Given, And, When, Then, But }) => {
+    Given('I have rated recipe {string} {int} stars', async (_, id: string, n: number) => {
+      await setStars(id, n as Stars)
+    })
+    And('recipe {string} has the note {string}', async (_, id: string, note: string) => {
+      await setNotes(id, note)
+    })
+    When('I clear the note on recipe {string}', async (_, id: string) => {
+      await setNotes(id, '')
+    })
+    Then('recipe {string} has no note', async (_, id: string) => {
+      expect((await db.userData.get(id))?.notes).toBeUndefined()
+    })
+    But('recipe {string} has {int} stars', async (_, id: string, n: number) => {
+      expect((await db.userData.get(id))?.stars).toBe(n)
     })
   })
 

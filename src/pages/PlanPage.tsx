@@ -109,6 +109,13 @@ export function PlanPage() {
     return m
   }, [userData])
 
+  // Recipes carrying cooking notes — so a planned meal flags "read your notes before you cook".
+  const notedIds = useMemo(() => {
+    const s = new Set<string>()
+    for (const u of userData ?? []) if (u.notes) s.add(u.recipeId)
+    return s
+  }, [userData])
+
   const lastCookedById = useMemo(() => {
     const m = new Map<string, string>()
     for (const c of cooked ?? []) {
@@ -428,6 +435,15 @@ export function PlanPage() {
                         <span className={rec.warn ? 'text-warn-ink' : 'text-muted'}>
                           · {rec.text}
                         </span>
+                        {notedIds.has(r.id) && (
+                          <span
+                            className="text-brand-ink"
+                            title="You added notes on this recipe — open it to read them"
+                          >
+                            · <span aria-hidden="true">📝</span>
+                            <span className="sr-only">has your notes</span>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

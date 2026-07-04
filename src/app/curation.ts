@@ -51,6 +51,25 @@ export async function setRotation(
 }
 
 /**
+ * Set (or clear, with an empty/whitespace string) a recipe's free-text cooking notes —
+ * "add salt to the rice next time" — preserving any stars, rotation or tags already on the
+ * row. The text is trimmed; clearing a row that has nothing else removes it.
+ */
+export async function setNotes(recipeId: string, notes: string): Promise<void> {
+  const trimmed = notes.trim()
+  const existing = await db.userData.get(recipeId)
+  if (!trimmed) {
+    if (existing && (existing.stars || existing.rotation || existing.userTags?.length)) {
+      await db.userData.put({ ...existing, notes: undefined })
+    } else if (existing) {
+      await db.userData.delete(recipeId)
+    }
+    return
+  }
+  await db.userData.put({ ...(existing ?? { recipeId }), recipeId, notes: trimmed })
+}
+
+/**
  * Clear a recipe's rating *and* rotation in one read-modify-write, sending it back to the
  * unrated triage backlog. Notes/tags are kept (the row survives if it has them). Done as a
  * single operation deliberately: calling setStars + setRotation concurrently would race on

@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { RotationRating, StarRating } from './RatingScale'
-import { clearCuration, setRotation, setStars } from '../app/curation'
+import { fieldBoxClass } from './Select'
+import { clearCuration, setNotes, setRotation, setStars } from '../app/curation'
 import { dishForRecipe } from '../app/variants'
 import { ingredientDelta, variantLabel } from '../lib/variants'
 import { formatScaledQty, scaledIngredientLabel, servingFactor } from '../lib/scaleServings'
@@ -164,7 +165,7 @@ export function RecipeDetail({
           <div className="mt-4 rounded-lg border border-line bg-surface p-3">
             <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">
               Nutrition{' '}
-              <span className="font-normal tracking-normal text-subtle normal-case">
+              <span className="font-normal tracking-normal text-muted normal-case">
                 · per serving
               </span>
             </h3>
@@ -325,7 +326,52 @@ export function RecipeDetail({
               </CheckItem>
             ))}
         </ol>
+
+        <RecipeNotes recipeId={recipe.id} />
       </div>
+    </div>
+  )
+}
+
+// Free-text cooking notes for next time ("add salt to the rice"). Private user data on the
+// curation row, kept alongside ★/◆ and exported with the backup. Edits autosave: on blur, and
+// on unmount too (so closing the page or the Plan modal without blurring never drops a note).
+function RecipeNotes({ recipeId }: { recipeId: string }) {
+  // What's stored (empty string when none). Live, so an import or a variant swap reflects here.
+  const stored = useLiveQuery(async () => (await db.userData.get(recipeId))?.notes ?? '', [recipeId])
+  // Local edit buffer; `null` means "not editing — mirror what's stored".
+  const [draft, setDraft] = useState<string | null>(null)
+  const value = draft ?? stored ?? ''
+
+  // Fresh buffer whenever the recipe changes (navigation / variant swap).
+  useEffect(() => setDraft(null), [recipeId])
+
+  // Persist the buffer if it differs from storage. Held in a ref so the unmount flush always
+  // sees the latest draft without re-subscribing the cleanup effect on every keystroke.
+  const persist = useRef<() => void>(() => {})
+  persist.current = () => {
+    if (draft !== null && draft.trim() !== (stored ?? '')) void setNotes(recipeId, draft)
+  }
+  useEffect(() => () => persist.current(), [])
+
+  return (
+    <div className="mt-6">
+      <h2 className="text-sm font-semibold tracking-wide text-muted uppercase">Your notes</h2>
+      <p className="mt-1 text-xs text-muted">
+        Thoughts for next time — tweaks, timings, what to watch. Only you see these.
+      </p>
+      <textarea
+        value={value}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          persist.current()
+          setDraft(null)
+        }}
+        rows={3}
+        aria-label="Your notes for this recipe"
+        placeholder="e.g. add salt to the rice — it needed it last time."
+        className={`${fieldBoxClass} mt-2 w-full resize-y px-3 py-2 text-sm placeholder:text-muted`}
+      />
     </div>
   )
 }

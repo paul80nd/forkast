@@ -139,6 +139,16 @@ Conceptual; the exact record shapes are the TS types in `src/schema/userData.ts`
 - **★1–2** — binned
 - **unrated** — triage backlog
 
+### Recipe notes (built)
+
+Free-text **cooking notes** per recipe — what you'd change *next time* ("add salt to the rice,
+it wasn't salty enough"). Deliberately **not** an edit to the recipe: the reference record stays
+re-importable; the note is precious user data (`userData.notes`, keyed by recipe id), written via
+`setNotes` in `src/app/curation.ts` and exported with the backup. Shown as an editable panel below
+the method on the recipe page (autosaves on blur), and flagged with a small 📝 marker on planned
+meals so you remember to read them before cooking. Sits on the same curation row as ★/◆, so a note
+survives clearing a rating (and vice-versa).
+
 ## MVP scope
 
 1. **Import** a dataset (`recipes.json` + images) into IndexedDB; ship a bundled demo set

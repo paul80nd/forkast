@@ -26,6 +26,37 @@ Feature: Rate recipes with stars
     Then recipe "r1" has no stars
     But recipe "r1" still has the note "great with rice"
 
+  Scenario: Adding a note stores it
+    When I set the note on recipe "r1" to "add salt to the rice"
+    Then recipe "r1" has the note "add salt to the rice"
+
+  Scenario: Editing a note replaces the previous text
+    Given recipe "r1" has the note "a bit bland"
+    When I set the note on recipe "r1" to "add salt to the rice"
+    Then recipe "r1" has the note "add salt to the rice"
+
+  Scenario: A note is trimmed of surrounding whitespace
+    When I set the note on recipe "r1" to "   needs more chilli   "
+    Then recipe "r1" has the note "needs more chilli"
+
+  Scenario: A note lives alongside a rating
+    Given I have rated recipe "r1" 5 stars
+    When I set the note on recipe "r1" to "double the sauce"
+    Then recipe "r1" has 5 stars
+    And recipe "r1" has the note "double the sauce"
+
+  Scenario: Clearing the only note on a recipe removes its row
+    Given recipe "r1" has the note "add salt to the rice"
+    When I clear the note on recipe "r1"
+    Then recipe "r1" has no curation row
+
+  Scenario: Clearing a note keeps the row when the recipe is rated
+    Given I have rated recipe "r1" 4 stars
+    And recipe "r1" has the note "add salt to the rice"
+    When I clear the note on recipe "r1"
+    Then recipe "r1" has no note
+    But recipe "r1" has 4 stars
+
   Scenario: Setting a rotation stores it
     When I set the rotation on recipe "r1" to 5
     Then recipe "r1" has rotation 5
