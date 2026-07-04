@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { resolveAsset } from '../lib/assets'
 import { RotationRating, StarRating } from './RatingScale'
+import { ImageLightbox } from './ImageLightbox'
 import { fieldBoxClass } from './Select'
 import { clearCuration, setNotes, setRotation, setStars } from '../app/curation'
 import { dishForRecipe } from '../app/variants'
@@ -50,6 +51,8 @@ export function RecipeDetail({
   const [checkedIng, setCheckedIng] = useState<Set<number>>(new Set())
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set())
   const [showParsed, setShowParsed] = useState(false)
+  // Click-to-enlarge: the thumbnail is cropped 4:3, so a lightbox shows the whole image bigger.
+  const [zoomed, setZoomed] = useState(false)
   useEffect(() => {
     setServes(recipe.serves)
     setCheckedIng(new Set())
@@ -67,11 +70,25 @@ export function RecipeDetail({
     <div className="grid gap-6 md:grid-cols-[2fr_3fr]">
       {/* Left: image + at-a-glance facts */}
       <div>
-        <img
-          src={resolveAsset(recipe.image)}
-          alt=""
-          className="aspect-[4/3] w-full rounded-xl object-cover"
-        />
+        <button
+          type="button"
+          onClick={() => setZoomed(true)}
+          aria-label="View a larger image"
+          className="block w-full cursor-zoom-in overflow-hidden rounded-xl"
+        >
+          <img
+            src={resolveAsset(recipe.image)}
+            alt=""
+            className="aspect-[4/3] w-full object-cover transition hover:brightness-95"
+          />
+        </button>
+        {zoomed && (
+          <ImageLightbox
+            src={resolveAsset(recipe.image)}
+            label={`${recipe.title} — larger image`}
+            onClose={() => setZoomed(false)}
+          />
+        )}
         <dl className="mt-4 space-y-2 text-sm">
           <Fact label="Cuisine" value={recipe.cuisine} />
           <Fact label="Time" value={`${recipe.prepTime} min`} />
