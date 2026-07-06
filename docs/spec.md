@@ -99,8 +99,9 @@ no separate review pass** — the SPA owns ingredient identity, lazily.
 
 Reference data seeded at import; the scalar text (`title`, `description`, `recipeCode`) plus the
 `tags` and `allergens` lists are **editable in the full recipe view**, written in place — see
-[`recipe-edit-spec.md`](recipe-edit-spec.md). Ingredients and method stay read-only. Edits export
-with the backup but a re-import/re-seed can overwrite them (like deletion).
+[`recipe-edit-spec.md`](recipe-edit-spec.md). Tags/allergens can also be renamed, merged and deleted
+in bulk from the **Config → Tags & allergens** manager. Ingredients and method stay read-only. Edits
+export with the backup but a re-import/re-seed can overwrite them (like deletion).
 
 | Field | Notes |
 |---|---|

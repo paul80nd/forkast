@@ -3,9 +3,21 @@
 // No Dexie/I-O here — the app layer feeds these `db.recipes.toArray()`.
 
 import type { Recipe } from '../schema/recipe'
+import { normalizeStringList } from './recipeEdit'
 
 /** Which free-label field of a recipe we're operating on. */
 export type LabelKind = 'tags' | 'allergens'
+
+/**
+ * Rewrite one recipe's label list for a rename / merge / delete: every entry whose folded value
+ * is in `fromKeys` becomes `to`, then the list is normalised (trimmed, blanks dropped, de-duped).
+ * An empty `to` therefore deletes the matched labels; merging into an existing label collapses the
+ * duplicate. `fromKeys` holds lower-cased spellings. Pure — the app layer maps this over recipes.
+ */
+export function applyRelabel(labels: string[], fromKeys: Set<string>, to: string): string[] {
+  const mapped = labels.map((l) => (fromKeys.has(l.trim().toLowerCase()) ? to : l))
+  return normalizeStringList(mapped)
+}
 
 /**
  * Distinct label values across `recipes`, folded to one spelling per case-insensitive key

@@ -1,6 +1,31 @@
 import { describe, expect, it } from 'vitest'
-import { distinctLabels, labelUsage } from './tags'
+import { applyRelabel, distinctLabels, labelUsage } from './tags'
 import { makeRecipe } from '../../test/factories'
+
+describe('applyRelabel', () => {
+  const keys = (...vals: string[]) => new Set(vals.map((v) => v.toLowerCase()))
+
+  it('renames a label, matching case-insensitively', () => {
+    expect(applyRelabel(['Speedy', 'vegetarian'], keys('speedy'), 'quick')).toEqual([
+      'quick',
+      'vegetarian',
+    ])
+  })
+
+  it('merges several spellings, collapsing into an existing label', () => {
+    expect(applyRelabel(['veggie', 'vegetarian', 'egg'], keys('veggie', 'vegetarian'), 'vegetarian')).toEqual(
+      ['vegetarian', 'egg'],
+    )
+  })
+
+  it('deletes matched labels when `to` is empty', () => {
+    expect(applyRelabel(['gluten', 'egg'], keys('egg'), '')).toEqual(['gluten'])
+  })
+
+  it('is a no-op when nothing matches', () => {
+    expect(applyRelabel(['gluten'], keys('egg'), 'dairy')).toEqual(['gluten'])
+  })
+})
 
 const recipes = [
   makeRecipe({ id: 'r1', tags: ['speedy', 'Vegetarian'], allergens: ['gluten'] }),

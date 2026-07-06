@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { INGREDIENTS, pluralOf } from '../data/ingredients'
@@ -7,8 +7,40 @@ import { ImportDataset } from '../components/ImportDataset'
 import { BackupRestore } from '../components/BackupRestore'
 import { StorageUsage } from '../components/StorageUsage'
 import { RecipeImages } from '../components/RecipeImages'
+import { TagManager } from '../components/TagManager'
 
 export function ConfigPage() {
+  const [tab, setTab] = useState<'general' | 'labels'>('general')
+
+  return (
+    <section>
+      <h1 className="text-2xl font-semibold tracking-tight">Config</h1>
+
+      <div className="mt-4 flex gap-1 border-b border-line">
+        {(['general', 'labels'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`-mb-px border-b-2 px-3 py-1.5 text-sm font-medium transition ${
+              tab === t
+                ? 'border-brand-500 text-brand-ink'
+                : 'border-transparent text-muted hover:text-ink'
+            }`}
+          >
+            {t === 'general' ? 'General' : 'Tags & allergens'}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4">
+        {tab === 'general' ? <GeneralTab /> : <TagManager />}
+      </div>
+    </section>
+  )
+}
+
+function GeneralTab() {
   // The live dictionary + bindings (both small); no need to load every recipe. Ingredients are
   // bound lazily at shopping time, so a line without an ingredientId is normal, not an error.
   const dict = useLiveQuery(() => db.dictionary.toArray(), [])
@@ -32,10 +64,8 @@ export function ConfigPage() {
   )
 
   return (
-    <section>
-      <h1 className="text-2xl font-semibold tracking-tight">Config</h1>
-
-      <div className="mt-5 space-y-4">
+    <>
+      <div className="space-y-4">
         <ImportDataset />
         <BackupRestore />
         <StorageUsage />
@@ -86,6 +116,6 @@ export function ConfigPage() {
           </tbody>
         </table>
       </div>
-    </section>
+    </>
   )
 }

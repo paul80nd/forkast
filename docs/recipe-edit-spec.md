@@ -49,5 +49,22 @@ both cases. See the [decision entry](decisions.md#2026-07-06--editing-a-recipe-m
   editing. The **Edit** button turns the title, description, and card code into inputs with **Save**
   (disabled while the title is blank) and **Cancel**. Tags and allergens instead use a `ChipEditor`
   each — its own **Edit / Done** toggle reveals a × on every chip and an add box; every add/remove
-  **persists immediately** (no separate Save). All editing targets the **shown** variant, like
-  ratings/notes, and resets on navigation or a variant swap.
+  **persists immediately** (no separate Save). The add box autocompletes from `distinctLabels`
+  (`src/lib/tags.ts`) — the labels already in use — so you reuse a spelling instead of coining a
+  near-duplicate. All editing targets the **shown** variant, like ratings/notes, and resets on
+  navigation or a variant swap.
+
+## Managing labels centrally
+
+Autocomplete prevents new near-duplicates; the **Config → Tags & allergens** tab cleans up the ones
+already there. It lists tags and allergens **separately** (via `labelUsage` in `src/lib/tags.ts`),
+each label with a recipe count, sorted alphabetically so near-duplicates sit adjacent. You can
+**rename** a label, **delete** it, or tick several and **merge** them into one canonical spelling.
+
+- **One primitive** backs all three (`relabelRecipes(kind, from, to)` in `src/app/tags.ts`): replace
+  every label in `from` with `to` across all recipes; an empty `to` deletes. Rename = one `from`;
+  merge = several; delete = empty `to`. It rewrites in one transaction, touching only the recipes
+  that change. The pure per-recipe rewrite is `applyRelabel` (`src/lib/tags.ts`), which reuses
+  `normalizeStringList`, so merging into an existing label collapses the duplicate for free.
+- Same in-place storage model and re-import trade-off as recipe editing (above). Labels aren't used
+  for filtering yet, so a rename/merge only rewrites the recipe arrays — nothing else to keep in sync.
