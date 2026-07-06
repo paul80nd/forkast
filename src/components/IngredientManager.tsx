@@ -29,7 +29,10 @@ export function IngredientManager() {
   const [filter, setFilter] = useState('')
   const [editing, setEditing] = useState<string | null>(null)
 
-  if (dict === undefined || bindings === undefined || orderRow === undefined)
+  // Note: `orderRow` is intentionally NOT part of this gate — useLiveQuery returns undefined both
+  // while loading and when the settings row simply doesn't exist (the common, un-customised case),
+  // so gating on it would hang on "Loading…" forever. An absent row just means the default order.
+  if (dict === undefined || bindings === undefined)
     return <p className="text-muted">Loading…</p>
 
   // Fall back to the static seed if the Dexie dictionary is empty (e.g. before the first reseed);
