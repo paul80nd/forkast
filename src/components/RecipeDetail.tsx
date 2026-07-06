@@ -46,6 +46,10 @@ export function RecipeDetail({
 
   const stars = useLiveQuery(async () => (await db.userData.get(recipe.id))?.stars, [recipe.id])
   const rotation = useLiveQuery(async () => (await db.userData.get(recipe.id))?.rotation, [recipe.id])
+  // Notes you've written are worth reading before you cook, so they sit *above* the method when
+  // present; an empty notes box stays tucked below it (see the two RecipeNotes slots).
+  const savedNotes = useLiveQuery(async () => (await db.userData.get(recipe.id))?.notes ?? '', [recipe.id])
+  const hasNotes = Boolean(savedNotes?.trim())
 
   // Autocomplete for the tag/allergen add-boxes: the distinct labels already used across the
   // collection, so new entries reuse an existing spelling instead of inventing near-duplicates.
@@ -408,6 +412,10 @@ export function RecipeDetail({
           </p>
         )}
 
+        {/* Your notes lead the method when you've written some — the tweaks you want in mind
+            before cooking; otherwise the empty box sits after it (below). */}
+        {hasNotes && <RecipeNotes recipeId={recipe.id} />}
+
         <h2 className="mt-6 text-sm font-semibold tracking-wide text-muted uppercase">Method</h2>
         {/* Tick steps off as you cook — the number becomes a ✓ and the step dims. */}
         <ol className="mt-2 divide-y divide-divider">
@@ -426,7 +434,7 @@ export function RecipeDetail({
             ))}
         </ol>
 
-        <RecipeNotes recipeId={recipe.id} />
+        {!hasNotes && <RecipeNotes recipeId={recipe.id} />}
       </div>
     </div>
   )
