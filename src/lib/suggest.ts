@@ -28,7 +28,11 @@ export interface SuggestConfig {
     quality: number
     /** Multiplies dueness (0…duenessCap). */
     dueness: number
-    /** Subtracted per variety axis (cuisine/protein/band) already represented in the basket. */
+    /**
+     * Subtracted **per basket meal** that shares a variety axis (cuisine/protein/band). Counts,
+     * not presence — a third Italian is penalised more than a second, so the suggester leans
+     * harder away from an axis the more of it is already planned.
+     */
     penaltyPerAxis: number
   }
   /** Softmax temperature for weighted-random selection — lower ⇒ closer to always-best. */
@@ -83,11 +87,16 @@ export interface Suggestion {
   reasons: string[]
 }
 
-/** The variety axes currently represented in the basket (presence sets). */
+/** The variety axes in the basket, counted — how many meals so far carry each value. */
 interface Axes {
-  cuisines: Set<string>
-  proteins: Set<string>
-  bands: Set<string>
+  cuisines: Map<string, number>
+  proteins: Map<string, number>
+  bands: Map<string, number>
+}
+
+/** Record one more basket meal carrying `key` on an axis. */
+function bump(axis: Map<string, number>, key: string): void {
+  axis.set(key, (axis.get(key) ?? 0) + 1)
 }
 
 /** Quick / medium / long band for a prep time. */
@@ -124,10 +133,12 @@ export function scoreCandidate(
 ): number {
   const quality = c.stars - 2 // ★3→1, ★4→2, ★5→3
   const due = dueness(c.daysSinceCooked, c.rotation, cfg)
-  let penalty = 0
-  if (axes.cuisines.has(c.cuisine)) penalty++
-  if (axes.proteins.has(c.mainProtein ?? OTHER_PROTEIN)) penalty++
-  if (axes.bands.has(timeBand(c.prepTime, cfg))) penalty++
+  // Count every basket meal sharing an axis value (not mere presence), so an over-represented
+  // cuisine/protein/band is pushed down harder each time it recurs.
+  const penalty =
+    (axes.cuisines.get(c.cuisine) ?? 0) +
+    (axes.proteins.get(c.mainProtein ?? OTHER_PROTEIN) ?? 0) +
+    (axes.bands.get(timeBand(c.prepTime, cfg)) ?? 0)
   return cfg.weights.quality * quality + cfg.weights.dueness * due - cfg.weights.penaltyPerAxis * penalty
 }
 
@@ -208,13 +219,13 @@ export function suggestWeek({ candidates, basket = [], count, seed, config }: Su
   const rng = mulberry32(seed)
 
   // Seed the variety axes and the taken sets from the basket.
-  const axes: Axes = { cuisines: new Set(), proteins: new Set(), bands: new Set() }
+  const axes: Axes = { cuisines: new Map(), proteins: new Map(), bands: new Map() }
   const usedGroups = new Set<string>()
   const usedIds = new Set<string>()
   for (const b of basket) {
-    axes.cuisines.add(b.cuisine)
-    axes.proteins.add(b.mainProtein ?? OTHER_PROTEIN)
-    axes.bands.add(timeBand(b.prepTime, cfg))
+    bump(axes.cuisines, b.cuisine)
+    bump(axes.proteins, b.mainProtein ?? OTHER_PROTEIN)
+    bump(axes.bands, timeBand(b.prepTime, cfg))
     if (b.groupId) usedGroups.add(b.groupId)
     if (b.id) usedIds.add(b.id)
   }
@@ -234,9 +245,9 @@ export function suggestWeek({ candidates, basket = [], count, seed, config }: Su
     picked.push({ id: c.id, score, reasons: reasonsFor(c, axes, cfg) })
 
     // Commit the pick: it now constrains variety and blocks its id + group.
-    axes.cuisines.add(c.cuisine)
-    axes.proteins.add(c.mainProtein ?? OTHER_PROTEIN)
-    axes.bands.add(timeBand(c.prepTime, cfg))
+    bump(axes.cuisines, c.cuisine)
+    bump(axes.proteins, c.mainProtein ?? OTHER_PROTEIN)
+    bump(axes.bands, timeBand(c.prepTime, cfg))
     usedIds.add(c.id)
     if (c.groupId) usedGroups.add(c.groupId)
   }

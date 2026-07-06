@@ -32,6 +32,13 @@ Feature: Suggest a varied week
     When I suggest a week of 5
     Then the suggestions are exactly "r2"
 
+  Scenario: A cuisine already on the plan is steered away from
+    Given recipes "planned, moreItalian" rated 4 stars with cuisine "italian"
+    And recipe "thai" rated 4 stars with cuisine "thai"
+    And recipe "planned" is on the plan
+    When I suggest a week of 2 favouring variety
+    Then the suggestions are exactly "thai"
+
   Scenario: A recently-cooked recipe is not suggested
     Given recipes "r1, r2" rated 4 stars
     And recipe "r1" was cooked today

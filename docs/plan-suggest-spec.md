@@ -79,10 +79,13 @@ basket — which is what makes the *week* varied rather than just "the top N rec
 ### Dynamic variety penalty
 
 As each meal is chosen, candidates that **share an axis value** with the current basket are
-penalised — one penalty each for a repeated **cuisine**, **main protein**, or **time band**
-(prepTime banded into quick / medium / long). Penalties are **soft** (subtract from the score),
-so a clearly superior recipe can still repeat an axis, but all else equal the suggester spreads
-across cuisines, proteins, and effort levels.
+penalised on each of **cuisine**, **main protein**, and **time band** (prepTime banded into
+quick / medium / long). The penalty **counts** basket meals, not mere presence: a candidate whose
+cuisine already appears **three** times on the plan is penalised three times as hard as one that
+appears once — so the suggester leans away from an axis more firmly the more of it is already
+planned. Penalties are **soft** (subtract from the score), so a clearly superior recipe can still
+repeat an axis, but all else equal the suggester spreads across cuisines, proteins, and effort
+levels.
 
 ### Selection — greedy weighted fill
 

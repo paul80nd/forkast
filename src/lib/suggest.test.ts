@@ -21,7 +21,11 @@ function cand(over: Partial<Candidate> & { id: string }): Candidate {
   }
 }
 
-const emptyAxes = () => ({ cuisines: new Set<string>(), proteins: new Set<string>(), bands: new Set<string>() })
+const emptyAxes = () => ({
+  cuisines: new Map<string, number>(),
+  proteins: new Map<string, number>(),
+  bands: new Map<string, number>(),
+})
 
 describe('timeBand', () => {
   it('bands prep time into quick / medium / long', () => {
@@ -68,9 +72,16 @@ describe('scoreCandidate', () => {
 
   it('penalises a candidate that repeats a basket axis', () => {
     const fresh = emptyAxes()
-    const seen = { cuisines: new Set(['italian']), proteins: new Set<string>(), bands: new Set<string>() }
+    const seen = { cuisines: new Map([['italian', 1]]), proteins: new Map<string, number>(), bands: new Map<string, number>() }
     const c = cand({ id: 'a', cuisine: 'italian' })
     expect(scoreCandidate(c, seen)).toBeLessThan(scoreCandidate(c, fresh))
+  })
+
+  it('penalises harder the more of an axis the basket already holds (count, not presence)', () => {
+    const c = cand({ id: 'a', cuisine: 'italian' })
+    const once = { cuisines: new Map([['italian', 1]]), proteins: new Map<string, number>(), bands: new Map<string, number>() }
+    const thrice = { cuisines: new Map([['italian', 3]]), proteins: new Map<string, number>(), bands: new Map<string, number>() }
+    expect(scoreCandidate(c, thrice)).toBeLessThan(scoreCandidate(c, once))
   })
 })
 

@@ -99,6 +99,27 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('the suggestions are exactly {string}', exactly)
   })
 
+  Scenario('A cuisine already on the plan is steered away from', ({ Given, And, When, Then }) => {
+    Given('recipes {string} rated {int} stars with cuisine {string}', async (_, list: string, n: number, cuisine: string) => {
+      for (const id of ids(list)) {
+        await db.recipes.put(makeRecipe({ id, cuisine }))
+        await setStars(id, n as Stars)
+      }
+    })
+    And('recipe {string} rated {int} stars with cuisine {string}', async (_, id: string, n: number, cuisine: string) => {
+      await db.recipes.put(makeRecipe({ id, cuisine }))
+      await setStars(id, n as Stars)
+    })
+    And('recipe {string} is on the plan', async (_, id: string) => {
+      await addToPlan(id)
+    })
+    // topK 1 forces the strict argmax, so the only thing under test is the variety penalty.
+    When('I suggest a week of {int} favouring variety', async (_, count: number) => {
+      suggestions = await suggestWeekPlan({ count, seed: SEED, config: { topK: 1 } })
+    })
+    Then('the suggestions are exactly {string}', exactly)
+  })
+
   Scenario('A recently-cooked recipe is not suggested', ({ Given, And, When, Then }) => {
     Given('recipes {string} rated {int} stars', rateList)
     And('recipe {string} was cooked today', async (_, id: string) => {
