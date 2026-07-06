@@ -485,11 +485,6 @@ export function PlanPage() {
                       </div>
                     </div>
                   </div>
-                  <MealPortions
-                    recipeId={r.id}
-                    portions={portions}
-                    effective={mealPortions}
-                  />
                   {hasVersions && (
                     <button
                       type="button"
@@ -505,6 +500,11 @@ export function PlanPage() {
                       ⇄ {siblings.length}
                     </button>
                   )}
+                  <MealPortions
+                    recipeId={r.id}
+                    portions={portions}
+                    effective={mealPortions}
+                  />
                   <button
                     type="button"
                     onClick={() => void cookWithUndo(r, slot)}
