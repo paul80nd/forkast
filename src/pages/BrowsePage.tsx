@@ -10,12 +10,16 @@ import { SkeletonCard } from '../components/SkeletonCard'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { deleteRecipes } from '../app/cleanup'
 import { resolveDishes, dishSizeByRecipe } from '../lib/variants'
-import { distinctLabels, matchesLabels } from '../lib/tags'
+import { distinctLabels } from '../lib/tags'
+import {
+  browseCards,
+  deepLinkFilter,
+  type AllergenMode,
+  type BrowseFilter,
+  type RatingFilter,
+  type SortKey,
+} from '../lib/browseFilter'
 import type { Stars } from '../schema/userData'
-
-type SortKey = 'rating' | 'time' | 'name'
-type RatingFilter = 'all' | 'unrated' | '5' | '4plus' | '3plus'
-type AllergenMode = 'avoid' | 'only'
 
 export function BrowsePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
@@ -43,21 +47,15 @@ export function BrowsePage() {
   useEffect(() => {
     if (deepLinkApplied.current) return
     deepLinkApplied.current = true
-    const tag = searchParams.get('tag')
-    const allergen = searchParams.get('allergen')
-    if (!tag && !allergen) return
-    setQuery('')
-    setCuisine('all')
-    setMaxTime(0)
-    setRating('all')
-    if (tag) {
-      setTags([tag])
-      setAllergens([])
-    } else if (allergen) {
-      setAllergens([allergen])
-      setAllergenMode('only')
-      setTags([])
-    }
+    const target = deepLinkFilter(searchParams.get('tag'), searchParams.get('allergen'))
+    if (!target) return
+    setQuery(target.query)
+    setCuisine(target.cuisine)
+    setTags(target.tags)
+    setAllergens(target.allergens)
+    setAllergenMode(target.allergenMode)
+    setMaxTime(target.maxTime)
+    setRating(target.rating)
     setSearchParams({}, { replace: true })
   }, [])
 
@@ -111,48 +109,16 @@ export function BrowsePage() {
     [recipes, overrides],
   )
 
-  const filtered = useMemo(() => {
-    let list = recipes ?? []
-    const q = query.trim().toLowerCase()
-    if (q) {
-      list = list.filter(
-        (r) =>
-          r.title.toLowerCase().includes(q) ||
-          r.description.toLowerCase().includes(q) ||
-          r.ingredients.some((i) => i.name.toLowerCase().includes(q)),
-      )
-    }
-    if (cuisine !== 'all') list = list.filter((r) => r.cuisine === cuisine)
-    if (tags.length) list = list.filter((r) => matchesLabels(r.tags, tags, 'all'))
-    if (allergens.length) {
-      const mode = allergenMode === 'only' ? 'any' : 'none'
-      list = list.filter((r) => matchesLabels(r.allergens, allergens, mode))
-    }
-    if (maxTime > 0) list = list.filter((r) => r.prepTime <= maxTime)
-    if (rating !== 'all') {
-      list = list.filter((r) => {
-        const s = starsById.get(r.id)
-        if (rating === 'unrated') return s === undefined
-        if (rating === '5') return s === 5
-        if (rating === '4plus') return s !== undefined && s >= 4
-        return s !== undefined && s >= 3 // 3plus
-      })
-    }
-    return list
-  }, [recipes, query, cuisine, tags, allergens, allergenMode, maxTime, rating, starsById])
+  const filter = useMemo<BrowseFilter>(
+    () => ({ query, cuisine, tags, allergens, allergenMode, maxTime, rating }),
+    [query, cuisine, tags, allergens, allergenMode, maxTime, rating],
+  )
 
-  // Collapse variants to one lead card per dish (when on), then sort the cards on show.
-  const cards = useMemo(() => {
-    const list = groupVariants
-      ? resolveDishes(filtered, overrides ?? []).map((d) => d.lead)
-      : filtered
-    return [...list].sort((a, b) => {
-      if (sort === 'name') return a.title.localeCompare(b.title)
-      if (sort === 'time') return a.prepTime - b.prepTime
-      // Top rated = our own ★; unrated (0) sort last.
-      return (starsById.get(b.id) ?? 0) - (starsById.get(a.id) ?? 0)
-    })
-  }, [filtered, groupVariants, overrides, sort, starsById])
+  // Filter → collapse variants to one lead card per dish (when on) → sort. Pure; see browseFilter.
+  const cards = useMemo(
+    () => browseCards(recipes ?? [], overrides ?? [], filter, { groupVariants, sort }, starsById),
+    [recipes, overrides, filter, groupVariants, sort, starsById],
+  )
 
   // Render incrementally — show a page of cards, load more as the user scrolls. The paging
   // count + scroll position survive a trip into a recipe (sessionStorage), so returning from
