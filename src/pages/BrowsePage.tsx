@@ -248,6 +248,12 @@ export function BrowsePage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search title or ingredient…"
+          // Recipe titles/ingredients aren't prose — stop the browser (Safari especially)
+          // "helpfully" autocorrecting, capitalising or squiggle-spellchecking what you type.
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          autoComplete="off"
           className={`${fieldBoxClass} min-w-56 flex-1 px-2.5 py-1.5 text-sm`}
         />
         <Select
