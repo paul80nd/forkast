@@ -72,6 +72,16 @@ export async function dishForRecipe(recipeId: string): Promise<Dish | null> {
 }
 
 /**
+ * The variant to show after deleting `recipeId` from its dish: the first remaining member
+ * (lead-first), or `null` when it has no siblings (a standalone recipe) — the caller then falls
+ * back to Browse. Computed on the *pre-delete* dish, so call it before the delete goes through.
+ */
+export async function nextVariantAfterDelete(recipeId: string): Promise<string | null> {
+  const dish = await dishForRecipe(recipeId)
+  return dish?.variants.find((v) => v.id !== recipeId)?.id ?? null
+}
+
+/**
  * Save a variant override for a set of recipes with a chosen lead. Enforces one override
  * per recipe: the given recipes are stripped from every other override first (an override
  * emptied that way is deleted; one whose lead was taken re-leads to a remaining member).

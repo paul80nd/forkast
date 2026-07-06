@@ -42,6 +42,18 @@ Feature: Curate recipe variants
     Then recipe "white" no longer exists
     And the dish for "brown" has members "brown, cauli" led by "brown"
 
+  Scenario: Deleting a variant lands on the dish's next member
+    Given I set a variant override for "white, brown, cauli" led by "white"
+    Then deleting "brown" would next show "white"
+    And deleting "white" would next show "brown"
+
+  Scenario: Deleting the final variant falls back to Browse
+    Given I set a variant override for "white, brown, cauli" led by "white"
+    When I delete recipe "brown"
+    And I delete recipe "cauli"
+    Then deleting "white" would next show Browse
+    And deleting "soup" would next show Browse
+
   Scenario: Dissolving an override reverts to the import grouping
     Given I set a variant override for "white, brown" led by "brown"
     When I dissolve that dish

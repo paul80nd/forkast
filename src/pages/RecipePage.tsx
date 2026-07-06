@@ -6,6 +6,7 @@ import { RecipeDetail } from '../components/RecipeDetail'
 import { CURRENT_PLAN_ID } from '../lib/plan'
 import { addToPlan, removeFromPlan } from '../app/plan'
 import { deleteRecipe } from '../app/cleanup'
+import { nextVariantAfterDelete } from '../app/variants'
 
 export function RecipePage() {
   const { id = '' } = useParams()
@@ -105,8 +106,11 @@ export function RecipePage() {
                             `Delete “${shown.title}”?\n\nThis removes it and its ratings for good (re-import to restore).`,
                           )
                         ) {
+                          // Deleting one swap of a dish drops you onto a remaining variant, not all
+                          // the way out; only a standalone recipe (no siblings) sends you to Browse.
+                          const nextId = await nextVariantAfterDelete(shown.id)
                           await deleteRecipe(shown.id)
-                          navigate('/browse')
+                          navigate(nextId ? `/recipe/${nextId}` : '/browse')
                         }
                       }}
                       className="block w-full px-3 py-2 text-left text-sm font-medium text-danger-ink hover:bg-danger-50"

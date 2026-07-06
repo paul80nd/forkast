@@ -69,6 +69,10 @@ On the lead's detail page, surface the **variant options**. The differences ("br
 rice", "chicken ⇄ thigh") are **computed live** by diffing the group's members — reuse the
 Refine **Compare** ingredient-diff; nothing is precomputed or stored.
 
+Deleting the shown swap here keeps you **inside the dish**: it lands on the first remaining member
+(lead-first, via `nextVariantAfterDelete`), not back at Browse. Only deleting a **standalone** recipe
+— one with no siblings left — falls back to Browse.
+
 ### Planning — choose the swap for the week
 Because variants stay separate full recipes, planning needs **no new schema**:
 

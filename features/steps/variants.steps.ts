@@ -4,6 +4,7 @@ import { db } from '../../src/db/db'
 import { makeRecipe } from '../../test/factories'
 import {
   dishForRecipe,
+  nextVariantAfterDelete,
   setVariantOverride,
   removeFromOverride,
   dissolveOverride,
@@ -135,6 +136,36 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     And('the dish for {string} has members {string} led by {string}', async (_, id, m, l) => {
       await expectDish(id, ids(m), l)
+    })
+  })
+
+  Scenario('Deleting a variant lands on the dish\'s next member', ({ Given, Then, And }) => {
+    Given('I set a variant override for {string} led by {string}', async (_, m, l) => {
+      await setVariantOverride(ids(m), l)
+    })
+    Then('deleting {string} would next show {string}', async (_, id: string, next: string) => {
+      expect(await nextVariantAfterDelete(id)).toBe(next)
+    })
+    And('deleting {string} would next show {string}', async (_, id: string, next: string) => {
+      expect(await nextVariantAfterDelete(id)).toBe(next)
+    })
+  })
+
+  Scenario('Deleting the final variant falls back to Browse', ({ Given, When, Then, And }) => {
+    Given('I set a variant override for {string} led by {string}', async (_, m, l) => {
+      await setVariantOverride(ids(m), l)
+    })
+    When('I delete recipe {string}', async (_, id: string) => {
+      await deleteRecipe(id)
+    })
+    And('I delete recipe {string}', async (_, id: string) => {
+      await deleteRecipe(id)
+    })
+    Then('deleting {string} would next show Browse', async (_, id: string) => {
+      expect(await nextVariantAfterDelete(id)).toBeNull()
+    })
+    And('deleting {string} would next show Browse', async (_, id: string) => {
+      expect(await nextVariantAfterDelete(id)).toBeNull()
     })
   })
 
