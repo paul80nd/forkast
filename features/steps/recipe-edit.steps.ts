@@ -1,8 +1,17 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
-import { updateRecipeDetails } from '../../src/app/recipeEdit'
+import {
+  setRecipeAllergens,
+  setRecipeTags,
+  updateRecipeDetails,
+} from '../../src/app/recipeEdit'
 import { makeRecipe } from '../../test/factories'
+
+/** Split a CSV as the chip UI would hand it over — raw, so the app layer does the tidying. */
+const rawList = (csv: string) => csv.split(',')
+/** Trimmed, blank-free expectation list. */
+const list = (csv: string) => csv.split(',').map((s) => s.trim()).filter(Boolean)
 
 const feature = await loadFeature('features/recipe-edit.feature')
 
@@ -60,6 +69,45 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     Then('recipe {string} has title {string}', async (_, id: string, title: string) => {
       expect((await db.recipes.get(id))?.title).toBe(title)
+    })
+  })
+
+  Scenario('Editing tags independently', ({ When, Then, And }) => {
+    When('I set recipe {string} tags to {string}', async (_, id: string, csv: string) => {
+      await setRecipeTags(id, rawList(csv))
+    })
+    Then('recipe {string} has tags {string}', async (_, id: string, csv: string) => {
+      expect((await db.recipes.get(id))?.tags).toEqual(list(csv))
+    })
+    And('I set recipe {string} tags to {string}', async (_, id: string, csv: string) => {
+      await setRecipeTags(id, rawList(csv))
+    })
+    And('recipe {string} has tags {string}', async (_, id: string, csv: string) => {
+      expect((await db.recipes.get(id))?.tags).toEqual(list(csv))
+    })
+  })
+
+  Scenario('Tags are trimmed and de-duplicated', ({ When, Then }) => {
+    When('I set recipe {string} tags to {string}', async (_, id: string, csv: string) => {
+      await setRecipeTags(id, rawList(csv))
+    })
+    Then('recipe {string} has tags {string}', async (_, id: string, csv: string) => {
+      expect((await db.recipes.get(id))?.tags).toEqual(list(csv))
+    })
+  })
+
+  Scenario('Editing and clearing allergens independently', ({ When, Then, And }) => {
+    When('I set recipe {string} allergens to {string}', async (_, id: string, csv: string) => {
+      await setRecipeAllergens(id, rawList(csv))
+    })
+    Then('recipe {string} has allergens {string}', async (_, id: string, csv: string) => {
+      expect((await db.recipes.get(id))?.allergens).toEqual(list(csv))
+    })
+    And('I set recipe {string} allergens to {string}', async (_, id: string, csv: string) => {
+      await setRecipeAllergens(id, rawList(csv))
+    })
+    And('recipe {string} has no allergens', async (_, id: string) => {
+      expect((await db.recipes.get(id))?.allergens).toEqual([])
     })
   })
 })

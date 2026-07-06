@@ -69,9 +69,10 @@ export interface Recipe {
   /** The single browse facet, e.g. "Italian" — typically the source's cuisine label. */
   cuisine: string
   /** Free-form labels for filtering: diet/effort derived at import (e.g. "vegetarian",
-   *  "dairy-free", "speedy") unioned with the source's own category labels. */
+   *  "dairy-free", "speedy") unioned with the source's own category labels. User-editable in the
+   *  recipe view (see docs/recipe-edit-spec.md). */
   tags: string[]
-  /** e.g. ["gluten", "egg", "fish"] — powers no-go filters. */
+  /** e.g. ["gluten", "egg", "fish"] — powers no-go filters. User-editable in the recipe view. */
   allergens: string[]
 
   /** Prep+cook minutes for the recipe's base `serves` (typically 2). */

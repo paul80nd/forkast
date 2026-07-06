@@ -6,7 +6,7 @@ import { RotationRating, StarRating } from './RatingScale'
 import { ImageLightbox } from './ImageLightbox'
 import { fieldBoxClass } from './Select'
 import { clearCuration, setNotes, setRotation, setStars } from '../app/curation'
-import { updateRecipeDetails } from '../app/recipeEdit'
+import { setRecipeAllergens, setRecipeTags, updateRecipeDetails } from '../app/recipeEdit'
 import { dishForRecipe } from '../app/variants'
 import { ingredientDelta, variantLabel } from '../lib/variants'
 import { formatScaledQty, scaledIngredientLabel, servingFactor } from '../lib/scaleServings'
@@ -178,40 +178,24 @@ export function RecipeDetail({
           )}
         </div>
 
-        {recipe.allergens.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">
-              Allergens
-            </h3>
-            {/* Warn (honey) tone so these read as "contains", not just another descriptive label. */}
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {recipe.allergens.map((a) => (
-                <span
-                  key={a}
-                  className="rounded bg-warn-tint px-1.5 py-0.5 text-xs font-medium text-warn-ink"
-                >
-                  {a}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Warn (honey) tone so allergens read as "contains", not just another descriptive label. */}
+        <ChipEditor
+          key={`allergens-${recipe.id}`}
+          label="Allergens"
+          items={recipe.allergens}
+          editable={editable}
+          onChange={(next) => void setRecipeAllergens(recipe.id, next)}
+          chipClass="inline-flex items-center rounded bg-warn-tint px-1.5 py-0.5 text-xs font-medium text-warn-ink"
+        />
 
-        {recipe.tags.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">Tags</h3>
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {recipe.tags.map((t) => (
-                <span
-                  key={t}
-                  className="rounded-full bg-sunken px-2 py-0.5 text-xs text-muted"
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        <ChipEditor
+          key={`tags-${recipe.id}`}
+          label="Tags"
+          items={recipe.tags}
+          editable={editable}
+          onChange={(next) => void setRecipeTags(recipe.id, next)}
+          chipClass="inline-flex items-center rounded-full bg-sunken px-2 py-0.5 text-xs text-muted"
+        />
 
         {recipe.nutrition && (
           <div className="mt-4 rounded-lg border border-line bg-surface p-3">
@@ -477,6 +461,91 @@ function RecipeNotes({ recipeId }: { recipeId: string }) {
         placeholder="e.g. add salt to the rice — it needed it last time."
         className={`${fieldBoxClass} mt-2 w-full resize-y px-3 py-2 text-sm placeholder:text-muted`}
       />
+    </div>
+  )
+}
+
+// An inline, independently-editable chip list (tags / allergens). Read-only unless `editable`,
+// where a per-section Edit toggle reveals a × on each chip and an add box; every add/remove
+// persists immediately via `onChange` (which normalises + de-dupes, so a duplicate add is a
+// harmless no-op). Hidden entirely when empty and not editable. Keyed on the recipe id by the
+// caller, so the edit toggle/draft reset on a variant swap.
+function ChipEditor({
+  label,
+  items,
+  editable,
+  onChange,
+  chipClass,
+}: {
+  label: string
+  items: string[]
+  editable: boolean
+  onChange: (next: string[]) => void
+  chipClass: string
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+
+  if (items.length === 0 && !editable) return null
+
+  const add = () => {
+    const value = draft.trim()
+    if (value) onChange([...items, value])
+    setDraft('')
+  }
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">{label}</h3>
+        {editable && (
+          <button
+            type="button"
+            onClick={() => {
+              setDraft('')
+              setEditing((e) => !e)
+            }}
+            className="text-xs font-medium text-muted hover:text-ink"
+          >
+            {editing ? 'Done' : 'Edit'}
+          </button>
+        )}
+      </div>
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+        {items.map((item) => (
+          <span key={item} className={chipClass}>
+            {item}
+            {editing && (
+              <button
+                type="button"
+                onClick={() => onChange(items.filter((x) => x !== item))}
+                aria-label={`Remove ${item}`}
+                className="ml-1 leading-none opacity-60 hover:opacity-100"
+              >
+                ×
+              </button>
+            )}
+          </span>
+        ))}
+        {editing && (
+          <input
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                add()
+              }
+            }}
+            onBlur={add}
+            aria-label={`Add ${label.toLowerCase()}`}
+            placeholder="add…"
+            className={`${fieldBoxClass} w-24 px-2 py-0.5 text-xs`}
+          />
+        )}
+        {!editing && items.length === 0 && <span className="text-xs text-muted">None</span>}
+      </div>
     </div>
   )
 }

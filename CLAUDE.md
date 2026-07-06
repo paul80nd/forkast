@@ -27,8 +27,9 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
     DB (`forkast-images`), excluded from the JSON backup. `src/db/images.ts` + `src/app/images.ts` +
     `useRecipeImage`; ingested via the Config → Recipe images card.
   - [`docs/recipe-edit-spec.md`](docs/recipe-edit-spec.md) — **Recipe editing** (built): edit a
-    recipe's scalar text (title/description/**card code**) in the full view; mutates the `recipes`
-    table in place (`src/lib/recipeEdit.ts` + `src/app/recipeEdit.ts`).
+    recipe's scalar text (title/description/**card code**) plus its **tags/allergens** (independent
+    chip editors) in the full view; mutates the `recipes` table in place (`src/lib/recipeEdit.ts` +
+    `src/app/recipeEdit.ts`).
   - [`docs/plan-suggest-spec.md`](docs/plan-suggest-spec.md) — assisted "suggest a varied week"
     (**built**: propose-then-accept shortlist; `src/lib/suggest.ts` + `src/app/suggest.ts`).
   - [`docs/variants-spec.md`](docs/variants-spec.md) — **Variants** (built): one dish, many swaps —

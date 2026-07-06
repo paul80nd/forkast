@@ -19,3 +19,13 @@ export async function updateRecipeDetails(recipeId: string, patch: RecipeEdit): 
   if (!existing) return
   await db.recipes.put({ ...existing, ...clean })
 }
+
+/** Replace a recipe's tag list (normalised; an empty list clears them). */
+export function setRecipeTags(recipeId: string, tags: string[]): Promise<void> {
+  return updateRecipeDetails(recipeId, { tags })
+}
+
+/** Replace a recipe's allergen list (normalised; an empty list clears them). */
+export function setRecipeAllergens(recipeId: string, allergens: string[]): Promise<void> {
+  return updateRecipeDetails(recipeId, { allergens })
+}

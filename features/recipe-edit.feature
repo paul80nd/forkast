@@ -24,3 +24,19 @@ Feature: Edit a recipe in the full view
   Scenario: A blank title is rejected and the existing title is kept
     When I edit recipe "r1" with title "   "
     Then recipe "r1" has title "Recipe r1"
+
+  Scenario: Editing tags independently
+    When I set recipe "r1" tags to "speedy, vegetarian"
+    Then recipe "r1" has tags "speedy, vegetarian"
+    And I set recipe "r1" tags to "speedy"
+    And recipe "r1" has tags "speedy"
+
+  Scenario: Tags are trimmed and de-duplicated
+    When I set recipe "r1" tags to " Speedy , speedy ,  , vegetarian"
+    Then recipe "r1" has tags "Speedy, vegetarian"
+
+  Scenario: Editing and clearing allergens independently
+    When I set recipe "r1" allergens to "gluten, egg"
+    Then recipe "r1" has allergens "gluten, egg"
+    And I set recipe "r1" allergens to ""
+    And recipe "r1" has no allergens

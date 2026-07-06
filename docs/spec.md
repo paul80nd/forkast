@@ -97,10 +97,10 @@ no separate review pass** — the SPA owns ingredient identity, lazily.
 
 ### Recipe (reference — mostly read-only)
 
-Reference data seeded at import; the scalar text (`title`, `description`, `recipeCode`) is
-**editable in the full recipe view**, written in place — see [`recipe-edit-spec.md`](recipe-edit-spec.md).
-Ingredients and method stay read-only. Edits export with the backup but a re-import/re-seed can
-overwrite them (like deletion).
+Reference data seeded at import; the scalar text (`title`, `description`, `recipeCode`) plus the
+`tags` and `allergens` lists are **editable in the full recipe view**, written in place — see
+[`recipe-edit-spec.md`](recipe-edit-spec.md). Ingredients and method stay read-only. Edits export
+with the backup but a re-import/re-seed can overwrite them (like deletion).
 
 | Field | Notes |
 |---|---|
@@ -112,7 +112,8 @@ overwrite them (like deletion).
 | `variantGroupKey?` | shared opaque key marking recipes as variants of one dish (protein/carb/side swap); derivation is a private import concern — see [`variants-spec.md`](variants-spec.md) |
 | `variantGroupLead?` | `true` on one member per key — the import's best-guess origin the app leads with (user-overridable) |
 | `cuisine` | the single browse facet (from source); `tags[]` carries derived diet/effort labels |
-| `allergens[]` | from source, for reference/display |
+| `tags[]` | derived diet/effort + source category labels; editable in the recipe view |
+| `allergens[]` | from source, for reference/display; editable in the recipe view |
 | `prepTime` | prep+cook minutes for the recipe's base `serves` |
 | `serves` | base portions the quantities are written for (default 2) |
 | `nutrition?` | per-portion macros (kcal + protein/fat/saturates/carbs/sugars/fibre/salt), if available |
