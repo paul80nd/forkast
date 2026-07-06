@@ -413,8 +413,17 @@ export function PlanPage() {
 
       {/* The week */}
       {planned.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-line-strong bg-card p-8 text-center text-muted">
-          Nothing planned yet — add meals from your shortlist below.
+        <div className="mt-4 rounded-2xl border border-dashed border-line-strong bg-card p-8 text-center">
+          <p className="text-muted">Nothing planned yet.</p>
+          <button
+            type="button"
+            disabled={suggesting}
+            onClick={runSuggest}
+            className="mt-3 rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800 disabled:opacity-50"
+          >
+            {suggesting ? 'Thinking…' : 'Suggest a varied week'}
+          </button>
+          <p className="mt-2 text-xs text-muted">or add meals from the picker below.</p>
         </div>
       ) : (
         <>
