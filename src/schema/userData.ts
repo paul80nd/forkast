@@ -49,9 +49,17 @@ export interface WeekPlan {
   /** e.g. "2026-W27" or a generated id. */
   id: string
   label?: string
-  /** How many this plan caters for; scales the shopping list. */
+  /** The default household size; scales any meal without its own override. */
   portions: number
   recipeIds: string[]
+  /**
+   * Per-meal portion overrides, keyed by recipeId — leftovers/batch awareness: cook one meal for
+   * guests or batch it for lunches while the rest stay at the plan `portions`. Absent (or absent
+   * for a given id) means that meal uses the default; the shopping merge scales each recipe by its
+   * own effective portions. Keying by recipeId is safe because a plan holds each recipe at most
+   * once. Optional and back-compatible — older plans simply have no overrides.
+   */
+  portionOverrides?: Record<string, number>
 }
 
 /**

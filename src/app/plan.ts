@@ -29,11 +29,24 @@ export async function addRecipesToPlan(recipeIds: string[]): Promise<void> {
   await db.plans.put({ ...plan, recipeIds: [...plan.recipeIds, ...added] })
 }
 
+/** Return a copy of `overrides` without `id`, or the same value if it wasn't present. */
+function withoutOverride(
+  overrides: Record<string, number> | undefined,
+  id: string,
+): Record<string, number> | undefined {
+  if (!overrides || !(id in overrides)) return overrides
+  const next = { ...overrides }
+  delete next[id]
+  return next
+}
+
 export async function removeFromPlan(recipeId: string): Promise<void> {
   const plan = await getOrCreatePlan()
   await db.plans.put({
     ...plan,
     recipeIds: plan.recipeIds.filter((id) => id !== recipeId),
+    // Drop any per-meal portions override with the meal, so it can't linger or resurface.
+    portionOverrides: withoutOverride(plan.portionOverrides, recipeId),
   })
 }
 
@@ -62,12 +75,36 @@ export async function swapPlanRecipe(fromId: string, toId: string): Promise<void
   if (i === -1 || plan.recipeIds.includes(toId)) return
   const recipeIds = [...plan.recipeIds]
   recipeIds[i] = toId
-  await db.plans.put({ ...plan, recipeIds })
+  // Carry any per-meal portions override across the swap — same slot, same "cooking for N".
+  let portionOverrides = plan.portionOverrides
+  if (portionOverrides && fromId in portionOverrides) {
+    portionOverrides = { ...portionOverrides, [toId]: portionOverrides[fromId] }
+    delete portionOverrides[fromId]
+  }
+  await db.plans.put({ ...plan, recipeIds, portionOverrides })
 }
 
 export async function setPortions(portions: number): Promise<void> {
   const plan = await getOrCreatePlan()
   await db.plans.put({ ...plan, portions })
+}
+
+/**
+ * Override one meal's portions (guests, or batch-cook for lunches) while the rest stay at the
+ * plan default. Passing `undefined` — or a value equal to the plan-wide `portions` — clears the
+ * override so the meal follows the default again. No-op for a recipe not on the plan.
+ */
+export async function setMealPortions(
+  recipeId: string,
+  portions: number | undefined,
+): Promise<void> {
+  const plan = await getOrCreatePlan()
+  if (!plan.recipeIds.includes(recipeId)) return
+  const portionOverrides =
+    portions == null || portions === plan.portions
+      ? withoutOverride(plan.portionOverrides, recipeId)
+      : { ...plan.portionOverrides, [recipeId]: portions }
+  await db.plans.put({ ...plan, portionOverrides })
 }
 
 /**

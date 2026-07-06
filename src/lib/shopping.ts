@@ -23,6 +23,7 @@ export interface ShopLine {
 }
 
 const EMPTY_BINDINGS: ReadonlyMap<string, string> = new Map()
+const EMPTY_PORTIONS: ReadonlyMap<string, number> = new Map()
 
 /** The key ingredient bindings + the unmatched grouping use — case/space-insensitive name. */
 export function normalizeName(name: string): string {
@@ -55,8 +56,10 @@ interface Acc {
 
 /**
  * Merge the ingredients of the planned recipes into a shopping list, scaled to
- * `portions`. Each ingredient is summed in its purchase unit where a conversion
- * exists; otherwise the recipe-unit amount is kept as its own line.
+ * each meal's portions. A recipe scales by `portionOverrides.get(id)` if it has a
+ * per-meal override (leftovers/batch), else by the plan-wide `portions`. Each
+ * ingredient is summed in its purchase unit where a conversion exists; otherwise
+ * the recipe-unit amount is kept as its own line.
  *
  * A line resolves to a canonical ingredient by its own `ingredientId` if set,
  * else by a lazy `bindings` entry (name → ingredientId) from shopping-time
@@ -69,6 +72,7 @@ export function buildShoppingList(
   dict: Map<string, IngredientDef> = INGREDIENTS_BY_ID,
   bindings: ReadonlyMap<string, string> = EMPTY_BINDINGS,
   aisleOrder: readonly string[] = AISLE_ORDER,
+  portionOverrides: ReadonlyMap<string, number> = EMPTY_PORTIONS,
 ): ShoppingList {
   const matched = new Map<string, Acc>()
   const unmatchedMap = new Map<
@@ -79,7 +83,7 @@ export function buildShoppingList(
   const basics = new Set<string>()
 
   for (const r of recipes) {
-    const factor = portions / (r.serves || 2)
+    const factor = (portionOverrides.get(r.id) ?? portions) / (r.serves || 2)
     for (const b of r.basics) basics.add(b)
 
     for (const line of r.ingredients) {

@@ -10,6 +10,7 @@ import {
   removeFromPlan,
   insertIntoPlanAt,
   setPortions,
+  setMealPortions,
   markCooked,
   unmarkCooked,
   swapPlanRecipe,
@@ -39,6 +40,9 @@ function freshSeed(): number {
 }
 
 const PORTION_OPTIONS = [2, 4, 6]
+// Per-meal choices go a little wider than the plan default — 1 (a solo lunch), odd sizes for
+// guests (5), and 8 for a big batch-cook. The plan default is folded in so it's always offered.
+const MEAL_PORTION_OPTIONS = [1, 2, 3, 4, 5, 6, 8]
 
 function recency(dateISO: string | undefined): { text: string; warn: boolean } {
   if (!dateISO) return { text: 'not cooked yet', warn: false }
@@ -440,6 +444,7 @@ export function PlanPage() {
               const hasVersions = siblings.length > 1
               const lead = siblings[0] ?? r
               const versionsOpen = versionsOpenId === r.id
+              const mealPortions = plan?.portionOverrides?.[r.id] ?? portions
               return (
                 <li
                   key={r.id}
@@ -480,6 +485,11 @@ export function PlanPage() {
                       </div>
                     </div>
                   </div>
+                  <MealPortions
+                    recipeId={r.id}
+                    portions={portions}
+                    effective={mealPortions}
+                  />
                   {hasVersions && (
                     <button
                       type="button"
@@ -697,6 +707,45 @@ function SuggestionSlot({
         </button>
       </div>
     </li>
+  )
+}
+
+// Per-meal "cooking for N" — overrides the week default for one meal (guests / batch-cook). When
+// it differs from the default it reads in brand ink so an off-default meal is glanceable; picking
+// the default value clears the override (handled in setMealPortions).
+function MealPortions({
+  recipeId,
+  portions,
+  effective,
+}: {
+  recipeId: string
+  portions: number
+  effective: number
+}) {
+  const overridden = effective !== portions
+  const options = [...new Set([...MEAL_PORTION_OPTIONS, portions, effective])].sort((a, b) => a - b)
+  return (
+    <label
+      className="flex items-center gap-1 text-xs"
+      title="Portions for this meal — override the week default for guests or batch-cooking"
+    >
+      <span className={overridden ? 'font-medium text-brand-ink' : 'text-muted'}>for</span>
+      <span className="sr-only">Portions for this meal</span>
+      <Select
+        size="sm"
+        value={effective}
+        onChange={(e) => void setMealPortions(recipeId, Number(e.target.value))}
+        aria-label="Portions for this meal"
+        className={overridden ? 'border-brand-400 font-medium text-brand-ink' : 'text-muted'}
+      >
+        {options.map((n) => (
+          <option key={n} value={n}>
+            {n}
+            {n === portions ? ' (default)' : ''}
+          </option>
+        ))}
+      </Select>
+    </label>
   )
 }
 

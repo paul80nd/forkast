@@ -2,7 +2,7 @@ import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { expect } from 'vitest'
 import { db } from '../../src/db/db'
 import { CURRENT_PLAN_ID } from '../../src/lib/plan'
-import { addToPlan, setPortions } from '../../src/app/plan'
+import { addToPlan, setPortions, setMealPortions } from '../../src/app/plan'
 import {
   getPlanShoppingList,
   getPlanShoppingListText,
@@ -85,6 +85,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     await setPortions(portions)
     for (const id of ids(list)) await addToPlan(id)
   }
+  const setMeal = async (_: unknown, id: string, portions: number) => setMealPortions(id, portions)
   const build = async () => {
     list = await getPlanShoppingList()
   }
@@ -145,6 +146,15 @@ describeFeature(feature, ({ Background, Scenario }) => {
   Scenario("Quantities scale to the plan's portions", ({ Given, And, When, Then }) => {
     Given('a recipe {string} with {string} bound to {string}', boundRecipe)
     And('recipes {string} are on the plan for {int}', onPlan)
+    When('I build the shopping list', build)
+    Then('the list contains {string}', contains)
+  })
+
+  Scenario('A per-meal portions override scales only that meal', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} with {string} bound to {string}', boundRecipe)
+    And('a recipe {string} with {string} bound to {string}', boundRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    And('I set recipe {string} to cater for {int}', setMeal)
     When('I build the shopping list', build)
     Then('the list contains {string}', contains)
   })

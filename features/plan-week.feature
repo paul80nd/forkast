@@ -25,6 +25,32 @@ Feature: Plan a week of meals
     When I set the plan to cater for 4
     Then the plan caters for 4
 
+  Scenario: Overriding one meal's portions leaves the rest at the default
+    Given the plan is exactly "r1, r2"
+    When I set recipe "r1" to cater for 4
+    Then meal "r1" caters for 4
+    And meal "r2" caters for 2
+    And the plan caters for 2
+
+  Scenario: Setting a meal back to the default clears its override
+    Given the plan is exactly "r1"
+    And I set recipe "r1" to cater for 4
+    When I set recipe "r1" to cater for 2
+    Then meal "r1" has no portions override
+
+  Scenario: Removing a meal drops its portions override
+    Given the plan is exactly "r1, r2"
+    And I set recipe "r1" to cater for 6
+    When I remove recipe "r1" from the plan
+    Then meal "r1" has no portions override
+
+  Scenario: Swapping a meal for a variant carries its portions override
+    Given the plan is exactly "r1, r2"
+    And I set recipe "r1" to cater for 6
+    When I swap planned recipe "r1" for "r1b"
+    Then meal "r1b" caters for 6
+    And meal "r1" has no portions override
+
   Scenario: Marking a recipe cooked records history and clears it from the plan
     Given I have added recipe "r1" to the plan
     When I mark recipe "r1" as cooked

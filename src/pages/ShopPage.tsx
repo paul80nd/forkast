@@ -46,6 +46,8 @@ export function ShopPage() {
   const showToast = useToast()
 
   const portions = plan?.portions ?? 2
+  // A per-meal portions override means "for N" is only the default; flag that some meals differ.
+  const mixedPortions = Object.values(plan?.portionOverrides ?? {}).some((p) => p !== portions)
 
   // Gate loading on the derived list only. `plan` resolves to `undefined` both while loading AND
   // when there's simply no plan row yet (never planned a week) — gating on it would wedge the page
@@ -92,6 +94,7 @@ export function ShopPage() {
         <div className="flex items-center gap-3 text-sm text-muted">
           <span>
             {itemCount} items · {mealCount} meals · for {portions}
+            {mixedPortions && ' · some meals differ'}
           </span>
           {checked.size > 0 && (
             <button

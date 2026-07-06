@@ -7,6 +7,7 @@ import {
   removeFromPlan,
   insertIntoPlanAt,
   setPortions,
+  setMealPortions,
   markCooked,
   unmarkCooked,
   swapPlanRecipe,
@@ -73,6 +74,78 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     Then('the plan caters for {int}', async (_, portions: number) => {
       expect((await plan())?.portions).toBe(portions)
+    })
+  })
+
+  // Effective portions for a meal = its override, else the plan default.
+  async function mealPortions(id: string): Promise<number | undefined> {
+    const p = await plan()
+    return p?.portionOverrides?.[id] ?? p?.portions
+  }
+
+  Scenario("Overriding one meal's portions leaves the rest at the default", ({ Given, When, Then, And }) => {
+    Given('the plan is exactly {string}', async (_, csv: string) => {
+      for (const id of csv.split(',').map((s) => s.trim())) await addToPlan(id)
+    })
+    When('I set recipe {string} to cater for {int}', async (_, id: string, n: number) => {
+      await setMealPortions(id, n)
+    })
+    Then('meal {string} caters for {int}', async (_, id: string, n: number) => {
+      expect(await mealPortions(id)).toBe(n)
+    })
+    And('meal {string} caters for {int}', async (_, id: string, n: number) => {
+      expect(await mealPortions(id)).toBe(n)
+    })
+    And('the plan caters for {int}', async (_, n: number) => {
+      expect((await plan())?.portions).toBe(n)
+    })
+  })
+
+  Scenario('Setting a meal back to the default clears its override', ({ Given, And, When, Then }) => {
+    Given('the plan is exactly {string}', async (_, csv: string) => {
+      for (const id of csv.split(',').map((s) => s.trim())) await addToPlan(id)
+    })
+    And('I set recipe {string} to cater for {int}', async (_, id: string, n: number) => {
+      await setMealPortions(id, n)
+    })
+    When('I set recipe {string} to cater for {int}', async (_, id: string, n: number) => {
+      await setMealPortions(id, n)
+    })
+    Then('meal {string} has no portions override', async (_, id: string) => {
+      expect((await plan())?.portionOverrides?.[id]).toBeUndefined()
+    })
+  })
+
+  Scenario('Removing a meal drops its portions override', ({ Given, And, When, Then }) => {
+    Given('the plan is exactly {string}', async (_, csv: string) => {
+      for (const id of csv.split(',').map((s) => s.trim())) await addToPlan(id)
+    })
+    And('I set recipe {string} to cater for {int}', async (_, id: string, n: number) => {
+      await setMealPortions(id, n)
+    })
+    When('I remove recipe {string} from the plan', async (_, id: string) => {
+      await removeFromPlan(id)
+    })
+    Then('meal {string} has no portions override', async (_, id: string) => {
+      expect((await plan())?.portionOverrides?.[id]).toBeUndefined()
+    })
+  })
+
+  Scenario('Swapping a meal for a variant carries its portions override', ({ Given, And, When, Then }) => {
+    Given('the plan is exactly {string}', async (_, csv: string) => {
+      for (const id of csv.split(',').map((s) => s.trim())) await addToPlan(id)
+    })
+    And('I set recipe {string} to cater for {int}', async (_, id: string, n: number) => {
+      await setMealPortions(id, n)
+    })
+    When('I swap planned recipe {string} for {string}', async (_, from: string, to: string) => {
+      await swapPlanRecipe(from, to)
+    })
+    Then('meal {string} caters for {int}', async (_, id: string, n: number) => {
+      expect(await mealPortions(id)).toBe(n)
+    })
+    And('meal {string} has no portions override', async (_, id: string) => {
+      expect((await plan())?.portionOverrides?.[id]).toBeUndefined()
     })
   })
 

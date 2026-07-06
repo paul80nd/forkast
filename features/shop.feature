@@ -19,6 +19,14 @@ Feature: Shopping list
     When I build the shopping list
     Then the list contains "garlic cloves · × 4"
 
+  Scenario: A per-meal portions override scales only that meal
+    Given a recipe "r1" with "1 garlic" bound to "garlic"
+    And a recipe "r2" with "1 garlic" bound to "garlic"
+    And recipes "r1, r2" are on the plan for 2
+    And I set recipe "r1" to cater for 4
+    When I build the shopping list
+    Then the list contains "garlic cloves · × 3"
+
   Scenario: An unbound ingredient is listed verbatim, not dropped
     Given a recipe "r1" with unbound "mystery herb"
     And recipes "r1" are on the plan for 2

@@ -40,6 +40,14 @@ describe('buildShoppingList', () => {
     expect(labels(buildShoppingList([a, b], 2))).toContain('limes · × 2')
   })
 
+  it('scales a meal by its per-meal portions override, others by the default', () => {
+    const a = recipe('a', [{ rawLabel: '1 lime', name: 'lime', qty: 1, ingredientId: 'lime' }])
+    const b = recipe('b', [{ rawLabel: '1 lime', name: 'lime', qty: 1, ingredientId: 'lime' }])
+    // a batch-cooks for 4 (×2), b stays at the default 2 (×1) ⇒ 3 limes.
+    const list = buildShoppingList([a, b], 2, undefined, undefined, undefined, new Map([['a', 4]]))
+    expect(labels(list)).toContain('limes · × 3')
+  })
+
   it('converts recipe units to the purchase unit and sums (tbsp -> ml)', () => {
     const a = recipe('a', [{ rawLabel: '2 tbsp soy sauce', name: 'soy sauce', qty: 2, unit: 'tbsp', ingredientId: 'soy-sauce' }])
     const b = recipe('b', [{ rawLabel: '1 tbsp soy sauce', name: 'soy sauce', qty: 1, unit: 'tbsp', ingredientId: 'soy-sauce' }])

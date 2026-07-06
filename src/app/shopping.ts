@@ -11,6 +11,7 @@ import type { ShoppingState } from '../schema/userData'
 async function loadPlanContext(planId: string): Promise<{
   recipes: Recipe[]
   portions: number
+  portionOverrides: Map<string, number>
   dict: Map<string, IngredientDef>
 }> {
   const plan = await db.plans.get(planId)
@@ -22,6 +23,7 @@ async function loadPlanContext(planId: string): Promise<{
   return {
     recipes: recipeRows.filter((r): r is Recipe => r != null),
     portions: plan?.portions ?? 2,
+    portionOverrides: new Map(Object.entries(plan?.portionOverrides ?? {})),
     dict: dictRows.length ? new Map(dictRows.map((d) => [d.id, d])) : INGREDIENTS_BY_ID,
   }
 }
@@ -36,13 +38,13 @@ async function loadPlanContext(planId: string): Promise<{
  * after restoring a pre-dictionary backup, before the startup reseed runs).
  */
 export async function getPlanShoppingList(planId: string = CURRENT_PLAN_ID): Promise<ShoppingList> {
-  const [{ recipes, portions, dict }, bindingRows, aisleOrder] = await Promise.all([
+  const [{ recipes, portions, portionOverrides, dict }, bindingRows, aisleOrder] = await Promise.all([
     loadPlanContext(planId),
     db.bindings.toArray(),
     getAisleOrder(),
   ])
   const bindings = new Map(bindingRows.map((b) => [normalizeName(b.name), b.ingredientId]))
-  return buildShoppingList(recipes, portions, dict, bindings, aisleOrder)
+  return buildShoppingList(recipes, portions, dict, bindings, aisleOrder, portionOverrides)
 }
 
 /**

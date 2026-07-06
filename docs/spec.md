@@ -131,7 +131,7 @@ Conceptual; the exact record shapes are the TS types in `src/schema/userData.ts`
 |-----------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | `userData`      | per-recipe `{ stars?, rotation?, notes?, userTags? }`, keyed by `recipeId` — `rotation` is the desired cook frequency on a 1–5 scale (planner input); see rating semantics |
 | `cooked`        | one row per cook `{ recipeId, date }` — feeds "not cooked recently"                                                                     |
-| `plans`         | `{ id, portions, recipeIds[] }` — MVP is a single current week                                                                          |
+| `plans`         | `{ id, portions, recipeIds[], portionOverrides? }` — a single current week; `portionOverrides` (recipeId → portions) lets one meal differ from the plan default, see [`plan-portions-spec.md`](plan-portions-spec.md) |
 | `shopping`      | per-plan `{ checked[], extras[] }` — tick-off state + manual extras; the list itself is derived                                         |
 | `settings`      | key/value rows (e.g. `householdSize`, `dataSource`)                                                                                     |
 | `dictionary`    | the ingredient dictionary — seeded from the bundled default, then grown by **lazy binding at shopping time**; rides along in the export; see [`shop-spec.md`](shop-spec.md) |
@@ -167,10 +167,11 @@ survives clearing a rating (and vice-versa).
    (`?tag=` / `?allergen=`). (No-go proteins are excluded upstream when building the dataset.)
 3. **Curate** — set ★1–5; fast keyboard triage of the unrated backlog.
 4. **Plan a week** — manually add recipes; choose portions (default **2**,
-   scalable to **4**/N); show cuisine / protein / time badges + a "not cooked
-   recently" hint so variety is eyeballable. Plus **assisted "suggest a varied
-   week"** (built) — a propose-then-accept shortlist scored on stars, rotation
-   and the variety axes. See [`plan-suggest-spec.md`](plan-suggest-spec.md).
+   scalable to **4**/N), with **per-meal overrides** for leftovers/batch or guests
+   (see [`plan-portions-spec.md`](plan-portions-spec.md)); show cuisine / protein / time
+   badges + a "not cooked recently" hint so variety is eyeballable. Plus **assisted
+   "suggest a varied week"** (built) — a propose-then-accept shortlist scored on stars,
+   rotation and the variety axes. See [`plan-suggest-spec.md`](plan-suggest-spec.md).
 5. **Shopping list** — parse + **merge** ingredients across the plan, **scale**
    to portions, group by aisle, list `basics` separately as "assumed in
    cupboard", tick off, add manual extras, **bind ingredients to the
@@ -181,9 +182,9 @@ survives clearing a rating (and vice-versa).
 
 ## Later (noted, not built)
 
-- Leftovers/batch awareness, multi-week plan history. (Per-serving nutrition is
-  **captured at import and already shown** on the recipe page; a richer nutrition view
-  could come later.)
+- Multi-week plan history. (Leftovers/batch awareness is **built** as per-meal portions —
+  see [`plan-portions-spec.md`](plan-portions-spec.md). Per-serving nutrition is **captured at
+  import and already shown** on the recipe page; a richer nutrition view could come later.)
 
 ## Known hard bits (bounded)
 

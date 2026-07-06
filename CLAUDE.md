@@ -34,6 +34,10 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
     `src/app/tags.ts`).
   - [`docs/plan-suggest-spec.md`](docs/plan-suggest-spec.md) — assisted "suggest a varied week"
     (**built**: propose-then-accept shortlist; `src/lib/suggest.ts` + `src/app/suggest.ts`).
+  - [`docs/plan-portions-spec.md`](docs/plan-portions-spec.md) — **Per-meal portions** (built):
+    override one meal's headcount (leftovers/batch/guests) while the rest stay at the plan default;
+    `WeekPlan.portionOverrides` + `setMealPortions` + the `MealPortions` control, fed into the same
+    shopping-merge scaling.
   - [`docs/use-up-spec.md`](docs/use-up-spec.md) — **Use up ingredients** (built): a lightweight
     Plan-page list of ingredients you have → flags which the week doesn't use → suggests recipes by
     coverage. `src/lib/useUp.ts` + `src/app/useUp.ts` + `UseUpPanel`; list persisted as a `settings`
