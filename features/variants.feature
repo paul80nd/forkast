@@ -54,6 +54,17 @@ Feature: Curate recipe variants
     Then deleting "white" would next show Browse
     And deleting "soup" would next show Browse
 
+  Scenario: Adding an existing recipe to a dish
+    When I add recipe "soup" to the dish for "white"
+    Then the dish for "white" has members "white, brown, cauli, soup" led by "white"
+    And the dish for "soup" has members "white, brown, cauli, soup" led by "white"
+
+  Scenario: Merging one variant group into another
+    Given I set a variant override for "white, brown" led by "white"
+    And I set a variant override for "cauli, soup" led by "cauli"
+    When I merge the dish for "cauli" into the dish for "white"
+    Then the dish for "white" has members "white, brown, cauli, soup" led by "white"
+
   Scenario: Dissolving an override reverts to the import grouping
     Given I set a variant override for "white, brown" led by "brown"
     When I dissolve that dish

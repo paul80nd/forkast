@@ -103,6 +103,35 @@ export async function setVariantOverride(recipeIds: string[], leadId: string): P
   })
 }
 
+/**
+ * Add an existing recipe to the dish that `dishRecipeId` belongs to, pinning the result as a user
+ * override led by that dish's current lead. A no-op if the recipe is already in the dish. The added
+ * recipe leaves any other variant group it was in (one override per recipe — see setVariantOverride).
+ */
+export async function addRecipeToDish(recipeId: string, dishRecipeId: string): Promise<void> {
+  const dish = await dishForRecipe(dishRecipeId)
+  if (!dish) return
+  const ids = dish.variants.map((v) => v.id)
+  if (ids.includes(recipeId)) return
+  await setVariantOverride([...ids, recipeId], dish.lead.id)
+}
+
+/**
+ * Merge one dish into another: every variant of the `source` dish joins the `target` dish, led by
+ * the target's current lead. A no-op if they're already the same dish or either can't be resolved.
+ */
+export async function mergeDishes(sourceRecipeId: string, targetRecipeId: string): Promise<void> {
+  const [source, target] = await Promise.all([
+    dishForRecipe(sourceRecipeId),
+    dishForRecipe(targetRecipeId),
+  ])
+  if (!source || !target) return
+  const targetIds = target.variants.map((v) => v.id)
+  if (targetIds.includes(source.lead.id)) return // already the same dish
+  const sourceIds = source.variants.map((v) => v.id)
+  await setVariantOverride([...targetIds, ...sourceIds], target.lead.id)
+}
+
 /** Re-designate the lead of an existing override. No-op if the id/lead don't match. */
 export async function setOverrideLead(overrideId: string, leadId: string): Promise<void> {
   const o = await db.variantOverrides.get(overrideId)

@@ -104,10 +104,13 @@ Because variants stay separate full recipes, planning needs **no new schema**:
   **detaches** a recipe ("this isn't a variant"). Overrides are precious user data — they ride the
   backup and survive re-import. Pure resolution: `resolveDishes(recipes, overrides)` in
   `src/lib/variants.ts`; app seam `src/app/variants.ts` (`dishForRecipe`, `setVariantOverride`,
-  `removeFromOverride`, `setOverrideLead`, `dissolveOverride`).
+  `addRecipeToDish`, `mergeDishes`, `removeFromOverride`, `setOverrideLead`, `dissolveOverride`).
+  `addRecipeToDish` and `mergeDishes` are thin compositions of `setVariantOverride` (union the
+  members, keep the target's lead), so one-override-per-recipe still holds.
 - **Refine → Variants** (replaces the old Group tab) is where the user curates: *suggest* merges the
   image-hash missed (text-match, kept only if a cluster spans >1 effective dish) → confirm + pick
   lead; *create* by hand; and an *all-dishes* list with re-lead / remove-member / revert-to-auto /
+  **add an existing recipe** into a group / **merge one group into another** (both search-pick) /
   **delete-recipe** (removes it outright via `deleteRecipe`, e.g. the unwanted "with dessert" combos —
   the delete cascade drops it from any override, promoting a new lead if it was the lead).
 - **Resolved open questions:** *groups vs variants* → variants win, groups removed. *Lead-override

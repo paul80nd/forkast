@@ -9,6 +9,8 @@ import {
   suggestVariantMerges,
   setVariantOverride,
   setOverrideLead,
+  addRecipeToDish,
+  mergeDishes,
   removeFromOverride,
   dissolveOverride,
 } from '../app/variants'
@@ -42,7 +44,7 @@ export function VariantsTab({
     <>
       <VariantSuggestions byId={byId} />
       <VariantCreate recipes={recipes} byId={byId} />
-      <VariantDishList dishes={dishes} overrides={overrides} />
+      <VariantDishList dishes={dishes} overrides={overrides} recipes={recipes} />
     </>
   )
 }
@@ -303,9 +305,11 @@ type SortKey = 'size' | 'title'
 function VariantDishList({
   dishes,
   overrides,
+  recipes,
 }: {
   dishes: Dish[]
   overrides: VariantOverride[]
+  recipes: Recipe[]
 }) {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortKey>('size')
@@ -354,7 +358,13 @@ function VariantDishList({
 
       <ul className="mt-3 space-y-2">
         {shown.map((d) => (
-          <VariantDishRow key={d.lead.id} dish={d} override={overrideFor(d, overrides)} />
+          <VariantDishRow
+            key={d.lead.id}
+            dish={d}
+            override={overrideFor(d, overrides)}
+            recipes={recipes}
+            allDishes={dishes}
+          />
         ))}
       </ul>
       {visible < filtered.length && (
@@ -370,11 +380,55 @@ function VariantDishList({
   )
 }
 
-function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOverride }) {
+function VariantDishRow({
+  dish,
+  override,
+  recipes,
+  allDishes,
+}: {
+  dish: Dish
+  override?: VariantOverride
+  recipes: Recipe[]
+  allDishes: Dish[]
+}) {
   const [open, setOpen] = useState(false)
   const [comparing, setComparing] = useState(false)
+  // Inline "add a recipe" / "merge into another group" search tools (one open at a time).
+  const [tool, setTool] = useState<null | 'add' | 'merge'>(null)
+  const [q, setQ] = useState('')
   const { lead, variants } = dish
   const memberIds = variants.map((v) => v.id)
+  const memberSet = new Set(memberIds)
+
+  const qLower = q.trim().toLowerCase()
+  const addResults = qLower
+    ? recipes.filter((r) => !memberSet.has(r.id) && r.title.toLowerCase().includes(qLower)).slice(0, 8)
+    : []
+  const mergeResults = qLower
+    ? allDishes.filter((d) => d.lead.id !== lead.id && d.lead.title.toLowerCase().includes(qLower)).slice(0, 8)
+    : []
+
+  function openTool(t: 'add' | 'merge') {
+    setTool((cur) => (cur === t ? null : t))
+    setQ('')
+  }
+  async function addRecipe(id: string) {
+    await addRecipeToDish(id, lead.id)
+    setTool(null)
+    setQ('')
+  }
+  async function mergeInto(target: Dish) {
+    if (
+      !window.confirm(
+        `Merge “${lead.title}” (${variants.length} version${variants.length === 1 ? '' : 's'}) into ` +
+          `“${target.lead.title}”?\n\nThey become one dish, led by “${target.lead.title}”.`,
+      )
+    )
+      return
+    await mergeDishes(lead.id, target.lead.id)
+    setTool(null)
+    setQ('')
+  }
 
   async function makeLead(id: string) {
     if (override) await setOverrideLead(override.id, id)
@@ -453,7 +507,24 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
               )
             })}
           </ul>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => openTool('add')}
+              className="rounded-md px-2.5 py-1 text-sm font-medium text-muted hover:bg-sunken"
+            >
+              {tool === 'add' ? 'Close' : 'Add recipe'}
+            </button>
+            {allDishes.length > 1 && (
+              <button
+                type="button"
+                onClick={() => openTool('merge')}
+                className="rounded-md px-2.5 py-1 text-sm font-medium text-muted hover:bg-sunken"
+                title="Merge this group into another dish"
+              >
+                {tool === 'merge' ? 'Close' : 'Merge into…'}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setComparing((c) => !c)}
@@ -472,6 +543,54 @@ function VariantDishRow({ dish, override }: { dish: Dish; override?: VariantOver
               </button>
             )}
           </div>
+
+          {tool && (
+            <div className="relative mt-2">
+              <input
+                type="search"
+                autoFocus
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={
+                  tool === 'add' ? 'Search a recipe to add…' : 'Search a group to merge into…'
+                }
+                className={`${fieldBoxClass} w-full px-2.5 py-1.5 text-sm`}
+              />
+              {tool === 'add' && addResults.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-line bg-card shadow-md">
+                  {addResults.map((r) => (
+                    <li key={r.id}>
+                      <button
+                        type="button"
+                        onClick={() => void addRecipe(r.id)}
+                        className="block w-full truncate px-3 py-1.5 text-left text-sm hover:bg-brand-wash"
+                      >
+                        {r.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {tool === 'merge' && mergeResults.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-line bg-card shadow-md">
+                  {mergeResults.map((d) => (
+                    <li key={d.lead.id}>
+                      <button
+                        type="button"
+                        onClick={() => void mergeInto(d)}
+                        className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-brand-wash"
+                      >
+                        <span className="truncate">{d.lead.title}</span>
+                        <span className="shrink-0 text-xs text-muted">
+                          {d.variants.length} versions
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           {comparing && <CompareView recipes={variants} />}
         </div>
       )}

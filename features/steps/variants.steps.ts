@@ -6,6 +6,8 @@ import {
   dishForRecipe,
   nextVariantAfterDelete,
   setVariantOverride,
+  addRecipeToDish,
+  mergeDishes,
   removeFromOverride,
   dissolveOverride,
   getOverrides,
@@ -166,6 +168,33 @@ describeFeature(feature, ({ Background, Scenario }) => {
     })
     And('deleting {string} would next show Browse', async (_, id: string) => {
       expect(await nextVariantAfterDelete(id)).toBeNull()
+    })
+  })
+
+  Scenario('Adding an existing recipe to a dish', ({ When, Then, And }) => {
+    When('I add recipe {string} to the dish for {string}', async (_, id: string, dishId: string) => {
+      await addRecipeToDish(id, dishId)
+    })
+    Then('the dish for {string} has members {string} led by {string}', async (_, id, m, l) => {
+      await expectDish(id, ids(m), l)
+    })
+    And('the dish for {string} has members {string} led by {string}', async (_, id, m, l) => {
+      await expectDish(id, ids(m), l)
+    })
+  })
+
+  Scenario('Merging one variant group into another', ({ Given, And, When, Then }) => {
+    Given('I set a variant override for {string} led by {string}', async (_, m, l) => {
+      await setVariantOverride(ids(m), l)
+    })
+    And('I set a variant override for {string} led by {string}', async (_, m, l) => {
+      await setVariantOverride(ids(m), l)
+    })
+    When('I merge the dish for {string} into the dish for {string}', async (_, src: string, tgt: string) => {
+      await mergeDishes(src, tgt)
+    })
+    Then('the dish for {string} has members {string} led by {string}', async (_, id, m, l) => {
+      await expectDish(id, ids(m), l)
     })
   })
 
