@@ -26,8 +26,10 @@ For each ingredient line:
 - **Merge + convert**: sum a resolved ingredient in its **purchase unit** where the recipe unit
   converts to it (free within a dimension; volume↔mass needs a **density** — see below); where
   it doesn't convert, keep the recipe-unit amount as its own line.
-- Lines are grouped by **aisle** (`AISLE_ORDER`, unknown aisles fall to the end) and sorted
-  **alphabetically by name** within each aisle.
+- Lines are grouped by **aisle** in a **saved, user-editable order** (`buildShoppingList` takes
+  the order; it defaults to `AISLE_ORDER` and `getPlanShoppingList` passes the persisted one —
+  see *Aisle management* below). Unknown aisles fall to the end; within each aisle, lines sort
+  **alphabetically by name**.
 
 Each line reads **name-first** so it scans and sorts by ingredient: `dried chilli flakes · 11 g`,
 `spring onions · × 2` (count uses `× N`; weight/volume uses the amount + unit).
@@ -128,6 +130,24 @@ no-op returning false — while any binding still points at it, since a bound en
 target; unbind it first (Shop → Your bindings). Seed rows shown before the first reseed (the
 static-list fallback) aren't real Dexie entries, so they offer no Delete.
 
+### Aisle management (Config → Ingredients)
+
+The aisle list — the shop's **section order** — is persisted as one `settings` row (`aisleOrder`,
+a `string[]`), so it rides along in the backup snapshot with no schema bump; when unset it falls
+back to the built-in `AISLE_ORDER`. The **Aisles** panel at the top of Config → Ingredients
+(pure list maths in `src/lib/aisles.ts`, Dexie seam in `src/app/aisles.ts`) lets you:
+
+- **Add** an aisle (takes a slot in the order, available in the ingredient aisle picker).
+- **Rename** it — rewrites every dictionary entry that sits in it, then the order list. Renaming
+  onto an **existing** aisle **merges** them (the entries fold in; the source slot is dropped).
+- **Reorder** (▲▼) — the saved order is what `getPlanShoppingList` feeds `buildShoppingList`, so
+  this sets the order sections appear on the list.
+- **Delete** an aisle — only when **no** ingredient uses it (`deleteAisle` is a no-op otherwise).
+
+The effective list shown = the saved order plus any aisle a dictionary entry still references
+(`orderedAisles`), so a custom aisle set on an ingredient shows up even before it's saved to the
+order. (The Shop create/edit-ingredient aisle selects still offer only the built-in aisles.)
+
 ## Seams + tests
 
 - Pure logic in `src/lib/shopping.ts` (merge/convert/format), `src/lib/ingredientMatch.ts`
@@ -138,11 +158,15 @@ static-list fallback) aren't real Dexie entries, so they offer no Delete.
 - `features/shop.feature` covers merge, scale, verbatim, tick/extras, bind-merges,
   create-then-bind, density conversion, editing/renaming an ingredient, deleting an unused one (and
   refusing to delete a bound one), the per-line recipe count, and the text export (ticks + conversions).
+- Aisle management lives in `src/lib/aisles.ts` (pure, unit-tested) + `src/app/aisles.ts` (Dexie
+  seam); `features/aisles.feature` covers add, rename, merge-on-rename, delete-when-unused,
+  protect-when-in-use, and reorder driving the shopping list's section order.
 
 ## Not built / later
 
 - **No aisle is derived** — an ingredient's aisle is whatever the dictionary entry says (set on
   create, editable in the bindings panel or Config → Ingredients).
-- Bulk-bind, aisle management (rename/merge aisles across the dictionary), and richer
-  create-ingredient fields (aliases) are possible later. Name/plural/aisle editing now lives in
-  the Config → Ingredients manager (above).
+- Bulk-bind and richer create-ingredient fields (aliases) are possible later. Name/plural/aisle
+  editing and full aisle management (add/rename/merge/reorder/delete) now live in the
+  Config → Ingredients manager (above). Making the Shop create/edit aisle selects honour the
+  saved aisle order is a small follow-up.

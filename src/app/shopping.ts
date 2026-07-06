@@ -3,6 +3,7 @@ import { CURRENT_PLAN_ID } from '../lib/plan'
 import { buildShoppingList, normalizeName, type ShoppingList } from '../lib/shopping'
 import { shoppingListToText } from '../lib/shoppingExport'
 import { INGREDIENTS_BY_ID, type IngredientDef } from '../data/ingredients'
+import { getAisleOrder } from './aisles'
 import type { Recipe } from '../schema/recipe'
 import type { ShoppingState } from '../schema/userData'
 
@@ -35,12 +36,13 @@ async function loadPlanContext(planId: string): Promise<{
  * after restoring a pre-dictionary backup, before the startup reseed runs).
  */
 export async function getPlanShoppingList(planId: string = CURRENT_PLAN_ID): Promise<ShoppingList> {
-  const [{ recipes, portions, dict }, bindingRows] = await Promise.all([
+  const [{ recipes, portions, dict }, bindingRows, aisleOrder] = await Promise.all([
     loadPlanContext(planId),
     db.bindings.toArray(),
+    getAisleOrder(),
   ])
   const bindings = new Map(bindingRows.map((b) => [normalizeName(b.name), b.ingredientId]))
-  return buildShoppingList(recipes, portions, dict, bindings)
+  return buildShoppingList(recipes, portions, dict, bindings, aisleOrder)
 }
 
 /**

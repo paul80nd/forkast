@@ -66,6 +66,7 @@ export function buildShoppingList(
   portions: number,
   dict: Map<string, IngredientDef> = INGREDIENTS_BY_ID,
   bindings: ReadonlyMap<string, string> = EMPTY_BINDINGS,
+  aisleOrder: readonly string[] = AISLE_ORDER,
 ): ShoppingList {
   const matched = new Map<string, Acc>()
   const unmatchedMap = new Map<
@@ -147,12 +148,14 @@ export function buildShoppingList(
     }
   }
 
-  const aisles = AISLE_ORDER.map((aisle) => ({
-    aisle,
-    lines: (byAisle.get(aisle) ?? []).sort((a, b) => a.label.localeCompare(b.label)),
-  })).filter((a) => a.lines.length)
+  const aisles = aisleOrder
+    .map((aisle) => ({
+      aisle,
+      lines: (byAisle.get(aisle) ?? []).sort((a, b) => a.label.localeCompare(b.label)),
+    }))
+    .filter((a) => a.lines.length)
   for (const [aisle, lines] of byAisle) {
-    if (!AISLE_ORDER.includes(aisle)) aisles.push({ aisle, lines })
+    if (!aisleOrder.includes(aisle)) aisles.push({ aisle, lines })
   }
 
   const unmatched = [...unmatchedMap.values()]
