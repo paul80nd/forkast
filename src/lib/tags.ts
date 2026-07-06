@@ -36,6 +36,24 @@ export function distinctLabels(recipes: Recipe[], kind: LabelKind): string[] {
   return [...seen.values()].sort((a, b) => a.localeCompare(b))
 }
 
+/**
+ * Does a recipe's label list satisfy a filter selection? Empty `selected` always matches (the
+ * filter is off). Case-insensitive. Modes: `all` — carries every selected label (tag AND filter);
+ * `any` — carries at least one (allergen "only"); `none` — carries none (allergen "avoid").
+ */
+export function matchesLabels(
+  labels: string[],
+  selected: string[],
+  mode: 'all' | 'any' | 'none',
+): boolean {
+  if (selected.length === 0) return true
+  const have = new Set(labels.map((l) => l.trim().toLowerCase()))
+  const want = selected.map((s) => s.trim().toLowerCase())
+  if (mode === 'all') return want.every((w) => have.has(w))
+  const anyPresent = want.some((w) => have.has(w))
+  return mode === 'any' ? anyPresent : !anyPresent
+}
+
 /** A label and how many recipes carry it. */
 export interface LabelUsage {
   value: string

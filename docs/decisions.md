@@ -8,6 +8,16 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-07-06 — Browse allergen filter: Avoid by default, with an Only toggle
+
+Tag filters in Browse are positive (a recipe must carry *all* selected tags — AND). Allergen filters
+default to **Avoid** (hide recipes containing any selected allergen — the meal-planning no-go the
+schema always intended), with an **Only** toggle that flips to "show recipes that *do* contain them".
+*Why the toggle:* the tag manager's click-through wants to *find* recipes carrying a label — the
+opposite of avoidance — so one control serves both the planner (avoid) and label inspection (only)
+rather than bolting on a second allergen filter. Labels aren't used anywhere else yet, so filtering
+is a pure, additive predicate (`matchesLabels`, `src/lib/tags.ts`).
+
 ## 2026-07-06 — Editing a recipe mutates the reference table in place
 
 The recipe view can now edit a recipe's scalar text — title, description, and the printed

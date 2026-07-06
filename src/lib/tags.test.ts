@@ -1,6 +1,30 @@
 import { describe, expect, it } from 'vitest'
-import { applyRelabel, distinctLabels, labelUsage } from './tags'
+import { applyRelabel, distinctLabels, labelUsage, matchesLabels } from './tags'
 import { makeRecipe } from '../../test/factories'
+
+describe('matchesLabels', () => {
+  const labels = ['Vegetarian', 'speedy']
+
+  it('matches everything when nothing is selected', () => {
+    expect(matchesLabels(labels, [], 'all')).toBe(true)
+    expect(matchesLabels(labels, [], 'none')).toBe(true)
+  })
+
+  it("'all' needs every selected label, case-insensitively", () => {
+    expect(matchesLabels(labels, ['vegetarian', 'Speedy'], 'all')).toBe(true)
+    expect(matchesLabels(labels, ['vegetarian', 'quick'], 'all')).toBe(false)
+  })
+
+  it("'any' needs at least one selected label", () => {
+    expect(matchesLabels(labels, ['quick', 'speedy'], 'any')).toBe(true)
+    expect(matchesLabels(labels, ['quick'], 'any')).toBe(false)
+  })
+
+  it("'none' excludes when any selected label is present", () => {
+    expect(matchesLabels(['gluten', 'egg'], ['gluten'], 'none')).toBe(false)
+    expect(matchesLabels(['egg'], ['gluten'], 'none')).toBe(true)
+  })
+})
 
 describe('applyRelabel', () => {
   const keys = (...vals: string[]) => new Set(vals.map((v) => v.toLowerCase()))

@@ -161,8 +161,10 @@ survives clearing a rating (and vice-versa).
 1. **Import** a dataset (`recipes.json` + images) into IndexedDB; ship a bundled demo set
    so first run shows something. Imported recipes carry **no** ingredient binding —
    binding is lazy, done in-app at shopping time (see *Architecture*).
-2. **Browse / search / filter** — by cuisine, prep time, and your **★ rating**. (No-go
-   proteins are excluded upstream when building the dataset, not filtered here.)
+2. **Browse / search / filter** — by cuisine, prep time, your **★ rating**, **tags** (match all)
+   and **allergens** (Avoid = hide any-of, or Only = show those that contain them). The Config →
+   Tags & allergens manager links straight through to Browse filtered to a chosen label
+   (`?tag=` / `?allergen=`). (No-go proteins are excluded upstream when building the dataset.)
 3. **Curate** — set ★1–5; fast keyboard triage of the unrated backlog.
 4. **Plan a week** — manually add recipes; choose portions (default **2**,
    scalable to **4**/N); show cuisine / protein / time badges + a "not cooked

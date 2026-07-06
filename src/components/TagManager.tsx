@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { labelUsage, distinctLabels, type LabelKind } from '../lib/tags'
@@ -131,6 +132,18 @@ function LabelSection({
                 </span>
                 {!isRenaming && (
                   <div className="ml-auto flex items-center gap-3">
+                    <Link
+                      to={{
+                        pathname: '/browse',
+                        search: new URLSearchParams({
+                          [kind === 'tags' ? 'tag' : 'allergen']: u.value,
+                        }).toString(),
+                      }}
+                      title={`Browse recipes with “${u.value}”`}
+                      className="text-xs font-medium text-brand-ink hover:underline"
+                    >
+                      Browse
+                    </Link>
                     <button
                       type="button"
                       onClick={() => startRename(u.value)}

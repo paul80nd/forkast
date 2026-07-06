@@ -66,5 +66,7 @@ each label with a recipe count, sorted alphabetically so near-duplicates sit adj
   merge = several; delete = empty `to`. It rewrites in one transaction, touching only the recipes
   that change. The pure per-recipe rewrite is `applyRelabel` (`src/lib/tags.ts`), which reuses
   `normalizeStringList`, so merging into an existing label collapses the duplicate for free.
+- Each row also has a **Browse** link that deep-links to that label's recipes (`/browse?tag=` /
+  `?allergen=`) — handy for eyeballing what carries a label before you rename, merge or delete it.
 - Same in-place storage model and re-import trade-off as recipe editing (above). Labels aren't used
   for filtering yet, so a rename/merge only rewrites the recipe arrays — nothing else to keep in sync.

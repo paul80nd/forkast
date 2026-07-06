@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { RecipeCard } from '../components/RecipeCard'
@@ -9,10 +10,12 @@ import { SkeletonCard } from '../components/SkeletonCard'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { deleteRecipes } from '../app/cleanup'
 import { resolveDishes, dishSizeByRecipe } from '../lib/variants'
+import { distinctLabels, matchesLabels } from '../lib/tags'
 import type { Stars } from '../schema/userData'
 
 type SortKey = 'rating' | 'time' | 'name'
 type RatingFilter = 'all' | 'unrated' | '5' | '4plus' | '3plus'
+type AllergenMode = 'avoid' | 'only'
 
 export function BrowsePage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
@@ -23,9 +26,40 @@ export function BrowsePage() {
   const [cuisine, setCuisine] = usePersistentState('browse.cuisine', 'all')
   const [maxTime, setMaxTime] = usePersistentState('browse.maxTime', 0) // 0 = any
   const [rating, setRating] = usePersistentState<RatingFilter>('browse.rating', 'all')
+  // Tags filter positively (AND — a recipe must carry all selected); allergens either avoid
+  // (hide any-of) or, in "only" mode, show recipes that do contain them.
+  const [tags, setTags] = usePersistentState<string[]>('browse.tags', [])
+  const [allergens, setAllergens] = usePersistentState<string[]>('browse.allergens', [])
+  const [allergenMode, setAllergenMode] = usePersistentState<AllergenMode>('browse.allergenMode', 'avoid')
   const [sort, setSort] = usePersistentState<SortKey>('browse.sort', 'rating')
   // Collapse each dish's variants to one lead card (default on — the point of the feature).
   const [groupVariants, setGroupVariants] = usePersistentState('browse.groupVariants', true)
+
+  // Deep-link from the tag manager: ?tag=<v> focuses on recipes carrying that tag; ?allergen=<v>
+  // focuses on recipes containing that allergen (allergen "only" mode). Applied once on mount — it
+  // clears the broad filters for a clean landing, then drops the query param.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const deepLinkApplied = useRef(false)
+  useEffect(() => {
+    if (deepLinkApplied.current) return
+    deepLinkApplied.current = true
+    const tag = searchParams.get('tag')
+    const allergen = searchParams.get('allergen')
+    if (!tag && !allergen) return
+    setQuery('')
+    setCuisine('all')
+    setMaxTime(0)
+    setRating('all')
+    if (tag) {
+      setTags([tag])
+      setAllergens([])
+    } else if (allergen) {
+      setAllergens([allergen])
+      setAllergenMode('only')
+      setTags([])
+    }
+    setSearchParams({}, { replace: true })
+  }, [])
 
   // Multi-select for bulk delete (ephemeral — cleared on leaving Browse). Gated behind an
   // explicit "Select" mode so the normal grid stays tap-to-open.
@@ -67,6 +101,8 @@ export function BrowsePage() {
     () => Array.from(new Set((recipes ?? []).map((r) => r.cuisine))).sort(),
     [recipes],
   )
+  const tagOptions = useMemo(() => distinctLabels(recipes ?? [], 'tags'), [recipes])
+  const allergenOptions = useMemo(() => distinctLabels(recipes ?? [], 'allergens'), [recipes])
 
   // Effective dishes over the whole catalogue (import grouping + user overrides), so a
   // collapsed card's badge reflects the whole dish even when the list is filtered down.
@@ -87,6 +123,11 @@ export function BrowsePage() {
       )
     }
     if (cuisine !== 'all') list = list.filter((r) => r.cuisine === cuisine)
+    if (tags.length) list = list.filter((r) => matchesLabels(r.tags, tags, 'all'))
+    if (allergens.length) {
+      const mode = allergenMode === 'only' ? 'any' : 'none'
+      list = list.filter((r) => matchesLabels(r.allergens, allergens, mode))
+    }
     if (maxTime > 0) list = list.filter((r) => r.prepTime <= maxTime)
     if (rating !== 'all') {
       list = list.filter((r) => {
@@ -98,7 +139,7 @@ export function BrowsePage() {
       })
     }
     return list
-  }, [recipes, query, cuisine, maxTime, rating, starsById])
+  }, [recipes, query, cuisine, tags, allergens, allergenMode, maxTime, rating, starsById])
 
   // Collapse variants to one lead card per dish (when on), then sort the cards on show.
   const cards = useMemo(() => {
@@ -134,7 +175,7 @@ export function BrowsePage() {
     setVisible(PAGE)
     setSelected(new Set())
     window.scrollTo(0, 0)
-  }, [query, cuisine, maxTime, rating, sort, groupVariants])
+  }, [query, cuisine, tags, allergens, allergenMode, maxTime, rating, sort, groupVariants])
 
   useEffect(() => {
     sessionStorage.setItem('browse.visible', String(visible))
@@ -194,11 +235,21 @@ export function BrowsePage() {
   }
   const chips: { key: string; label: string; clear: () => void }[] = []
   if (cuisine !== 'all') chips.push({ key: 'cuisine', label: cuisine, clear: () => setCuisine('all') })
+  for (const t of tags)
+    chips.push({ key: `tag:${t}`, label: t, clear: () => setTags((xs) => xs.filter((x) => x !== t)) })
+  for (const a of allergens)
+    chips.push({
+      key: `allergen:${a}`,
+      label: `${allergenMode === 'only' ? 'Has' : 'No'} ${a}`,
+      clear: () => setAllergens((xs) => xs.filter((x) => x !== a)),
+    })
   if (maxTime > 0) chips.push({ key: 'time', label: timeLabels[maxTime], clear: () => setMaxTime(0) })
   if (rating !== 'all')
     chips.push({ key: 'rating', label: ratingLabels[rating], clear: () => setRating('all') })
   const clearFilters = () => {
     setCuisine('all')
+    setTags([])
+    setAllergens([])
     setMaxTime(0)
     setRating('all')
   }
@@ -206,6 +257,10 @@ export function BrowsePage() {
     clearFilters()
     setQuery('')
   }
+  const toggleTag = (t: string) =>
+    setTags((xs) => (xs.includes(t) ? xs.filter((x) => x !== t) : [...xs, t]))
+  const toggleAllergen = (a: string) =>
+    setAllergens((xs) => (xs.includes(a) ? xs.filter((x) => x !== a) : [...xs, a]))
   const eyebrow = 'text-[11px] font-semibold tracking-wider text-muted uppercase'
 
   return (
@@ -257,6 +312,78 @@ export function BrowsePage() {
                 ))}
               </Select>
             </label>
+            {tagOptions.length > 0 && (
+              <div>
+                <span className={eyebrow}>Tags</span>
+                <div className="mt-1.5 flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
+                  {tagOptions.map((t) => {
+                    const on = tags.includes(t)
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => toggleTag(t)}
+                        aria-pressed={on}
+                        className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                          on
+                            ? 'border-brand-500 bg-brand-700 text-white'
+                            : 'border-line bg-card text-ink hover:border-brand-300 hover:text-brand-ink'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {allergenOptions.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={eyebrow}>Allergens</span>
+                  {/* Avoid = hide recipes containing any; Only = show recipes that do contain them. */}
+                  <div className="flex gap-1 text-xs">
+                    {(['avoid', 'only'] as const).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setAllergenMode(m)}
+                        aria-pressed={allergenMode === m}
+                        className={`rounded-md px-2 py-0.5 font-medium capitalize transition ${
+                          allergenMode === m ? 'bg-brand-700 text-white' : 'text-muted hover:text-ink'
+                        }`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-1.5 flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
+                  {allergenOptions.map((a) => {
+                    const on = allergens.includes(a)
+                    const onClass =
+                      allergenMode === 'only'
+                        ? 'border-brand-500 bg-brand-700 text-white'
+                        : 'border-warn-ink bg-warn-tint text-warn-ink'
+                    return (
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => toggleAllergen(a)}
+                        aria-pressed={on}
+                        className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                          on
+                            ? onClass
+                            : 'border-line bg-card text-ink hover:border-brand-300 hover:text-brand-ink'
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
             <label className="block">
               <span className={eyebrow}>Max time</span>
               <Select
