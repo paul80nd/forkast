@@ -85,6 +85,18 @@ export async function setIngredientDensity(id: string, gPerMl: number | undefine
   await updateIngredient(id, { densityGPerMl: gPerMl })
 }
 
+/**
+ * Delete a dictionary ingredient — but only when nothing binds to it. A bound entry is the
+ * merge target for one or more ingredient names, so removing it would silently un-merge those
+ * lines; callers must unbind first. Returns false (a no-op) if any binding still points at it.
+ */
+export async function deleteIngredient(id: string): Promise<boolean> {
+  const bound = await db.bindings.filter((b) => b.ingredientId === id).count()
+  if (bound > 0) return false
+  await db.dictionary.delete(id)
+  return true
+}
+
 /** URL/id-safe slug from a name, e.g. "Chicken Thighs" → "chicken-thighs". */
 function slugify(name: string): string {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')

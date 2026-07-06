@@ -69,6 +69,18 @@ Feature: Shopping list
     When I build the shopping list
     Then the list contains "korean chilli paste · 200 g"
 
+  Scenario: An unused ingredient can be deleted from the dictionary
+    Given I create an ingredient "sumac" in aisle "Pantry" bought in "g"
+    When I delete that ingredient
+    Then the dictionary has no ingredient named "sumac"
+
+  Scenario: A bound ingredient is protected from deletion
+    Given a recipe "r1" with unbound "gochujang"
+    And I create an ingredient "gochujang" in aisle "Pantry" bought in "g"
+    And I bind "gochujang" to that new ingredient
+    When I try to delete that ingredient
+    Then the dictionary still has an ingredient named "gochujang"
+
   Scenario: A merged line records how many recipes it combines
     Given a recipe "r1" using "2 tbsp soy sauce"
     And a recipe "r2" using "1 tbsp soy sauce"

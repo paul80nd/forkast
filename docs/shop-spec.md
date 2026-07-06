@@ -123,16 +123,21 @@ the same `updateIngredient` seam. Renaming only touches the dictionary entry, ne
 bindings (which key on the *recipe-line* name), so bound lines keep merging under the new label.
 Buy unit and density stay edited in Shop → Your bindings, where their conversion effect is visible.
 
+An **unused** entry (bound count 0) can be **deleted** (`deleteIngredient`), which refuses — as a
+no-op returning false — while any binding still points at it, since a bound entry is a live merge
+target; unbind it first (Shop → Your bindings). Seed rows shown before the first reseed (the
+static-list fallback) aren't real Dexie entries, so they offer no Delete.
+
 ## Seams + tests
 
 - Pure logic in `src/lib/shopping.ts` (merge/convert/format), `src/lib/ingredientMatch.ts`
   (ranking), and `src/lib/shoppingExport.ts` (text/HTML export) — no Dexie, unit-tested.
 - Dexie use-cases in `src/app/shopping.ts` (`getPlanShoppingList`, `getPlanShoppingListText`,
-  tick/extras, `setBinding`/`unbind`, `createIngredient`, `updateIngredient`) — the seam the UI
-  and feature tests share.
+  tick/extras, `setBinding`/`unbind`, `createIngredient`, `updateIngredient`, `deleteIngredient`) —
+  the seam the UI and feature tests share.
 - `features/shop.feature` covers merge, scale, verbatim, tick/extras, bind-merges,
-  create-then-bind, density conversion, editing an ingredient, the per-line recipe count, and the
-  text export (ticks + conversions).
+  create-then-bind, density conversion, editing/renaming an ingredient, deleting an unused one (and
+  refusing to delete a bound one), the per-line recipe count, and the text export (ticks + conversions).
 
 ## Not built / later
 

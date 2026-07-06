@@ -15,6 +15,7 @@ import {
   createIngredient,
   setIngredientDensity,
   updateIngredient,
+  deleteIngredient,
 } from '../../src/app/shopping'
 import { makeRecipe } from '../../test/factories'
 import type { ShoppingList } from '../../src/lib/shopping'
@@ -104,6 +105,17 @@ describeFeature(feature, ({ Background, Scenario }) => {
     updateIngredient(created.id, { aisle, purchaseUnit: unit })
   const renameIngredient = async (_: unknown, name: string, plural: string) =>
     updateIngredient(created.id, { name, plural })
+  const deleteCreated = async () => {
+    await deleteIngredient(created.id)
+  }
+  const dictHasNoNamed = async (_: unknown, name: string) => {
+    const all = await db.dictionary.toArray()
+    expect(all.some((d) => d.name === name)).toBe(false)
+  }
+  const dictHasNamed = async (_: unknown, name: string) => {
+    const all = await db.dictionary.toArray()
+    expect(all.some((d) => d.name === name)).toBe(true)
+  }
   const hasAisle = (_: unknown, aisle: string) => {
     expect(list.aisles.some((a) => a.aisle === aisle)).toBe(true)
   }
@@ -184,6 +196,20 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('I rename that ingredient to {string} with plural {string}', renameIngredient)
     When('I build the shopping list', build)
     Then('the list contains {string}', contains)
+  })
+
+  Scenario('An unused ingredient can be deleted from the dictionary', ({ Given, When, Then }) => {
+    Given('I create an ingredient {string} in aisle {string} bought in {string}', createIng)
+    When('I delete that ingredient', deleteCreated)
+    Then('the dictionary has no ingredient named {string}', dictHasNoNamed)
+  })
+
+  Scenario('A bound ingredient is protected from deletion', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} with unbound {string}', unboundRecipe)
+    And('I create an ingredient {string} in aisle {string} bought in {string}', createIng)
+    And('I bind {string} to that new ingredient', bindToNew)
+    When('I try to delete that ingredient', deleteCreated)
+    Then('the dictionary still has an ingredient named {string}', dictHasNamed)
   })
 
   Scenario('A merged line records how many recipes it combines', ({ Given, And, When, Then }) => {

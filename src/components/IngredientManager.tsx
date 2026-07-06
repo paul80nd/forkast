@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { AISLE_ORDER, INGREDIENTS, pluralOf, type IngredientDef } from '../data/ingredients'
 import { getUnit } from '../lib/units'
-import { updateIngredient } from '../app/shopping'
+import { updateIngredient, deleteIngredient } from '../app/shopping'
 import { fieldBoxClass } from './Select'
 
 // Config → Ingredients: the canonical dictionary the shopping list merges by. Each entry's
@@ -29,8 +29,10 @@ export function IngredientManager() {
   if (dict === undefined || bindings === undefined)
     return <p className="text-muted">Loading…</p>
 
-  // Fall back to the static seed if the Dexie dictionary is empty (e.g. before the first reseed).
-  const source = dict.length ? dict : INGREDIENTS
+  // Fall back to the static seed if the Dexie dictionary is empty (e.g. before the first reseed);
+  // those rows aren't real Dexie entries, so they can't be deleted.
+  const fromDict = dict.length > 0
+  const source = fromDict ? dict : INGREDIENTS
   const aisles = [...new Set([...AISLE_ORDER, ...source.map((d) => d.aisle)])]
 
   const q = filter.trim().toLowerCase()
@@ -44,7 +46,7 @@ export function IngredientManager() {
       <p className="mt-1 text-sm text-muted">
         The canonical dictionary the shopping list merges by. {source.length} ingredients.{' '}
         <span className="text-muted">Grows as you bind ingredients while shopping.</span> Buy unit
-        and density are edited in Shop → Your bindings.
+        and density are edited in Shop → Your bindings; unused (unbound) entries can be deleted.
       </p>
 
       <input
@@ -84,6 +86,7 @@ export function IngredientManager() {
                   key={def.id}
                   def={def}
                   bound={bindCount.get(def.id) ?? 0}
+                  canDelete={fromDict}
                   onEdit={() => setEditing(def.id)}
                 />
               ),
@@ -105,13 +108,22 @@ export function IngredientManager() {
 function ViewRow({
   def,
   bound,
+  canDelete,
   onEdit,
 }: {
   def: IngredientDef
   bound: number
+  canDelete: boolean
   onEdit: () => void
 }) {
   const unit = getUnit(def.purchaseUnit)
+  // Only unbound entries can be removed — a bound one is a live merge target (delete it and its
+  // lines silently un-merge), so it must be unbound in Shop → Your bindings first.
+  const del = () => {
+    if (window.confirm(`Delete the ingredient “${def.name}” from the dictionary?`)) {
+      void deleteIngredient(def.id)
+    }
+  }
   return (
     <tr className={bound === 0 ? 'text-muted' : 'text-ink'}>
       <td className="px-3 py-1.5 font-medium">{def.name}</td>
@@ -128,7 +140,7 @@ function ViewRow({
         {unit.dimension === 'count' ? 'count' : unit.label}
       </td>
       <td className="px-3 py-1.5 text-right">{bound || '—'}</td>
-      <td className="px-3 py-1.5 text-right">
+      <td className="px-3 py-1.5 text-right whitespace-nowrap">
         <button
           type="button"
           onClick={onEdit}
@@ -136,6 +148,16 @@ function ViewRow({
         >
           Edit
         </button>
+        {canDelete && bound === 0 && (
+          <button
+            type="button"
+            onClick={del}
+            title="Delete this unused ingredient"
+            className="ml-2 text-xs font-medium text-muted hover:text-danger-ink"
+          >
+            Delete
+          </button>
+        )}
       </td>
     </tr>
   )
