@@ -166,8 +166,10 @@ survives clearing a rating (and vice-versa).
    Tags & allergens manager links straight through to Browse filtered to a chosen label
    (`?tag=` / `?allergen=`). (No-go proteins are excluded upstream when building the dataset.)
 3. **Curate** — set ★1–5; fast keyboard triage of the unrated backlog.
-4. **Plan a week** — manually add recipes; choose portions (default **2**,
-   scalable to **4**/N), with **per-meal overrides** for leftovers/batch or guests
+4. **Plan a week** — manually add recipes from a **filterable picker** (search + cuisine /
+   protein / time / minimum-★ facets and an "include unrated" toggle, reusing Browse's
+   `filterRecipes` pipeline — the same reach the suggester has); choose portions (default
+   **2**, scalable to **4**/N), with **per-meal overrides** for leftovers/batch or guests
    (see [`plan-portions-spec.md`](plan-portions-spec.md)); show cuisine / protein / time
    badges + a "not cooked recently" hint so variety is eyeballable. Plus **assisted
    "suggest a varied week"** (built) — a propose-then-accept shortlist scored on stars,

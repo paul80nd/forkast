@@ -22,9 +22,14 @@ import { resolveDishes, variantLabel } from '../lib/variants'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
 import { UseUpPanel } from '../components/UseUpPanel'
-import { Select } from '../components/Select'
+import { Select, fieldBoxClass } from '../components/Select'
 import { Switch } from '../components/Switch'
 import { SegmentedControl } from '../components/SegmentedControl'
+import {
+  filterRecipes,
+  matchesRating,
+  EMPTY_BROWSE_FILTER,
+} from '../lib/browseFilter'
 import type { Suggestion } from '../lib/suggest'
 import type { Recipe } from '../schema/recipe'
 import type { Stars } from '../schema/userData'
@@ -44,6 +49,21 @@ const PORTION_OPTIONS = [2, 4, 6]
 // guests (5), and 8 for a big batch-cook. The plan default is folded in so it's always offered.
 const MEAL_PORTION_OPTIONS = [1, 2, 3, 4, 5, 6, 8]
 
+// The picker's minimum-rating gate (a keeper-focused subset of Browse's RatingFilter) — paired
+// with an "include unrated" toggle for the untriaged backlog, mirroring the suggester.
+type PickRating = '3plus' | '4plus' | '5'
+const PICK_RATING_LABELS: Record<PickRating, string> = {
+  '3plus': '★3+ keepers',
+  '4plus': '★4+',
+  '5': '★5 only',
+}
+const TIME_OPTIONS = [
+  { value: 0, label: 'Any time' },
+  { value: 20, label: '≤ 20 min' },
+  { value: 30, label: '≤ 30 min' },
+  { value: 45, label: '≤ 45 min' },
+]
+
 function recency(dateISO: string | undefined): { text: string; warn: boolean } {
   if (!dateISO) return { text: 'not cooked yet', warn: false }
   const d = daysSince(dateISO)
@@ -58,7 +78,15 @@ export function PlanPage() {
   const plan = useLiveQuery(() => db.plans.get(CURRENT_PLAN_ID), [])
   const cooked = useLiveQuery(() => db.cooked.toArray(), [])
   const overrides = useLiveQuery(() => db.variantOverrides.toArray(), [])
-  const [pickerQuery, setPickerQuery] = useState('')
+  // Manual "Add meals" picker filters — the same facets the suggester offers, so hand-picking
+  // isn't the poor cousin. Persisted so they survive navigation, like Browse's filters.
+  const [pickerQuery, setPickerQuery] = usePersistentState('pick.query', '')
+  const [pickCuisine, setPickCuisine] = usePersistentState('pick.cuisine', 'all')
+  const [pickProtein, setPickProtein] = usePersistentState('pick.protein', 'all')
+  const [pickMaxTime, setPickMaxTime] = usePersistentState('pick.maxTime', 0) // 0 = any
+  const [pickRating, setPickRating] = usePersistentState<PickRating>('pick.rating', '3plus')
+  // Off by default — the picker leads with keepers; opt in to also surface the untriaged backlog.
+  const [pickIncludeUnrated, setPickIncludeUnrated] = usePersistentState('pick.includeUnrated', false)
   // The recipe shown in the pop-up detail view (opened from a suggested or planned row); null = closed.
   const [modalRecipe, setModalRecipe] = useState<Recipe | null>(null)
   const showToast = useToast()
@@ -236,17 +264,41 @@ export function PlanPage() {
     [planned],
   )
 
-  // Picker candidates: keepers (★3+), not already planned, not a no-go (fish).
+  // Facet options for the picker, drawn from the whole catalogue.
+  const cuisineOptions = useMemo(
+    () => Array.from(new Set((recipes ?? []).map((r) => r.cuisine))).sort(),
+    [recipes],
+  )
+  const proteinOptions = useMemo(
+    () =>
+      Array.from(
+        new Set((recipes ?? []).map((r) => r.mainProtein).filter((p): p is string => !!p)),
+      ).sort(),
+    [recipes],
+  )
+
+  // Picker candidates: Browse's filter pipeline for the shared facets (query/cuisine/protein/time),
+  // then the picker's own gate — a keeper minimum ★ (optionally union'd with the unrated backlog),
+  // never already-planned, never a no-go (fish).
   const candidates = useMemo(() => {
-    const q = pickerQuery.trim().toLowerCase()
-    return (recipes ?? [])
+    const filtered = filterRecipes(
+      recipes ?? [],
+      {
+        ...EMPTY_BROWSE_FILTER,
+        query: pickerQuery,
+        cuisine: pickCuisine,
+        protein: pickProtein,
+        maxTime: pickMaxTime,
+      },
+      starsById,
+    )
+    return filtered
       .filter((r) => {
-        const s = starsById.get(r.id)
-        if (!s || s < 3) return false
         if (plannedIds.includes(r.id)) return false
         if (r.allergens.includes('fish')) return false
-        if (q && !r.title.toLowerCase().includes(q)) return false
-        return true
+        const s = starsById.get(r.id)
+        if (s === undefined) return pickIncludeUnrated
+        return matchesRating(s, pickRating)
       })
       .sort((a, b) => {
         const sd = (starsById.get(b.id) ?? 0) - (starsById.get(a.id) ?? 0)
@@ -259,10 +311,37 @@ export function PlanPage() {
         if (ad && bd) return daysSince(bd) - daysSince(ad)
         return a.title.localeCompare(b.title)
       })
-  }, [recipes, starsById, plannedIds, lastCookedById, pickerQuery])
+  }, [
+    recipes,
+    starsById,
+    plannedIds,
+    lastCookedById,
+    pickerQuery,
+    pickCuisine,
+    pickProtein,
+    pickMaxTime,
+    pickRating,
+    pickIncludeUnrated,
+  ])
 
   const favourites = candidates.filter((r) => (starsById.get(r.id) ?? 0) >= 4)
   const variety = candidates.filter((r) => starsById.get(r.id) === 3)
+  const unratedPicks = candidates.filter((r) => !starsById.has(r.id))
+  const pickFiltersActive =
+    pickerQuery.trim() !== '' ||
+    pickCuisine !== 'all' ||
+    pickProtein !== 'all' ||
+    pickMaxTime > 0 ||
+    pickRating !== '3plus' ||
+    pickIncludeUnrated
+  const clearPickFilters = () => {
+    setPickerQuery('')
+    setPickCuisine('all')
+    setPickProtein('all')
+    setPickMaxTime(0)
+    setPickRating('3plus')
+    setPickIncludeUnrated(false)
+  }
 
   if (recipes === undefined || userData === undefined) {
     return <p className="text-muted">Loading…</p>
@@ -557,17 +636,86 @@ export function PlanPage() {
         </>
       )}
 
-      {/* Picker */}
+      {/* Picker — the same facets the suggester offers, so hand-picking a meal is a first-class path. */}
       <div className="mt-10">
-        <div className="flex items-end justify-between gap-3">
-          <h2 className="text-lg font-semibold">Add meals</h2>
+        <h2 className="text-lg font-semibold">Add meals</h2>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <input
             type="search"
             value={pickerQuery}
             onChange={(e) => setPickerQuery(e.target.value)}
-            placeholder="Search your shortlist…"
-            className="rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
+            placeholder="Search title or ingredient…"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            autoComplete="off"
+            className={`${fieldBoxClass} min-w-44 flex-1 px-2.5 py-1.5 text-sm`}
           />
+          <Select
+            value={pickCuisine}
+            onChange={(e) => setPickCuisine(e.target.value)}
+            aria-label="Filter by cuisine"
+          >
+            <option value="all">All cuisines</option>
+            {cuisineOptions.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </Select>
+          {proteinOptions.length > 0 && (
+            <Select
+              value={pickProtein}
+              onChange={(e) => setPickProtein(e.target.value)}
+              aria-label="Filter by main protein"
+              className="capitalize"
+            >
+              <option value="all">Any protein</option>
+              {proteinOptions.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </Select>
+          )}
+          <Select
+            value={pickMaxTime}
+            onChange={(e) => setPickMaxTime(Number(e.target.value))}
+            aria-label="Filter by maximum cooking time"
+          >
+            {TIME_OPTIONS.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </Select>
+          <Select
+            value={pickRating}
+            onChange={(e) => setPickRating(e.target.value as PickRating)}
+            aria-label="Minimum rating"
+          >
+            {(Object.keys(PICK_RATING_LABELS) as PickRating[]).map((r) => (
+              <option key={r} value={r}>
+                {PICK_RATING_LABELS[r]}
+              </option>
+            ))}
+          </Select>
+          <Switch
+            checked={pickIncludeUnrated}
+            onChange={setPickIncludeUnrated}
+            label="Include unrated"
+            title="Also surface recipes you haven’t rated yet"
+          />
+          {pickFiltersActive && (
+            <button
+              type="button"
+              onClick={clearPickFilters}
+              className="rounded-md px-2 py-1 text-sm font-medium text-muted hover:bg-sunken"
+            >
+              Clear
+            </button>
+          )}
         </div>
 
         <PickerStrip
@@ -582,13 +730,32 @@ export function PlanPage() {
           items={variety}
           lastCookedById={lastCookedById}
         />
+        {pickIncludeUnrated && (
+          <PickerStrip
+            title="Unrated"
+            subtitle="untriaged backlog"
+            items={unratedPicks}
+            lastCookedById={lastCookedById}
+          />
+        )}
 
-        {favourites.length === 0 && variety.length === 0 && (
+        {candidates.length === 0 && (
           <p className="mt-3 text-sm text-muted">
-            No more shortlisted recipes to add.{' '}
-            <Link to="/curate" className="text-brand-ink underline">
-              Rate some more →
-            </Link>
+            {pickFiltersActive ? (
+              <>
+                No recipes match those filters.{' '}
+                <button type="button" onClick={clearPickFilters} className="text-brand-ink underline">
+                  Clear filters
+                </button>
+              </>
+            ) : (
+              <>
+                No more shortlisted recipes to add.{' '}
+                <Link to="/curate" className="text-brand-ink underline">
+                  Rate some more →
+                </Link>
+              </>
+            )}
           </p>
         )}
       </div>

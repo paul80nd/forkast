@@ -15,6 +15,7 @@ export type AllergenMode = 'avoid' | 'only'
 export interface BrowseFilter {
   query: string
   cuisine: string // 'all' or a specific cuisine
+  protein?: string // 'all' or a specific mainProtein (used by the Plan picker; Browse leaves it 'all')
   tags: string[] // must carry all (AND)
   allergens: string[]
   allergenMode: AllergenMode // avoid = hide any-of; only = show those that contain any-of
@@ -26,6 +27,7 @@ export interface BrowseFilter {
 export const EMPTY_BROWSE_FILTER: BrowseFilter = {
   query: '',
   cuisine: 'all',
+  protein: 'all',
   tags: [],
   allergens: [],
   allergenMode: 'avoid',
@@ -67,6 +69,7 @@ export function filterRecipes(
     )
       return false
     if (f.cuisine !== 'all' && r.cuisine !== f.cuisine) return false
+    if (f.protein && f.protein !== 'all' && r.mainProtein !== f.protein) return false
     if (!matchesLabels(r.tags, f.tags, 'all')) return false
     if (!matchesLabels(r.allergens, f.allergens, f.allergenMode === 'only' ? 'any' : 'none'))
       return false

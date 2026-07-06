@@ -43,6 +43,12 @@ A candidate is eligible when it is:
 - **Not a household no-go** — same exclusion the manual picker already applies (e.g. `fish`).
   (No-go *proteins* are excluded upstream at dataset build; this is the belt-and-braces runtime
   filter the Plan picker already uses.)
+
+  > The **manual "Add meals" picker** now offers the same reach as the suggester: it filters the
+  > pool through Browse's `filterRecipes` (search + cuisine / protein / time), gates on a
+  > minimum-★ selector (★3+/★4+/★5), and has its own **"include unrated"** toggle for the
+  > untriaged backlog — so hand-picking a meal is no longer the poor cousin of suggesting a week.
+  > Results group into ★4–5 / ★3 / unrated strips; filters persist under `pick.*`.
 - **Rating gate** — by default only **★3+**. An **"Include unrated"** toggle (on the Plan page,
   default **on**, persisted) also draws in **unrated** recipes, each treated as a neutral **★3 ◆3**,
   so the planner is useful before a 3,000-recipe collection has been fully triaged. **Binned

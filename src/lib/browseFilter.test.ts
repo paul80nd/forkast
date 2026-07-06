@@ -73,6 +73,15 @@ describe('filterRecipes', () => {
     expect(ids(filterRecipes(recipes, f({ cuisine: 'Indian' }), stars))).toEqual(['r1', 'r3'])
   })
 
+  it('filters by main protein when set (and ignores it when "all")', () => {
+    const chicken = makeRecipe({ id: 'c', mainProtein: 'chicken' })
+    const beef = makeRecipe({ id: 'b', mainProtein: 'beef' })
+    const veg = makeRecipe({ id: 'v' }) // no mainProtein
+    const cat = [chicken, beef, veg]
+    expect(ids(filterRecipes(cat, f({ protein: 'chicken' }), stars))).toEqual(['c'])
+    expect(ids(filterRecipes(cat, f({ protein: 'all' }), stars))).toEqual(['c', 'b', 'v'])
+  })
+
   it('requires all selected tags (AND)', () => {
     expect(ids(filterRecipes(recipes, f({ tags: ['vegetarian'] }), stars))).toEqual(['r1', 'r2'])
     expect(ids(filterRecipes(recipes, f({ tags: ['speedy', 'vegetarian'] }), stars))).toEqual(['r1'])
