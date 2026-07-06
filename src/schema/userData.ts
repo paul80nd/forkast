@@ -77,6 +77,17 @@ export interface SettingRow {
   value: unknown
 }
 
+/**
+ * One entry on the "use up" list — an ingredient you want to cook down. `ingredientId` is set
+ * when it was picked from the dictionary (enables exact id/binding matching + a stable label);
+ * free-typed entries carry only `name` and match recipes by name tokens. The whole list is
+ * persisted as a single `settings` row (`key: 'useUp'`), so it rides along in the backup.
+ */
+export interface UseUpItem {
+  name: string
+  ingredientId?: string
+}
+
 /** A manually-added shopping item not derived from a recipe. */
 export interface ExtraItem {
   text: string

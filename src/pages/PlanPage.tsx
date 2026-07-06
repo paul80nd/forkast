@@ -19,6 +19,7 @@ import { suggestWeekPlan } from '../app/suggest'
 import { resolveDishes, variantLabel } from '../lib/variants'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
+import { UseUpPanel } from '../components/UseUpPanel'
 import { Select } from '../components/Select'
 import { Switch } from '../components/Switch'
 import { SegmentedControl } from '../components/SegmentedControl'
@@ -305,6 +306,9 @@ export function PlanPage() {
           </span>
         )}
       </div>
+
+      {/* Use up ingredients you have — suggest recipes that burn them down */}
+      <UseUpPanel />
 
       {suggestedEmpty && shortlist.length === 0 && (
         <p className="mt-3 text-sm text-muted">

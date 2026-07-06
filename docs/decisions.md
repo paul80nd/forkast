@@ -8,6 +8,19 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-07-06 — Use up ingredients: a lightweight list, not a quantified pantry
+
+The "use up ingredients" feature (`docs/use-up-spec.md`) is a **manually-curated list of
+ingredient names, no quantities** — persisted as a single `settings` row, so it needs no schema
+table and rides along in the backup. *Why:* a true pantry (amounts, consumption tracking, shopping
+deduction) is a much larger, higher-maintenance feature at odds with the app's manual, local-first
+ethos; the list captures the actual job (turn leftovers into planned meals) at a fraction of the
+cost. Suggestions rank the **whole collection** by ingredient **coverage** (★ breaks ties;
+no-go allergens and already-planned recipes excluded), targeting only the items the current plan
+doesn't already use. Matching reuses the name-token machinery (`tokenize`/`jaccard`) so it works on
+**unbound** recipe lines — most of them — via a token-subset rule ("chicken" ⊆ "chicken thighs",
+but "pea" ⊄ "peach").
+
 ## 2026-07-06 — Browse allergen filter: Avoid by default, with an Only toggle
 
 Tag filters in Browse are positive (a recipe must carry *all* selected tags — AND). Allergen filters

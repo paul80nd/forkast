@@ -34,6 +34,10 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
     `src/app/tags.ts`).
   - [`docs/plan-suggest-spec.md`](docs/plan-suggest-spec.md) — assisted "suggest a varied week"
     (**built**: propose-then-accept shortlist; `src/lib/suggest.ts` + `src/app/suggest.ts`).
+  - [`docs/use-up-spec.md`](docs/use-up-spec.md) — **Use up ingredients** (built): a lightweight
+    Plan-page list of ingredients you have → flags which the week doesn't use → suggests recipes by
+    coverage. `src/lib/useUp.ts` + `src/app/useUp.ts` + `UseUpPanel`; list persisted as a `settings`
+    row. Matches unbound lines by name tokens.
   - [`docs/variants-spec.md`](docs/variants-spec.md) — **Variants** (built): one dish, many swaps —
     import-seeded `variantGroupKey`/lead + a user-**override** layer; one card per dish in Browse,
     the swap selector on the recipe page, the swap chosen at plan time, curated in **Refine → Variants**.
