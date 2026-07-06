@@ -16,6 +16,7 @@ import {
 } from '../app/plan'
 import { useToast } from '../hooks/useToast'
 import { suggestWeekPlan } from '../app/suggest'
+import { getUseUpStatus } from '../app/useUp'
 import { resolveDishes, variantLabel } from '../lib/variants'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { RecipeModal } from '../components/RecipeModal'
@@ -97,6 +98,11 @@ export function PlanPage() {
   const [shortlist, setShortlist] = useState<Slot[]>([])
   const [suggesting, setSuggesting] = useState(false)
   const [suggestedEmpty, setSuggestedEmpty] = useState(false)
+  // The "use up ingredients" tool folds into the same assistant bar; its badge counts the
+  // listed ingredients the current week doesn't already use.
+  const [useUpOpen, setUseUpOpen] = useState(false)
+  const useUpStatus = useLiveQuery(() => getUseUpStatus(), [])
+  const useUpUnused = (useUpStatus ?? []).filter((s) => !s.usedByPlan).length
 
   const byId = useMemo(() => {
     const m = new Map<string, Recipe>()
@@ -273,42 +279,57 @@ export function PlanPage() {
         </div>
       </div>
 
-      {/* Suggest a varied week */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          disabled={suggesting}
-          onClick={runSuggest}
-          className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800 disabled:opacity-50"
-        >
-          {suggesting ? 'Thinking…' : 'Suggest a varied week'}
-        </button>
-        <label className="flex items-center gap-1.5 text-sm text-muted">
-          <input
-            type="number"
-            min={1}
-            max={14}
-            value={suggestCount}
-            onChange={(e) => setSuggestCount(Math.max(1, Math.min(14, Number(e.target.value) || 1)))}
-            className="w-16 rounded-md border border-line-strong bg-card px-2 py-1 text-sm"
+      {/* Plan assistant — Suggest a week + Use up ingredients, kept in one compact bar so the
+          week below stays the main content. Each tool's detail sits inside this bar. */}
+      <div className="mt-4 rounded-2xl border border-line bg-card p-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <button
+            type="button"
+            disabled={suggesting}
+            onClick={runSuggest}
+            className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800 disabled:opacity-50"
+          >
+            {suggesting ? 'Thinking…' : 'Suggest a varied week'}
+          </button>
+          <label className="flex items-center gap-1.5 text-sm text-muted">
+            <input
+              type="number"
+              min={1}
+              max={14}
+              value={suggestCount}
+              onChange={(e) => setSuggestCount(Math.max(1, Math.min(14, Number(e.target.value) || 1)))}
+              className="w-16 rounded-md border border-line-strong bg-card px-2 py-1 text-sm"
+            />
+            <span>meals a week</span>
+          </label>
+          <Switch
+            checked={includeUnrated}
+            onChange={setIncludeUnrated}
+            label="Include unrated"
+            title="Also draw from recipes you haven’t rated yet, treating them as a neutral ★3"
           />
-          <span>meals a week</span>
-        </label>
-        <Switch
-          checked={includeUnrated}
-          onChange={setIncludeUnrated}
-          label="Include unrated"
-          title="Also draw from recipes you haven’t rated yet, treating them as a neutral ★3"
-        />
-        {plannedCount > 0 && (
-          <span className="text-xs text-muted">
-            fills the {Math.max(0, suggestCount - plannedCount)} slots left after {plannedCount} planned
-          </span>
-        )}
+          {plannedCount > 0 && (
+            <span className="text-xs text-muted">
+              fills {Math.max(0, suggestCount - plannedCount)} slots after {plannedCount} planned
+            </span>
+          )}
+          {/* Use up ingredients — folds open below the bar, so the week isn't pushed down. */}
+          <button
+            type="button"
+            onClick={() => setUseUpOpen((o) => !o)}
+            aria-expanded={useUpOpen}
+            className="ml-auto rounded-md px-2.5 py-1.5 text-sm font-medium text-brand-ink transition hover:bg-sunken"
+          >
+            {useUpOpen ? '▾' : '▸'} Use up ingredients
+            {useUpUnused > 0 && (
+              <span className="ml-1.5 rounded-full bg-brand-wash px-1.5 text-xs text-brand-ink">
+                {useUpUnused} unused
+              </span>
+            )}
+          </button>
+        </div>
+        {useUpOpen && <UseUpPanel />}
       </div>
-
-      {/* Use up ingredients you have — suggest recipes that burn them down */}
-      <UseUpPanel />
 
       {suggestedEmpty && shortlist.length === 0 && (
         <p className="mt-3 text-sm text-muted">
