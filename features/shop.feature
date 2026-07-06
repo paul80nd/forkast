@@ -60,6 +60,15 @@ Feature: Shopping list
     When I build the shopping list
     Then the list has an aisle "Other"
 
+  Scenario: Renaming an ingredient changes how it reads on the list
+    Given a recipe "r1" using "200 g gochujang"
+    And recipes "r1" are on the plan for 2
+    And I create an ingredient "gochujang" in aisle "Pantry" bought in "g"
+    And I bind "gochujang" to that new ingredient
+    And I rename that ingredient to "korean chilli paste" with plural "korean chilli paste"
+    When I build the shopping list
+    Then the list contains "korean chilli paste · 200 g"
+
   Scenario: A merged line records how many recipes it combines
     Given a recipe "r1" using "2 tbsp soy sauce"
     And a recipe "r2" using "1 tbsp soy sauce"

@@ -114,6 +114,15 @@ the ingredient's aisle, purchase unit, and density (`updateIngredient` / `setIng
 or **Unbind** (back to verbatim). The list has a filter box and 50-at-a-time infinite scroll
 (mirrors Browse) since the dictionary grows over time.
 
+### The dictionary itself (Config → Ingredients)
+
+The **Config → Ingredients** tab (`src/components/IngredientManager.tsx`) is the dictionary
+view: the whole `dictionary` table, filterable by name/aisle, with each entry's **bound** count.
+Its display fields — **name, plural, aisle** — are editable inline (per-row Edit → Save), through
+the same `updateIngredient` seam. Renaming only touches the dictionary entry, never the name→id
+bindings (which key on the *recipe-line* name), so bound lines keep merging under the new label.
+Buy unit and density stay edited in Shop → Your bindings, where their conversion effect is visible.
+
 ## Seams + tests
 
 - Pure logic in `src/lib/shopping.ts` (merge/convert/format), `src/lib/ingredientMatch.ts`
@@ -128,6 +137,7 @@ or **Unbind** (back to verbatim). The list has a filter box and 50-at-a-time inf
 ## Not built / later
 
 - **No aisle is derived** — an ingredient's aisle is whatever the dictionary entry says (set on
-  create, editable in the bindings panel).
-- A dedicated dictionary manager (beyond the bindings panel), bulk-bind, and richer
-  create-ingredient fields (aliases, explicit plural) are possible later.
+  create, editable in the bindings panel or Config → Ingredients).
+- Bulk-bind, aisle management (rename/merge aisles across the dictionary), and richer
+  create-ingredient fields (aliases) are possible later. Name/plural/aisle editing now lives in
+  the Config → Ingredients manager (above).
