@@ -97,7 +97,11 @@ Each "Check these" line has a **Bind** toggle opening a picker:
   match scoring 1 and substring containment floored at 0.85.
 - A **search** box to find any dictionary entry.
 - **Create new** — name + aisle + purchase unit (+ density preset when bought by weight/volume);
-  `createIngredient` adds a dictionary entry (unique slug id) and binds in one step.
+  `createIngredient` adds a dictionary entry (unique slug id) and binds in one step. The **purchase
+  unit defaults from the line's own recipe unit** (`defaultPurchaseUnit`, `src/lib/units.ts`): the
+  unit itself when directly purchasable, else its dimension's base (mass→g, volume→ml, count→each) —
+  so it lands in the same dimension and the recipe amount converts with no density guess. The
+  unmatched `ShopLine` carries that unit as `bindUnit`.
 
 ### Density (volume ↔ mass)
 
@@ -157,7 +161,9 @@ order. (The Shop create/edit-ingredient aisle selects still offer only the built
   the seam the UI and feature tests share.
 - `features/shop.feature` covers merge, scale, verbatim, tick/extras, bind-merges,
   create-then-bind, density conversion, editing/renaming an ingredient, deleting an unused one (and
-  refusing to delete a bound one), the per-line recipe count, and the text export (ticks + conversions).
+  refusing to delete a bound one), the create-ingredient buy-unit default, the per-line recipe
+  count, and the text export (ticks + conversions). `defaultPurchaseUnit` is unit-tested in
+  `src/lib/units.test.ts`.
 - Aisle management lives in `src/lib/aisles.ts` (pure, unit-tested) + `src/app/aisles.ts` (Dexie
   seam); `features/aisles.feature` covers add, rename, merge-on-rename, delete-when-unused,
   protect-when-in-use, and reorder driving the shopping list's section order.

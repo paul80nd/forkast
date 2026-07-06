@@ -17,6 +17,8 @@ import {
   updateIngredient,
   deleteIngredient,
 } from '../../src/app/shopping'
+import { normalizeName } from '../../src/lib/shopping'
+import { defaultPurchaseUnit } from '../../src/lib/units'
 import { makeRecipe } from '../../test/factories'
 import type { ShoppingList } from '../../src/lib/shopping'
 import type { Ingredient } from '../../src/schema/recipe'
@@ -126,6 +128,11 @@ describeFeature(feature, ({ Background, Scenario }) => {
   const hasMeals = (_: unknown, n: number) => {
     expect(list.mealCount).toBe(n)
   }
+  const defaultsBuyUnit = (_: unknown, name: string, unit: string) => {
+    const line = list.unmatched.find((l) => l.bindName === normalizeName(name))
+    expect(line).toBeDefined()
+    expect(defaultPurchaseUnit(line?.bindUnit)).toBe(unit)
+  }
 
   Scenario('Ingredients merge across the planned recipes', ({ Given, And, When, Then }) => {
     Given('a recipe {string} with {string} bound to {string}', boundRecipe)
@@ -196,6 +203,13 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('I rename that ingredient to {string} with plural {string}', renameIngredient)
     When('I build the shopping list', build)
     Then('the list contains {string}', contains)
+  })
+
+  Scenario('An unbound line offers its own unit as the create-ingredient default', ({ Given, And, When, Then }) => {
+    Given('a recipe {string} using {string}', usingRecipe)
+    And('recipes {string} are on the plan for {int}', onPlan)
+    When('I build the shopping list', build)
+    Then('the unbound line {string} defaults its buy unit to {string}', defaultsBuyUnit)
   })
 
   Scenario('An unused ingredient can be deleted from the dictionary', ({ Given, When, Then }) => {

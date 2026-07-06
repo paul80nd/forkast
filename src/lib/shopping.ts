@@ -16,6 +16,8 @@ export interface ShopLine {
   aisle: string
   /** Normalised ingredient name for the lazy-bind flow (present on unmatched lines). */
   bindName?: string
+  /** Recipe unit of an unmatched line, to seed the create-ingredient buy unit. */
+  bindUnit?: string
   /** How many planned recipes contribute to this line — for spot-checking a merge. */
   recipeCount?: number
 }
@@ -165,6 +167,7 @@ export function buildShoppingList(
         label: shopLabel(u.name, u.qty, u.unitId),
         aisle: 'Other',
         bindName: normalizeName(u.name),
+        bindUnit: u.unitId,
         recipeCount: u.recipeIds.size,
       }
     })

@@ -28,6 +28,21 @@ export function getUnit(id: string | undefined): Unit {
   return (id && UNITS[id]) || UNITS.each
 }
 
+/** Base "buy" units offered when creating a dictionary ingredient (recipe units convert into these). */
+export const PURCHASE_UNITS = ['each', 'g', 'kg', 'ml', 'l']
+
+/**
+ * The purchase unit to default to when creating an ingredient for a line measured in `recipeUnit`.
+ * Uses the recipe unit itself when it's directly purchasable, else the base buy unit of its
+ * dimension (mass→g, volume→ml, count→each). Staying in-dimension means the recipe amount converts
+ * to the buy unit for free, with no density guess needed.
+ */
+export function defaultPurchaseUnit(recipeUnit: string | undefined): string {
+  if (recipeUnit && PURCHASE_UNITS.includes(recipeUnit)) return recipeUnit
+  const dimension = getUnit(recipeUnit).dimension
+  return dimension === 'mass' ? 'g' : dimension === 'volume' ? 'ml' : 'each'
+}
+
 /**
  * Convert `qty` from one unit to another. Same-dimension conversions always
  * work; volume<->mass works only with a density (grams per ml). Returns null

@@ -20,6 +20,7 @@ import {
   updateIngredient,
 } from '../app/shopping'
 import { matchIngredient } from '../lib/ingredientMatch'
+import { PURCHASE_UNITS, defaultPurchaseUnit } from '../lib/units'
 import { shoppingListToText, shoppingListToHtml } from '../lib/shoppingExport'
 import { AISLE_ORDER, DENSITY_PRESETS, type IngredientDef } from '../data/ingredients'
 import type { ShopLine } from '../lib/shopping'
@@ -34,10 +35,6 @@ function needsDensity(purchaseUnit: string): boolean {
 function buyUnitLabel(purchaseUnit: string): string {
   return purchaseUnit === 'each' ? 'each' : `in ${purchaseUnit}`
 }
-
-// Base "buy" units offered when creating a new dictionary ingredient (recipe units like tsp
-// convert into these where a conversion exists).
-const PURCHASE_UNITS = ['each', 'g', 'kg', 'ml', 'l']
 
 export function ShopPage() {
   const plan = useLiveQuery(() => db.plans.get(CURRENT_PLAN_ID), [])
@@ -433,7 +430,12 @@ function UnmatchedRow({
         )}
       </div>
       {open && line.bindName && (
-        <BindPanel name={line.bindName} dict={dict} onDone={() => setOpen(false)} />
+        <BindPanel
+          name={line.bindName}
+          recipeUnit={line.bindUnit}
+          dict={dict}
+          onDone={() => setOpen(false)}
+        />
       )}
     </li>
   )
@@ -444,17 +446,21 @@ function UnmatchedRow({
 // name across the plan.
 function BindPanel({
   name,
+  recipeUnit,
   dict,
   onDone,
 }: {
   name: string
+  recipeUnit?: string
   dict: IngredientDef[]
   onDone: () => void
 }) {
   const [query, setQuery] = useState(name)
   const [creating, setCreating] = useState(false)
   const [aisle, setAisle] = useState('Pantry')
-  const [unit, setUnit] = useState('g')
+  // Seed the buy unit from the line's own recipe unit (mass→g, volume→ml, count→each), so creating
+  // an ingredient for "200 g …" defaults to g and "150 ml …" to ml, converting for free.
+  const [unit, setUnit] = useState(() => defaultPurchaseUnit(recipeUnit))
   const [density, setDensity] = useState('') // '' = none, else g/ml as string
   const candidates = useMemo(() => matchIngredient(query, dict, 6), [query, dict])
 

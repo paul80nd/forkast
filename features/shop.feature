@@ -69,6 +69,12 @@ Feature: Shopping list
     When I build the shopping list
     Then the list contains "korean chilli paste · 200 g"
 
+  Scenario: An unbound line offers its own unit as the create-ingredient default
+    Given a recipe "r1" using "150 ml soy sauce"
+    And recipes "r1" are on the plan for 2
+    When I build the shopping list
+    Then the unbound line "soy sauce" defaults its buy unit to "ml"
+
   Scenario: An unused ingredient can be deleted from the dictionary
     Given I create an ingredient "sumac" in aisle "Pantry" bought in "g"
     When I delete that ingredient
