@@ -95,15 +95,20 @@ no separate review pass** — the SPA owns ingredient identity, lazily.
 
 ## Data model
 
-### Recipe (reference — read-only)
+### Recipe (reference — mostly read-only)
+
+Reference data seeded at import; the scalar text (`title`, `description`, `recipeCode`) is
+**editable in the full recipe view**, written in place — see [`recipe-edit-spec.md`](recipe-edit-spec.md).
+Ingredients and method stay read-only. Edits export with the backup but a re-import/re-seed can
+overwrite them (like deletion).
 
 | Field | Notes |
 |---|---|
 | `id` / `slug` | stable identifier |
-| `title`, `description` | |
+| `title`, `description` | editable in the recipe view |
 | `image` | local filename under `/images` |
 | `sourceUrl` | provenance (private datasets only) |
-| `recipeCode?` | printed recipe-card code if the source exposes one (e.g. `R1196`); best-effort, set at import only when confidently attributable |
+| `recipeCode?` | printed recipe-card code if the source exposes one (e.g. `R1196`); seeded best-effort at import, and user-editable in the recipe view |
 | `variantGroupKey?` | shared opaque key marking recipes as variants of one dish (protein/carb/side swap); derivation is a private import concern — see [`variants-spec.md`](variants-spec.md) |
 | `variantGroupLead?` | `true` on one member per key — the import's best-guess origin the app leads with (user-overridable) |
 | `cuisine` | the single browse facet (from source); `tags[]` carries derived diet/effort labels |

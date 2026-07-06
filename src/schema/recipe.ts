@@ -55,7 +55,8 @@ export interface Recipe {
   /** Provenance. Omitted from demo and any committed public data. */
   sourceUrl?: string
   /** Printed recipe-card code, if the source exposes one (e.g. "R1196"). Optional and
-   *  best-effort — set at import only when confidently attributable to this recipe. */
+   *  best-effort — seeded at import when confidently attributable, and user-editable in the
+   *  recipe view (see docs/recipe-edit-spec.md). */
   recipeCode?: string
   /** Non-empty when this recipe is one of several variants of the same dish (a protein /
    *  carb / side swap). Recipes sharing a key are the same dish; how a provider derives the

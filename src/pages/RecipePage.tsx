@@ -43,6 +43,7 @@ export function RecipePage() {
       <div className="mt-3">
         <RecipeDetail
           recipe={recipe}
+          editable
           headerActions={(shown) => {
             /* Split button: primary add/remove from week, with secondary actions in a menu.
                Acts on the shown variant, so adding the chosen swap plans that recipe. */

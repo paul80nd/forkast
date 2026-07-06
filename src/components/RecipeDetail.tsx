@@ -6,6 +6,7 @@ import { RotationRating, StarRating } from './RatingScale'
 import { ImageLightbox } from './ImageLightbox'
 import { fieldBoxClass } from './Select'
 import { clearCuration, setNotes, setRotation, setStars } from '../app/curation'
+import { updateRecipeDetails } from '../app/recipeEdit'
 import { dishForRecipe } from '../app/variants'
 import { ingredientDelta, variantLabel } from '../lib/variants'
 import { formatScaledQty, scaledIngredientLabel, servingFactor } from '../lib/scaleServings'
@@ -24,9 +25,12 @@ import type { Recipe } from '../schema/recipe'
 export function RecipeDetail({
   recipe: anchor,
   headerActions,
+  editable = false,
 }: {
   recipe: Recipe
   headerActions?: (shown: Recipe) => ReactNode
+  /** Offer in-place editing of the recipe's scalar text (full page only; off in the Plan modal). */
+  editable?: boolean
 }) {
   // The anchor's effective dish (import grouping + user overrides), ordered lead-first.
   const dish = useLiveQuery(() => dishForRecipe(anchor.id), [anchor.id])
@@ -53,12 +57,25 @@ export function RecipeDetail({
   const [showParsed, setShowParsed] = useState(false)
   // Click-to-enlarge: the thumbnail is cropped 4:3, so a lightbox shows the whole image bigger.
   const [zoomed, setZoomed] = useState(false)
+  // In-place editing of the recipe's scalar text (title / description / card code). Offered only on
+  // the full page (`editable`); the draft seeds from the shown recipe and is reset on navigation/swap.
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState({ title: '', description: '', recipeCode: '' })
+  const startEdit = () => {
+    setDraft({ title: recipe.title, description: recipe.description, recipeCode: recipe.recipeCode ?? '' })
+    setEditing(true)
+  }
+  const saveEdit = async () => {
+    await updateRecipeDetails(recipe.id, draft)
+    setEditing(false)
+  }
   // Prefer the image pack (falls back to the base/dev route); the enlarged view reuses it.
   const imageSrc = useRecipeImage(recipe.image)
   useEffect(() => {
     setServes(recipe.serves)
     setCheckedIng(new Set())
     setCheckedSteps(new Set())
+    setEditing(false)
   }, [recipe.id])
   const factor = servingFactor(serves, recipe.serves)
   const serveOptions = Array.from(new Set([recipe.serves, 2, 4, 6])).sort((a, b) => a - b)
@@ -108,7 +125,23 @@ export function RecipeDetail({
               />
             </dd>
           </div>
-          {recipe.recipeCode && <Fact label="Card" value={recipe.recipeCode} />}
+          {editing ? (
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-muted">Card</dt>
+              <dd className="m-0">
+                <input
+                  type="text"
+                  value={draft.recipeCode}
+                  onChange={(e) => setDraft((d) => ({ ...d, recipeCode: e.target.value }))}
+                  aria-label="Recipe card number"
+                  placeholder="e.g. R1196"
+                  className={`${fieldBoxClass} w-28 px-2 py-1 text-right text-sm`}
+                />
+              </dd>
+            </div>
+          ) : (
+            recipe.recipeCode && <Fact label="Card" value={recipe.recipeCode} />
+          )}
         </dl>
 
         <div className="mt-4 rounded-lg border border-line bg-surface p-3">
@@ -217,10 +250,63 @@ export function RecipeDetail({
       {/* Right: the recipe itself */}
       <div>
         <div className="flex items-start justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{recipe.title}</h1>
-          {headerActions?.(recipe)}
+          {editing ? (
+            <input
+              type="text"
+              value={draft.title}
+              onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
+              aria-label="Recipe title"
+              className={`${fieldBoxClass} w-full px-3 py-1.5 text-2xl font-semibold tracking-tight`}
+            />
+          ) : (
+            <h1 className="text-2xl font-semibold tracking-tight">{recipe.title}</h1>
+          )}
+          <div className="flex shrink-0 items-center gap-2">
+            {editing ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setEditing(false)}
+                  className="rounded-md px-3 py-1.5 text-sm font-medium text-muted hover:text-ink"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void saveEdit()}
+                  disabled={!draft.title.trim()}
+                  className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800 disabled:opacity-50"
+                >
+                  Save
+                </button>
+              </>
+            ) : (
+              <>
+                {editable && (
+                  <button
+                    type="button"
+                    onClick={startEdit}
+                    className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-muted hover:text-ink"
+                  >
+                    Edit
+                  </button>
+                )}
+                {headerActions?.(recipe)}
+              </>
+            )}
+          </div>
         </div>
-        <p className="mt-2 text-muted">{recipe.description}</p>
+        {editing ? (
+          <textarea
+            value={draft.description}
+            onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+            aria-label="Recipe description"
+            rows={2}
+            className={`${fieldBoxClass} mt-2 w-full resize-y px-3 py-2 text-sm`}
+          />
+        ) : (
+          <p className="mt-2 text-muted">{recipe.description}</p>
+        )}
 
         {recipe.sourceUrl && (
           <a

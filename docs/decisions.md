@@ -8,6 +8,17 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-07-06 — Editing a recipe mutates the reference table in place
+
+The recipe view can now edit a recipe's scalar text — title, description, and the printed
+**card code** (`recipeCode`) — writing straight to the `recipes` table rather than layering a
+precious per-recipe override in `userData` (as variants do). *Why:* it's the existing precedent
+— `deleteRecipe` already mutates that table, and the Save/Open backup carries the whole `recipes`
+set, so edits export and restore with no extra plumbing. *Trade-off, accepted:* a fresh re-import
+or a `DEMO_VERSION` re-seed can overwrite an edit, exactly as it would resurrect a deleted recipe;
+the export is the durable record either way. Scope is deliberately scalar-only — ingredients and
+method (unit/binding-bearing) stay read-only for now. See [`recipe-edit-spec.md`](recipe-edit-spec.md).
+
 ## 2026-07-04 — Image pack: a separate, content-addressed cache database
 
 Recipe images live in their own IndexedDB database (`forkast-images`), **not** the main
