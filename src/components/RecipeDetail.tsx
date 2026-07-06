@@ -7,6 +7,7 @@ import { ImageLightbox } from './ImageLightbox'
 import { fieldBoxClass } from './Select'
 import { clearCuration, setNotes, setRotation, setStars } from '../app/curation'
 import { setRecipeAllergens, setRecipeTags, updateRecipeDetails } from '../app/recipeEdit'
+import { distinctLabels } from '../lib/tags'
 import { dishForRecipe } from '../app/variants'
 import { ingredientDelta, variantLabel } from '../lib/variants'
 import { formatScaledQty, scaledIngredientLabel, servingFactor } from '../lib/scaleServings'
@@ -45,6 +46,13 @@ export function RecipeDetail({
 
   const stars = useLiveQuery(async () => (await db.userData.get(recipe.id))?.stars, [recipe.id])
   const rotation = useLiveQuery(async () => (await db.userData.get(recipe.id))?.rotation, [recipe.id])
+
+  // Autocomplete for the tag/allergen add-boxes: the distinct labels already used across the
+  // collection, so new entries reuse an existing spelling instead of inventing near-duplicates.
+  // Only needed while editing (`editable`); the empty default keeps the query off otherwise.
+  const allRecipes = useLiveQuery(async () => (editable ? await db.recipes.toArray() : []), [editable])
+  const tagOptions = distinctLabels(allRecipes ?? [], 'tags')
+  const allergenOptions = distinctLabels(allRecipes ?? [], 'allergens')
 
   const delta = recipe.id === lead.id ? null : ingredientDelta(lead, recipe)
 
@@ -185,6 +193,7 @@ export function RecipeDetail({
           items={recipe.allergens}
           editable={editable}
           onChange={(next) => void setRecipeAllergens(recipe.id, next)}
+          suggestions={allergenOptions}
           chipClass="inline-flex items-center rounded bg-warn-tint px-1.5 py-0.5 text-xs font-medium text-warn-ink"
         />
 
@@ -194,6 +203,7 @@ export function RecipeDetail({
           items={recipe.tags}
           editable={editable}
           onChange={(next) => void setRecipeTags(recipe.id, next)}
+          suggestions={tagOptions}
           chipClass="inline-flex items-center rounded-full bg-sunken px-2 py-0.5 text-xs text-muted"
         />
 
@@ -475,12 +485,15 @@ function ChipEditor({
   items,
   editable,
   onChange,
+  suggestions = [],
   chipClass,
 }: {
   label: string
   items: string[]
   editable: boolean
   onChange: (next: string[]) => void
+  /** Existing labels across the collection, offered as add-box autocomplete. */
+  suggestions?: string[]
   chipClass: string
 }) {
   const [editing, setEditing] = useState(false)
@@ -493,6 +506,11 @@ function ChipEditor({
     if (value) onChange([...items, value])
     setDraft('')
   }
+
+  // Suggest only labels not already on this recipe. A unique id per section links input↔datalist.
+  const listId = `chip-suggest-${label.toLowerCase()}`
+  const current = new Set(items.map((i) => i.toLowerCase()))
+  const options = suggestions.filter((s) => !current.has(s.toLowerCase()))
 
   return (
     <div className="mt-4">
@@ -541,8 +559,16 @@ function ChipEditor({
             onBlur={add}
             aria-label={`Add ${label.toLowerCase()}`}
             placeholder="add…"
+            list={options.length > 0 ? listId : undefined}
             className={`${fieldBoxClass} w-24 px-2 py-0.5 text-xs`}
           />
+        )}
+        {editing && options.length > 0 && (
+          <datalist id={listId}>
+            {options.map((o) => (
+              <option key={o} value={o} />
+            ))}
+          </datalist>
         )}
         {!editing && items.length === 0 && <span className="text-xs text-muted">None</span>}
       </div>
