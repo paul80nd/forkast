@@ -19,6 +19,15 @@ import { Select, fieldBoxClass } from './Select'
 import type { CandidateCluster } from '../lib/similarity'
 import { CompareView } from './CompareView'
 
+// Recipe/dish titles aren't prose — keep the browser (Safari especially) from autocorrecting,
+// auto-capitalising or squiggle-spellchecking what you type into these search boxes.
+const noAutocorrect = {
+  autoCorrect: 'off',
+  autoCapitalize: 'none',
+  spellCheck: false,
+  autoComplete: 'off',
+} as const
+
 const card = 'mt-5 rounded-xl border border-line bg-card p-4'
 const chip = 'rounded-full border px-2.5 py-1 text-sm transition'
 const primaryBtn =
@@ -239,6 +248,7 @@ function VariantCreate({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search recipes to add by title…"
+          {...noAutocorrect}
           className="w-full rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
         />
         {results.length > 0 && (
@@ -344,6 +354,7 @@ function VariantDishList({
             setVisible(50)
           }}
           placeholder="Search dishes…"
+          {...noAutocorrect}
           className={`${fieldBoxClass} min-w-56 flex-1 px-2.5 py-1.5 text-sm`}
         />
         <Select
@@ -554,6 +565,7 @@ function VariantDishRow({
                 placeholder={
                   tool === 'add' ? 'Search a recipe to add…' : 'Search a group to merge into…'
                 }
+                {...noAutocorrect}
                 className={`${fieldBoxClass} w-full px-2.5 py-1.5 text-sm`}
               />
               {tool === 'add' && addResults.length > 0 && (
