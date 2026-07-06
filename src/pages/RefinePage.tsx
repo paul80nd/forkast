@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { STAR_LABELS } from '../lib/curation'
+import { RecipeModal } from '../components/RecipeModal'
 import type { Recipe } from '../schema/recipe'
 import { deleteRecipes } from '../app/cleanup'
 import { suggestDuplicateCandidates } from '../app/duplicates'
@@ -342,6 +342,9 @@ function CleanupList({
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [busy, setBusy] = useState(false)
+  // Preview a binned recipe in the detail pop-up instead of navigating away (which would lose
+  // the selection you've built up).
+  const [preview, setPreview] = useState<Recipe | null>(null)
 
   const allSelected = items.every((b) => selected.has(b.recipe.id))
   const count = items.filter((b) => selected.has(b.recipe.id)).length
@@ -415,12 +418,18 @@ function CleanupList({
               onChange={() => toggle(recipe.id)}
               className="fk-check"
             />
-            <Link to={`/recipe/${recipe.id}`} className="flex-1 truncate text-sm text-ink hover:text-brand-ink">
+            <button
+              type="button"
+              onClick={() => setPreview(recipe)}
+              title="View recipe"
+              className="flex-1 truncate text-left text-sm text-ink hover:text-brand-ink hover:underline"
+            >
               {recipe.title}
-            </Link>
+            </button>
           </li>
         ))}
       </ul>
+      {preview && <RecipeModal recipe={preview} onClose={() => setPreview(null)} />}
     </div>
   )
 }

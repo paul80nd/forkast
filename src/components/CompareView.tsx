@@ -1,11 +1,15 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import { RecipeImage } from './RecipeImage'
+import { RecipeModal } from './RecipeModal'
 import type { Recipe } from '../schema/recipe'
 
 // A side-by-side comparison of a set of recipes: metadata rows plus ingredients, with the
 // ingredients each recipe doesn't share with every other highlighted — so a protein/carb
-// swap jumps out. Used by the Refine duplicates and variant tools.
+// swap jumps out. Used by the Refine duplicates and variant tools. Clicking a recipe opens it in
+// the detail pop-up rather than navigating away, so the Refine list/selection isn't lost.
 export function CompareView({ recipes }: { recipes: Recipe[] }) {
+  // The recipe shown in the detail pop-up (null = closed).
+  const [preview, setPreview] = useState<Recipe | null>(null)
   const counts = new Map<string, number>()
   for (const r of recipes) {
     const seen = new Set<string>()
@@ -28,6 +32,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
   ]
 
   return (
+    <>
     <div className="mt-3 overflow-x-auto rounded-lg border border-line bg-surface">
       <table className="w-full min-w-[28rem] text-sm">
         <thead>
@@ -35,7 +40,12 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
             <td className="p-2" />
             {recipes.map((r) => (
               <th key={r.id} className="p-2 text-left align-bottom font-semibold text-ink">
-                <Link to={`/recipe/${r.id}`} className="block hover:text-brand-ink hover:underline">
+                <button
+                  type="button"
+                  onClick={() => setPreview(r)}
+                  title="View recipe"
+                  className="block w-full text-left hover:text-brand-ink hover:underline"
+                >
                   {r.image ? (
                     <RecipeImage
                       image={r.image}
@@ -48,7 +58,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
                     </div>
                   )}
                   {r.title}
-                </Link>
+                </button>
               </th>
             ))}
           </tr>
@@ -91,5 +101,7 @@ export function CompareView({ recipes }: { recipes: Recipe[] }) {
         Highlighted ingredients aren’t shared by every recipe.
       </p>
     </div>
+    {preview && <RecipeModal recipe={preview} onClose={() => setPreview(null)} />}
+    </>
   )
 }
