@@ -23,7 +23,7 @@
     "@amiceli/vitest-cucumber": "^7.0.0",
     "@axe-core/playwright": "^4.12.1",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^24.13.2",
+    "@types/node": "^24.13.3",
     "@types/pluralize": "^0.0.33",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
