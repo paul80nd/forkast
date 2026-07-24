@@ -68,10 +68,11 @@ pragmatic: I'd rather shape an app than hand-crank a weekly shopping list. 🙂
 
 ## Status
 
-**v1 — feature-complete.** The core loop (Curate → Plan → Shop → export) is closed, with a
-cook-along recipe view (serving scaler, ingredient/step check-offs, nutrition) on top. Now in
-dogfooding and polish. See [`docs/spec.md`](docs/spec.md) for the full design and MVP scope,
-[`docs/decisions.md`](docs/decisions.md) for how it got here.
+**v1.0.0 — released.** The core loop (Curate → Plan → Shop → export) is closed, with a
+cook-along recipe view (serving scaler, ingredient/step check-offs, nutrition) on top, and now
+in dogfooding and polish. A few extras (multi-week plan history, a richer nutrition view) are
+deliberately deferred past v1. See [`docs/spec.md`](docs/spec.md) for the full design and
+delivered scope, [`docs/decisions.md`](docs/decisions.md) for how it got here.
 
 ## Licence
 

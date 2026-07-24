@@ -156,7 +156,9 @@ the method on the recipe page (autosaves on blur), and flagged with a small 📝
 meals so you remember to read them before cooking. Sits on the same curation row as ★/◆, so a note
 survives clearing a rating (and vice-versa).
 
-## MVP scope
+## v1 scope (delivered)
+
+All seven items below shipped in **v1.0.0** — the MVP scope, as built.
 
 1. **Import** a dataset (`recipes.json` + images) into IndexedDB; ship a bundled demo set
    so first run shows something. Imported recipes carry **no** ingredient binding —
@@ -182,7 +184,7 @@ survives clearing a rating (and vice-versa).
 6. **Mark as cooked** (date) — builds history from day one.
 7. **Export / Import** user data (backup/restore).
 
-## Later (noted, not built)
+## Deferred past v1 (noted, not built)
 
 - Multi-week plan history. (Leftovers/batch awareness is **built** as per-meal portions —
   see [`plan-portions-spec.md`](plan-portions-spec.md). Per-serving nutrition is **captured at
