@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
@@ -19,6 +19,13 @@ export function RecipePage() {
     async () => (await db.plans.get(CURRENT_PLAN_ID))?.recipeIds ?? [],
     [],
   )
+
+  // Navigating to a different recipe (e.g. via a Related card near the page foot) should land you
+  // at the top, not wherever you scrolled to. Keyed on the id, so an in-place variant swap — same
+  // id — leaves your scroll position alone.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [id])
 
   if (recipe === undefined) {
     return <p className="text-muted">Loading…</p>
@@ -45,6 +52,7 @@ export function RecipePage() {
         <RecipeDetail
           recipe={recipe}
           editable
+          showRelated
           headerActions={(shown) => {
             /* Split button: primary add/remove from week, with secondary actions in a menu.
                Acts on the shown variant, so adding the chosen swap plans that recipe. */

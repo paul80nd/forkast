@@ -13,6 +13,7 @@ import { ingredientDelta, variantLabel } from '../lib/variants'
 import { formatScaledQty, scaledIngredientLabel, servingFactor } from '../lib/scaleServings'
 import { SegmentedControl } from './SegmentedControl'
 import { CheckItem } from './CheckItem'
+import { RelatedRecipes } from './RelatedRecipes'
 import type { Recipe } from '../schema/recipe'
 
 // The shared recipe body — image + facts + editable ★/◆ rating panel + nutrition on the left,
@@ -27,11 +28,14 @@ export function RecipeDetail({
   recipe: anchor,
   headerActions,
   editable = false,
+  showRelated = false,
 }: {
   recipe: Recipe
   headerActions?: (shown: Recipe) => ReactNode
   /** Offer in-place editing of the recipe's scalar text (full page only; off in the Plan modal). */
   editable?: boolean
+  /** Show the "related recipes" section (full page only; off in the Plan modal to avoid nesting). */
+  showRelated?: boolean
 }) {
   // The anchor's effective dish (import grouping + user overrides), ordered lead-first.
   const dish = useLiveQuery(() => dishForRecipe(anchor.id), [anchor.id])
@@ -98,6 +102,7 @@ export function RecipeDetail({
   }
 
   return (
+    <>
     <div className="grid gap-6 md:grid-cols-[2fr_3fr]">
       {/* Left: image + at-a-glance facts */}
       <div>
@@ -437,6 +442,10 @@ export function RecipeDetail({
         {!hasNotes && <RecipeNotes recipeId={recipe.id} />}
       </div>
     </div>
+    {/* Related recipes span the full width below the two-column body; anchored on the shown
+        variant so a swap re-relates. Full page only (off in the Plan modal). */}
+    {showRelated && <RelatedRecipes anchorId={recipe.id} />}
+    </>
   )
 }
 

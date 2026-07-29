@@ -8,6 +8,20 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-07-29 — Related recipes: structured-feature similarity, computed on demand
+
+The recipe page gained a "more like this / something different" section
+(`docs/related-recipes-spec.md`). Relatedness is **structured-feature similarity** — a weighted
+Jaccard/exact/cosine blend over ingredients, tags, cuisine, protein, effort band and nutrition —
+**not** text embeddings. *Why:* every signal is already on a recipe, so this stays local,
+deterministic, explainable ("shares 8 ingredients, same cuisine"), and dependency-free, whereas an
+in-browser embedding model is a heavy download and opaque. Scoring one anchor against the whole
+collection is an O(N) few-ms pass, so it's **computed on demand** — no precomputed vectors, no
+IndexedDB schema change, nothing extra to back up. "Different" is **keeper-gated novelty** (a good
+recipe unlike the anchor), not raw farthest-neighbour, which would surface low-rated oddities.
+Reuses `similarity.ts`'s token/Jaccard primitives and `suggest.ts`'s `timeBand`. Deferred:
+a Browse "similar-to-X" pivot, and neural embeddings if literal similarity ever feels too wooden.
+
 ## 2026-07-29 — Suggester: de-concentrate the pick with a seeded jitter
 
 The "suggest a varied week" feature fixated on the same handful of recipes in real use. The

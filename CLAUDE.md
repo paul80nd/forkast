@@ -42,6 +42,12 @@ the executable proof. If code and a doc disagree, fix the doc in the same change
     Plan-page list of ingredients you have → flags which the week doesn't use → suggests recipes by
     coverage. `src/lib/useUp.ts` + `src/app/useUp.ts` + `UseUpPanel`; list persisted as a `settings`
     row. Matches unbound lines by name tokens.
+  - [`docs/related-recipes-spec.md`](docs/related-recipes-spec.md) — **Related recipes** (built):
+    a recipe-page "more like this / something different" section. **Structured-feature** similarity
+    (ingredients/tags/cuisine/protein/effort/nutrition, weighted), **computed on demand** — no
+    stored vectors, no schema change. `src/lib/relatedRecipes.ts` (pure ranker, reuses
+    `similarity.ts` + `timeBand`) + `src/app/relatedRecipes.ts` + `RelatedRecipes`. "Different" =
+    keeper-gated novelty, not raw farthest-neighbour.
   - [`docs/variants-spec.md`](docs/variants-spec.md) — **Variants** (built): one dish, many swaps —
     import-seeded `variantGroupKey`/lead + a user-**override** layer; one card per dish in Browse,
     the swap selector on the recipe page, the swap chosen at plan time, curated in **Refine → Variants**.
