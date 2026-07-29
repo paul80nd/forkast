@@ -62,6 +62,11 @@ Feature: Suggest a varied week
     When I suggest a week of 5 excluding "r1"
     Then the suggestions are exactly "r2"
 
+  Scenario: Re-suggesting surfaces different meals from a large tied pool
+    Given recipes "a, b, c, d, e, f, g, h, i, j" rated 4 stars
+    When I suggest a week of 3 across several seeds
+    Then the suggested weeks vary across seeds and span most of the pool
+
   Scenario: Accepting the suggestions adds them to the plan
     Given recipes "r1, r2" rated 4 stars
     When I suggest a week of 5

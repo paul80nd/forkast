@@ -20,6 +20,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
   // Fixed seed so the weighted-random selection is reproducible across runs.
   const SEED = 1
   let suggestions: Suggestion[] = []
+  let seedWeeks: string[][] = []
 
   Background(({ Given }) => {
     Given('a clean collection', async () => {
@@ -31,6 +32,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
         db.plans.clear(),
       ])
       suggestions = []
+      seedWeeks = []
     })
   })
 
@@ -151,6 +153,25 @@ describeFeature(feature, ({ Background, Scenario }) => {
       suggestions = await suggestWeekPlan({ count, seed: SEED, exclude: ids(list) })
     })
     Then('the suggestions are exactly {string}', exactly)
+  })
+
+  Scenario('Re-suggesting surfaces different meals from a large tied pool', ({ Given, When, Then }) => {
+    Given('recipes {string} rated {int} stars', rateList)
+    // A fresh seed per run (as the UI uses) redraws the top-K window from the tied mass.
+    When('I suggest a week of {int} across several seeds', async (_, count: number) => {
+      seedWeeks = []
+      for (let seed = 1; seed <= 8; seed++) {
+        seedWeeks.push((await suggestWeekPlan({ count, seed })).map((s) => s.id))
+      }
+    })
+    Then('the suggested weeks vary across seeds and span most of the pool', () => {
+      // Not every seed yields the same week...
+      const distinct = new Set(seedWeeks.map((w) => [...w].sort().join(',')))
+      expect(distinct.size).toBeGreaterThan(1)
+      // ...and across a handful of runs the picks reach well beyond a single fixed week.
+      const union = new Set(seedWeeks.flat())
+      expect(union.size).toBeGreaterThan(seedWeeks[0].length)
+    })
   })
 
   Scenario('Accepting the suggestions adds them to the plan', ({ Given, When, And, Then }) => {

@@ -101,6 +101,13 @@ levels.
    against the current basket, then pick one. Picking is **weighted-random among the top
    candidates** (not strictly the single top) so rerolls feel fresh and the same collection
    doesn't yield an identical week every time. A **seed** makes this deterministic for tests.
+   Before windowing to the top-K, each candidate's score gets a small **seeded jitter**
+   (`explorationJitter`): scores tie *heavily* (every never-cooked recipe sits at the dueness
+   cap and ★ is coarse), and without the jitter the top-K window would always be the same
+   array-order head — so the suggester kept proposing the same handful. The jitter redraws the
+   window from the tied mass each run; it's fresh per UI run but reproducible under a fixed seed,
+   and the shortlist still reports each pick's **true** intrinsic score (the jitter only steers
+   ranking, it is not a quality signal).
 3. **Enforce group exclusion** as you go (adding a meal blocks its whole group).
 4. **Stop early** if the eligible pool is exhausted (small collection / tight filters) — the
    suggester returns fewer than asked and says so, rather than repeating an axis to pad.
@@ -191,3 +198,8 @@ the pure scorer so they're one place to turn.
   brand-new ◆1 doesn't crowd out a due favourite.
 - **Weights:** quality and dueness contribute on a comparable scale; each repeated variety axis
   subtracts a penalty of similar magnitude to one ★ step. Exact numbers TBD in the unit tests.
+- **Selection spread:** `temperature ≈ 0.85` and `topK ≈ 16` flatten the weighted-random pick a
+  little, and **`explorationJitter ≈ 0.35`** (in ★-step units, so below one ★ step) breaks score
+  ties so re-suggesting rotates through the collection instead of a fixed head. Dial jitter down
+  if weeks feel too random, up if they feel samey. If that alone isn't enough, the next lever is a
+  cross-week "recently suggested" soft suppression (out of scope here).

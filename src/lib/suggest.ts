@@ -39,6 +39,15 @@ export interface SuggestConfig {
   temperature: number
   /** Sample only among this many top-scoring candidates each pick. */
   topK: number
+  /**
+   * Max random score wobble added to each candidate each pick, in ★-step units, drawn from the
+   * run's seeded rng. Breaks the many score **ties** (never-cooked recipes all sit at the dueness
+   * cap; ★ is coarse) so the top-K window is a fresh draw from the tied mass each run rather than
+   * always the same array-order head — the difference between "re-suggest rotates through the
+   * collection" and "it keeps proposing the same handful". Keep it below one ★ step so it reorders
+   * near-ties without overriding a genuine quality/dueness gap. Deterministic per seed; 0 disables.
+   */
+  explorationJitter: number
 }
 
 // First-guess tuning (see spec → "Tuning starting points"). One place to turn the dials.
@@ -50,8 +59,9 @@ export const DEFAULT_SUGGEST_CONFIG: SuggestConfig = {
   duenessCap: 2,
   timeBands: { quickMax: 25, mediumMax: 45 },
   weights: { quality: 1, dueness: 1.5, penaltyPerAxis: 1 },
-  temperature: 0.6,
-  topK: 8,
+  temperature: 0.85,
+  topK: 16,
+  explorationJitter: 0.35,
 }
 
 /** A protein-less recipe buckets here, so two of them count as sharing the protein axis. */
@@ -170,15 +180,19 @@ function mulberry32(seed: number): () => number {
   }
 }
 
-/** Weighted-random pick among the top-K scorers via a numerically-stable softmax. */
+/**
+ * Weighted-random pick among the top-K candidates via a numerically-stable softmax. Windowing and
+ * softmax run on `rank` (the score plus this run's exploration jitter) so ties rotate; the picked
+ * item still carries its true intrinsic `score`.
+ */
 function pickWeighted(
-  scored: { c: Candidate; score: number }[],
+  scored: { c: Candidate; score: number; rank: number }[],
   rng: () => number,
   cfg: SuggestConfig,
 ): { c: Candidate; score: number } {
-  const top = [...scored].sort((a, b) => b.score - a.score).slice(0, cfg.topK)
-  const maxScore = top[0].score
-  const weights = top.map((s) => Math.exp((s.score - maxScore) / cfg.temperature))
+  const top = [...scored].sort((a, b) => b.rank - a.rank).slice(0, cfg.topK)
+  const maxRank = top[0].rank
+  const weights = top.map((s) => Math.exp((s.rank - maxRank) / cfg.temperature))
   const total = weights.reduce((sum, w) => sum + w, 0)
   let r = rng() * total
   for (let i = 0; i < top.length; i++) {
@@ -239,7 +253,13 @@ export function suggestWeek({ candidates, basket = [], count, seed, config }: Su
     )
     if (available.length === 0) break
 
-    const scored = available.map((c) => ({ c, score: scoreCandidate(c, axes, cfg) }))
+    // Jitter each candidate's score by a seeded wobble so the top-K window is drawn fresh from
+    // the tied mass each run (see SuggestConfig.explorationJitter). The reported score stays the
+    // true intrinsic one — jitter only steers this run's ranking, it isn't a real quality signal.
+    const scored = available.map((c) => {
+      const score = scoreCandidate(c, axes, cfg)
+      return { c, score, rank: score + rng() * cfg.explorationJitter }
+    })
     const { c, score } = pickWeighted(scored, rng, cfg)
 
     picked.push({ id: c.id, score, reasons: reasonsFor(c, axes, cfg) })

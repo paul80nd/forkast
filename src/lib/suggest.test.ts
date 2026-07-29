@@ -138,6 +138,29 @@ describe('suggestWeek', () => {
     expect(ids).not.toContain('a')
   })
 
+  it('rotates the sampling window through tied candidates across runs (de-concentration)', () => {
+    // A large pool of interchangeable candidates: same ★, all never-cooked, distinct ids ⇒ all
+    // tie on intrinsic score. The only run-to-run difference is the seeded exploration jitter.
+    const candidates = Array.from({ length: 40 }, (_, i) => cand({ id: `r${i}` }))
+
+    // Jitter on (default): the top-K window is redrawn from the tied mass each run, so the single
+    // pick ranges far beyond the fixed head. Fully deterministic — the seeds are fixed 0…99.
+    const winners = new Set<string>()
+    for (let seed = 0; seed < 100; seed++) {
+      winners.add(suggestWeek({ candidates, count: 1, seed })[0].id)
+    }
+    expect(winners.size).toBeGreaterThan(cfg.topK)
+
+    // Mechanism check: with jitter off the window is the fixed array-order head, so no matter the
+    // seed the winner comes from the same ≤ topK candidates — the old "focuses on a handful" bug.
+    const fixed = new Set<string>()
+    for (let seed = 0; seed < 100; seed++) {
+      fixed.add(suggestWeek({ candidates, count: 1, seed, config: { explorationJitter: 0 } })[0].id)
+    }
+    expect(fixed.size).toBeLessThanOrEqual(cfg.topK)
+    expect(winners.size).toBeGreaterThan(fixed.size)
+  })
+
   it('is deterministic for a given seed', () => {
     const candidates = Array.from({ length: 12 }, (_, i) =>
       cand({ id: `c${i}`, stars: ((i % 3) + 3) as Candidate['stars'], cuisine: `cu${i % 4}`, prepTime: 20 + i }),
@@ -154,7 +177,8 @@ describe('suggestWeek', () => {
       cand({ id: 'B', cuisine: 'X' }),
       cand({ id: 'C', cuisine: 'Y' }),
     ]
-    const out = suggestWeek({ candidates, count: 2, seed: 1, config: { topK: 1 } })
+    // Jitter off so the tie-break is deterministic array order, isolating the variety penalty.
+    const out = suggestWeek({ candidates, count: 2, seed: 1, config: { topK: 1, explorationJitter: 0 } })
     // First pick A (ties → first); then C beats B because B repeats cuisine X.
     expect(out.map((s) => s.id)).toEqual(['A', 'C'])
   })

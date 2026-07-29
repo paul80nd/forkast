@@ -8,6 +8,21 @@ names, ever** (see `CLAUDE.md`).
 
 Each entry: the decision, *why*, and what it superseded if anything.
 
+## 2026-07-29 — Suggester: de-concentrate the pick with a seeded jitter
+
+The "suggest a varied week" feature fixated on the same handful of recipes in real use. The
+cause was in the *selection*, not the data: `pickWeighted` windows to the top `topK` by score
+and breaks ties by array order, but ties are pervasive (every never-cooked recipe sits at the
+dueness cap; ★ is coarse), so the **same fixed head** formed the sampling pool every run.
+*Fix:* a seeded per-run **exploration jitter** added to each candidate's score at ranking time,
+so the top-K window is redrawn from the tied mass each run — plus a modestly flatter softmax
+(`temperature` 0.6→0.85, `topK` 8→16). Deterministic per seed, so tests stay reproducible; the
+reported `score` remains the true intrinsic one (jitter only steers a run's ranking). Pure,
+config-only — no new persistence. *Deferred next levers, only if weeks still feel samey:* a
+cross-week "recently suggested" soft-suppression memory (a decaying `settings` row, like the
+use-up list), and richer variety via structured-feature **similarity vectors** — the same
+representation would also power a future "recipes similar to / different from this one" feature.
+
 ## 2026-07-06 — Use up ingredients: a lightweight list, not a quantified pantry
 
 The "use up ingredients" feature (`docs/use-up-spec.md`) is a **manually-curated list of
