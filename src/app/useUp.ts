@@ -4,14 +4,11 @@
 // from Dexie (recipes, bindings, ★, the current plan). Design: docs/use-up-spec.md.
 
 import { db } from '../db/db'
+import { NOGO_ALLERGENS } from '../data/nogo'
 import { CURRENT_PLAN_ID } from '../lib/plan'
 import { normalizeName } from '../lib/shopping'
 import { planCoverage, rankUseUpRecipes, type UseUpMatch } from '../lib/useUp'
 import type { UseUpItem } from '../schema/userData'
-
-// Mirrors src/app/suggest.ts — no-go allergens are also excluded upstream at dataset build;
-// this is the belt-and-braces runtime filter.
-const NOGO_ALLERGENS = ['fish']
 
 const KEY = 'useUp'
 

@@ -115,9 +115,10 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('recipe {string} is on the plan', async (_, id: string) => {
       await addToPlan(id)
     })
-    // topK 1 forces the strict argmax, so the only thing under test is the variety penalty.
+    // topK 1 + no jitter forces the strict argmax-by-score, so the only thing under test is the
+    // variety penalty (jitter off, else it would perturb which candidate tops a one-wide window).
     When('I suggest a week of {int} favouring variety', async (_, count: number) => {
-      suggestions = await suggestWeekPlan({ count, seed: SEED, config: { topK: 1 } })
+      suggestions = await suggestWeekPlan({ count, seed: SEED, config: { topK: 1, explorationJitter: 0 } })
     })
     Then('the suggestions are exactly {string}', exactly)
   })

@@ -443,8 +443,9 @@ export function RecipeDetail({
       </div>
     </div>
     {/* Related recipes span the full width below the two-column body; anchored on the shown
-        variant so a swap re-relates. Full page only (off in the Plan modal). */}
-    {showRelated && <RelatedRecipes anchorId={recipe.id} />}
+        variant so a swap re-relates. Full page only (off in the Plan modal). Keyed on the id so a
+        new recipe remounts it — otherwise useLiveQuery would flash the previous recipe's cards. */}
+    {showRelated && <RelatedRecipes key={recipe.id} anchorId={recipe.id} />}
     </>
   )
 }

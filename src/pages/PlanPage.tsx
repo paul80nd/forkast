@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
+import { NOGO_ALLERGENS } from '../data/nogo'
 import { RecipeImage } from '../components/RecipeImage'
 import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
 import {
@@ -295,7 +296,7 @@ export function PlanPage() {
     return filtered
       .filter((r) => {
         if (plannedIds.includes(r.id)) return false
-        if (r.allergens.includes('fish')) return false
+        if (r.allergens.some((a) => NOGO_ALLERGENS.includes(a))) return false
         const s = starsById.get(r.id)
         if (s === undefined) return pickIncludeUnrated
         return matchesRating(s, pickRating)

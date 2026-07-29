@@ -4,10 +4,10 @@
 // Versions swapper) and household no-gos, then ranks. Design: docs/related-recipes-spec.md.
 
 import { db } from '../db/db'
+import { NOGO_ALLERGENS } from '../data/nogo'
 import {
   DEFAULT_RELATED_CONFIG,
-  rankDifferent,
-  rankSimilar,
+  rankRelated,
   toFeatures,
   type Ranked,
   type RelatedCandidate,
@@ -15,10 +15,6 @@ import {
 } from '../lib/relatedRecipes'
 import { resolveDishes } from '../lib/variants'
 import type { Recipe } from '../schema/recipe'
-
-// Mirrors src/app/suggest.ts — no-go allergens are also excluded upstream at dataset build; this
-// is the belt-and-braces runtime filter.
-const NOGO_ALLERGENS = ['fish']
 
 /** One related recipe for display: the dish's lead card, its ★ (if rated), and its score. */
 export interface RelatedResult {
@@ -96,8 +92,6 @@ export async function getRelatedRecipes(
       })
       .filter((x): x is RelatedResult => x != null)
 
-  return {
-    similar: toResults(rankSimilar(anchorFeatures, candidates, cfg)),
-    different: toResults(rankDifferent(anchorFeatures, candidates, cfg)),
-  }
+  const { similar, different } = rankRelated(anchorFeatures, candidates, cfg)
+  return { similar: toResults(similar), different: toResults(different) }
 }

@@ -47,10 +47,10 @@ export function RelatedRecipes({ anchorId }: { anchorId: string }) {
       <p className="mt-1 text-xs text-muted">{BLURB[mode]}</p>
 
       {results.length === 0 ? (
+        // Only reachable in "different" mode — "similar" always fills to the top N (no relevance
+        // floor) whenever the section renders at all, so there's no empty "similar" state.
         <p className="mt-4 text-sm text-muted">
-          {mode === 'different'
-            ? 'Nothing rated highly enough yet — rate a few recipes ★3+ to get suggestions.'
-            : 'No close matches in your collection.'}
+          Nothing rated highly enough yet — rate a few recipes ★3+ to get suggestions.
         </p>
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

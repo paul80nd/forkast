@@ -3,6 +3,7 @@
 // the current plan; the pure logic does the scoring/selection. Design: docs/plan-suggest-spec.md.
 
 import { db } from '../db/db'
+import { NOGO_ALLERGENS } from '../data/nogo'
 import { CURRENT_PLAN_ID, daysSince } from '../lib/plan'
 import {
   suggestWeek,
@@ -13,10 +14,6 @@ import {
 } from '../lib/suggest'
 import { resolveDishes } from '../lib/variants'
 import type { Recipe } from '../schema/recipe'
-
-// Household no-go allergens — also excluded upstream when the dataset is built; this is the
-// belt-and-braces runtime filter (mirrors the manual Plan picker).
-const NOGO_ALLERGENS = ['fish']
 
 export interface SuggestWeekParams {
   /** Target total meals for the week (the current plan + `taken` count toward it). */

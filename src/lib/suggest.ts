@@ -181,9 +181,11 @@ function mulberry32(seed: number): () => number {
 }
 
 /**
- * Weighted-random pick among the top-K candidates via a numerically-stable softmax. Windowing and
- * softmax run on `rank` (the score plus this run's exploration jitter) so ties rotate; the picked
- * item still carries its true intrinsic `score`.
+ * Weighted-random pick among the top-K candidates via a numerically-stable softmax. The **window**
+ * (which candidates are in contention) is chosen on `rank` — score plus this run's exploration
+ * jitter — so ties rotate run-to-run; but the softmax **weights** run on the true `score`, so the
+ * jitter only decides membership, never a candidate's selection probability (it's not a quality
+ * signal). The picked item carries its true `score`.
  */
 function pickWeighted(
   scored: { c: Candidate; score: number; rank: number }[],
@@ -191,8 +193,8 @@ function pickWeighted(
   cfg: SuggestConfig,
 ): { c: Candidate; score: number } {
   const top = [...scored].sort((a, b) => b.rank - a.rank).slice(0, cfg.topK)
-  const maxRank = top[0].rank
-  const weights = top.map((s) => Math.exp((s.rank - maxRank) / cfg.temperature))
+  const maxScore = Math.max(...top.map((s) => s.score))
+  const weights = top.map((s) => Math.exp((s.score - maxScore) / cfg.temperature))
   const total = weights.reduce((sum, w) => sum + w, 0)
   let r = rng() * total
   for (let i = 0; i < top.length; i++) {

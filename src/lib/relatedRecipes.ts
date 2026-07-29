@@ -78,6 +78,16 @@ const NUTRITION_SCALE: Nutrition = {
 }
 const NUTRITION_KEYS = Object.keys(NUTRITION_SCALE) as (keyof Nutrition)[]
 
+/**
+ * True only when every macro is a finite number. `nutrition` is optional and back-compatible, so
+ * an old/hand-edited backup can carry a partial block — comparing that would divide undefined by a
+ * scale and spread NaN through the cosine and the whole similarity score (poisoning the sort).
+ * A partial/malformed block simply skips the nutrition axis instead.
+ */
+function nutritionComplete(n: Nutrition | undefined): n is Nutrition {
+  return !!n && NUTRITION_KEYS.every((k) => Number.isFinite(n[k]))
+}
+
 /** Project a recipe to its comparable features. */
 export function toFeatures(recipe: Recipe): RelatedFeatures {
   return {
@@ -131,23 +141,34 @@ export function recipeSimilarity(
   add(cfg.weights.cuisine, !!a.cuisine && !!b.cuisine, a.cuisine === b.cuisine ? 1 : 0)
   add(cfg.weights.band, !!a.band && !!b.band, a.band === b.band ? 1 : 0)
   add(cfg.weights.protein, !!a.mainProtein && !!b.mainProtein, a.mainProtein === b.mainProtein ? 1 : 0)
-  add(cfg.weights.nutrition, !!a.nutrition && !!b.nutrition, a.nutrition && b.nutrition ? nutritionSimilarity(a.nutrition, b.nutrition) : 0)
+  if (nutritionComplete(a.nutrition) && nutritionComplete(b.nutrition)) {
+    add(cfg.weights.nutrition, true, nutritionSimilarity(a.nutrition, b.nutrition))
+  }
   return wsum ? ssum / wsum : 0
 }
 
-/**
- * "More like this": candidates ranked by descending similarity to the anchor. The anchor itself
- * is dropped; the caller is responsible for excluding the anchor's variant siblings (they live in
- * the recipe page's Versions swapper) by collapsing dishes before passing candidates in.
- */
-export function rankSimilar(
+/** A non-anchor candidate paired with its similarity to the anchor — computed once, reused by
+ *  both lists. The anchor itself is always dropped; the caller excludes the anchor's variant
+ *  siblings (they live in the recipe page's Versions swapper) by collapsing dishes upstream. */
+interface Scored {
+  candidate: RelatedCandidate
+  similarity: number
+}
+
+function scoreAll(
   anchor: RelatedFeatures,
   candidates: RelatedCandidate[],
-  cfg: RelatedConfig = DEFAULT_RELATED_CONFIG,
-): Ranked[] {
+  cfg: RelatedConfig,
+): Scored[] {
   return candidates
     .filter((c) => c.features.id !== anchor.id)
-    .map((c) => ({ id: c.features.id, score: recipeSimilarity(anchor, c.features, cfg) }))
+    .map((c) => ({ candidate: c, similarity: recipeSimilarity(anchor, c.features, cfg) }))
+}
+
+/** "More like this": most alike first. */
+function pickSimilar(scored: Scored[], cfg: RelatedConfig): Ranked[] {
+  return scored
+    .map((s) => ({ id: s.candidate.features.id, score: s.similarity }))
     .sort((x, y) => y.score - x.score)
     .slice(0, cfg.limit)
 }
@@ -155,21 +176,49 @@ export function rankSimilar(
 /**
  * "Something different": a change of pace that's still worth cooking. Only **keepers** (★ ≥
  * minStars) are offered, scored by a blend of *novelty* (how unlike the anchor) and *quality* (★),
- * so the list favours good recipes that break the anchor's cuisine / protein / effort pattern
- * rather than the mathematically-farthest oddities. Anchor dropped; siblings excluded upstream.
+ * so it favours good recipes that break the anchor's cuisine / protein / effort pattern rather than
+ * the mathematically-farthest oddities.
  */
+function pickDifferent(scored: Scored[], cfg: RelatedConfig): Ranked[] {
+  return scored
+    .filter((s) => (s.candidate.stars ?? 0) >= cfg.minStars)
+    .map((s) => {
+      const novelty = 1 - s.similarity
+      const quality = ((s.candidate.stars ?? cfg.minStars) - 2) / 3 // ★3→0.33 … ★5→1
+      return {
+        id: s.candidate.features.id,
+        score: cfg.different.novelty * novelty + cfg.different.quality * quality,
+      }
+    })
+    .sort((x, y) => y.score - x.score)
+    .slice(0, cfg.limit)
+}
+
+/** "More like this" alone (also handy in isolation / tests). */
+export function rankSimilar(
+  anchor: RelatedFeatures,
+  candidates: RelatedCandidate[],
+  cfg: RelatedConfig = DEFAULT_RELATED_CONFIG,
+): Ranked[] {
+  return pickSimilar(scoreAll(anchor, candidates, cfg), cfg)
+}
+
+/** "Something different" alone (also handy in isolation / tests). */
 export function rankDifferent(
   anchor: RelatedFeatures,
   candidates: RelatedCandidate[],
   cfg: RelatedConfig = DEFAULT_RELATED_CONFIG,
 ): Ranked[] {
-  return candidates
-    .filter((c) => c.features.id !== anchor.id && (c.stars ?? 0) >= cfg.minStars)
-    .map((c) => {
-      const novelty = 1 - recipeSimilarity(anchor, c.features, cfg)
-      const quality = ((c.stars ?? cfg.minStars) - 2) / 3 // ★3→0.33 … ★5→1
-      return { id: c.features.id, score: cfg.different.novelty * novelty + cfg.different.quality * quality }
-    })
-    .sort((x, y) => y.score - x.score)
-    .slice(0, cfg.limit)
+  return pickDifferent(scoreAll(anchor, candidates, cfg), cfg)
+}
+
+/** Both lists in one pass — `recipeSimilarity` is evaluated once per candidate and shared, so a
+ *  recipe-page render (which needs both) doesn't score the pool twice. What the app calls. */
+export function rankRelated(
+  anchor: RelatedFeatures,
+  candidates: RelatedCandidate[],
+  cfg: RelatedConfig = DEFAULT_RELATED_CONFIG,
+): { similar: Ranked[]; different: Ranked[] } {
+  const scored = scoreAll(anchor, candidates, cfg)
+  return { similar: pickSimilar(scored, cfg), different: pickDifferent(scored, cfg) }
 }

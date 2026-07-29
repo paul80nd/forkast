@@ -9,6 +9,7 @@ import {
   type RelatedFeatures,
 } from './relatedRecipes'
 import { makeRecipe } from '../../test/factories'
+import type { Nutrition } from '../schema/recipe'
 
 // A features object with sensible, populated defaults; override per test.
 function feat(over: Partial<RelatedFeatures> & { id: string }): RelatedFeatures {
@@ -90,6 +91,15 @@ describe('recipeSimilarity', () => {
     const a = feat({ id: 'a', mainProtein: undefined })
     const b = feat({ id: 'b', mainProtein: undefined })
     expect(recipeSimilarity(a, b)).toBeCloseTo(1)
+  })
+
+  it('skips a partial/malformed nutrition block instead of NaN-poisoning the score', () => {
+    const full: Nutrition = { kcal: 500, protein: 30, fat: 20, saturates: 8, carbs: 40, sugars: 10, fibre: 6, salt: 1 }
+    const partial = { kcal: 500, protein: 30 } as unknown as Nutrition // missing macros (old backup)
+    const score = recipeSimilarity(feat({ id: 'a', nutrition: full }), feat({ id: 'b', nutrition: partial }))
+    expect(Number.isFinite(score)).toBe(true)
+    // Identical on every other axis; the incomplete nutrition axis is simply dropped ⇒ still 1.
+    expect(score).toBeCloseTo(1)
   })
 })
 
