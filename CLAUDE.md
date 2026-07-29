@@ -17,48 +17,25 @@ Prose specs are the source of truth for *design + rationale*; the Gherkin `featu
 the executable proof. If code and a doc disagree, fix the doc in the same change.
 
 - [`docs/spec.md`](docs/spec.md) — whole-app design, persistence, data model, MVP scope.
-- Per-feature specs (live in `docs/`):
-  - [`docs/curate-spec.md`](docs/curate-spec.md) — Curate (★ rating + triage).
-  - [`docs/shop-spec.md`](docs/shop-spec.md) — Shop (merged list + lazy ingredient binding at
-    shopping time: dictionary, name bindings, match, density).
-  - [`docs/image-pack-spec.md`](docs/image-pack-spec.md) — **Image pack** (built): load your own
-    recipe images into IndexedDB once so the hosted/installed app shows them without the dev-only
-    image server; a separate, **content-addressed** (dedups variant duplicates) re-importable cache
-    DB (`forkast-images`), excluded from the JSON backup. `src/db/images.ts` + `src/app/images.ts` +
-    `useRecipeImage`; ingested via the Config → Recipe images card.
-  - [`docs/recipe-edit-spec.md`](docs/recipe-edit-spec.md) — **Recipe editing** (built): edit a
-    recipe's scalar text (title/description/**card code**) plus its **tags/allergens** (independent
-    chip editors, autocompleted from labels in use) in the full view; mutates the `recipes` table in
-    place (`src/lib/recipeEdit.ts` + `src/app/recipeEdit.ts`). Also the **Config → Tags & allergens**
-    manager — bulk rename/merge/delete labels across the collection (`src/lib/tags.ts` +
-    `src/app/tags.ts`).
-  - [`docs/plan-suggest-spec.md`](docs/plan-suggest-spec.md) — assisted "suggest a varied week"
-    (**built**: propose-then-accept shortlist; `src/lib/suggest.ts` + `src/app/suggest.ts`).
-  - [`docs/plan-portions-spec.md`](docs/plan-portions-spec.md) — **Per-meal portions** (built):
-    override one meal's headcount (leftovers/batch/guests) while the rest stay at the plan default;
-    `WeekPlan.portionOverrides` + `setMealPortions` + the `MealPortions` control, fed into the same
-    shopping-merge scaling.
-  - [`docs/use-up-spec.md`](docs/use-up-spec.md) — **Use up ingredients** (built): a lightweight
-    Plan-page list of ingredients you have → flags which the week doesn't use → suggests recipes by
-    coverage. `src/lib/useUp.ts` + `src/app/useUp.ts` + `UseUpPanel`; list persisted as a `settings`
-    row. Matches unbound lines by name tokens.
-  - [`docs/related-recipes-spec.md`](docs/related-recipes-spec.md) — **Related recipes** (built):
-    a recipe-page "more like this / something different" section. **Structured-feature** similarity
-    (ingredients/tags/cuisine/protein/effort/nutrition, weighted), **computed on demand** — no
-    stored vectors, no schema change. `src/lib/relatedRecipes.ts` (pure ranker, reuses
-    `similarity.ts` + `timeBand`) + `src/app/relatedRecipes.ts` + `RelatedRecipes`. "Different" =
-    keeper-gated novelty, not raw farthest-neighbour.
-  - [`docs/variants-spec.md`](docs/variants-spec.md) — **Variants** (built): one dish, many swaps —
-    import-seeded `variantGroupKey`/lead + a user-**override** layer; one card per dish in Browse,
-    the swap selector on the recipe page, the swap chosen at plan time, curated in **Refine → Variants**.
-    **Supersedes the old manual Recipe Groups feature** (now removed).
-  - [`docs/refine-spec.md`](docs/refine-spec.md) — Refine umbrella (the tidying section +
-    shared principles + the import/deletion model), linking its job specs:
-    [`refine-duplicates-spec.md`](docs/refine-duplicates-spec.md),
-    [`refine-cleanup-spec.md`](docs/refine-cleanup-spec.md). (The former **Group** job is now the
-    Variants tab — see variants-spec.)
-  - [`docs/groups-spec.md`](docs/groups-spec.md) / [`docs/refine-groups-spec.md`](docs/refine-groups-spec.md)
-    — **superseded/removed** (historical records only; replaced by variants-spec).
+- Per-feature specs (in `docs/`) — a map only; each linked spec carries the detail and its own
+  code paths, so read the spec rather than duplicating it here:
+  - [`curate-spec.md`](docs/curate-spec.md) — Curate: ★ rating + triage.
+  - [`shop-spec.md`](docs/shop-spec.md) — Shop: merged list + lazy ingredient binding.
+  - [`image-pack-spec.md`](docs/image-pack-spec.md) — your recipe images in a separate,
+    **content-addressed** IDB (`forkast-images`), **excluded from the JSON backup**.
+  - [`recipe-edit-spec.md`](docs/recipe-edit-spec.md) — in-place edit of a recipe's text +
+    tags/allergens, plus the Config → Tags & allergens bulk rename/merge manager.
+  - [`plan-suggest-spec.md`](docs/plan-suggest-spec.md) — "suggest a varied week": propose-then-accept.
+  - [`plan-portions-spec.md`](docs/plan-portions-spec.md) — per-meal portion overrides, fed into shopping-merge scaling.
+  - [`use-up-spec.md`](docs/use-up-spec.md) — "use up ingredients": a list ranked into recipes by coverage.
+  - [`related-recipes-spec.md`](docs/related-recipes-spec.md) — recipe-page "more like this / something
+    different": structured-feature similarity, computed on demand (no stored vectors).
+  - [`variants-spec.md`](docs/variants-spec.md) — one dish, many swaps (import key + user override
+    layer). **Supersedes the removed Recipe Groups feature.**
+  - [`refine-spec.md`](docs/refine-spec.md) — Refine umbrella (tidying + import/deletion model) →
+    [`refine-duplicates-spec.md`](docs/refine-duplicates-spec.md), [`refine-cleanup-spec.md`](docs/refine-cleanup-spec.md).
+  - [`groups-spec.md`](docs/groups-spec.md) / [`refine-groups-spec.md`](docs/refine-groups-spec.md) —
+    **superseded/removed** (historical only; see variants-spec).
 - [`docs/decisions.md`](docs/decisions.md) — the cross-cutting decision trail ("how we got
   here"). Add an entry when you make an architectural call.
 - `features/*.feature` (+ `features/steps/`) — behaviour, run as tests.
@@ -151,6 +128,10 @@ Two tiers, one runner (Vitest 4):
   `test/factories.ts` builds valid records; each scenario's `Background` resets the store
   (per-scenario isolation). `tsconfig.app.json` also type-checks `test/` + `features/`,
   so `npm run build` catches errors there too.
+  - **Gotcha:** repeating an *identical* step line under the same keyword in one scenario
+    collapses (only the first binds, the rest report "missing step"). Use a Gherkin **data
+    table** (see `tag-manager`) or fold the fixture into one `Given` (see `duplicates`) rather
+    than N copies of `And a recipe …`.
 
 ## House rules
 
