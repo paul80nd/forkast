@@ -141,6 +141,8 @@ Two tiers, one runner (Vitest 4):
 - **New IndexedDB logic goes in `src/app/`**, not inline in components.
 - Keep `src/lib/` pure (no Dexie, no I/O) and unit-tested.
 - **Commit freely; never `git push`** — pushing is the developer's. Surface commit SHAs.
-- Commit messages end with: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
+- Commit messages end with a `Co-Authored-By:` trailer naming **the model actually writing the
+  commit** — e.g. `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`. Don't copy the version
+  from the last commit; the trailer records who wrote *this* one.
 - **Comments** explain what the code does now (+ why if non-obvious); never narrate history.
 - Honour the **privacy firewall** on every change.
