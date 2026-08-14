@@ -17,7 +17,7 @@
     "pluralize": "^8.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.6.0"
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@amiceli/vitest-cucumber": "^7.0.0",
