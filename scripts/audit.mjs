@@ -4,6 +4,10 @@
 //
 //   npm run dev            # in another terminal
 //   node scripts/audit.mjs [--base http://localhost:5173] [--out /tmp/forkast-audit]
+//
+// Playwright pins an exact browser build, so a Playwright bump (even a minor) makes launch
+// fail until you `npx playwright install chromium` — a ~95 MB download. CI never catches
+// this: the gate runs build + test only, never these scripts.
 
 import { chromium } from 'playwright'
 import { AxeBuilder } from '@axe-core/playwright'

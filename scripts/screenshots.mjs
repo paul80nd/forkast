@@ -8,6 +8,10 @@
 //
 // HashRouter, so routes are /#/<page>. Theme is localStorage 'theme' ('dark'|'light'),
 // applied before first paint by the inline script in index.html — set it via addInitScript.
+//
+// Playwright pins an exact browser build, so a Playwright bump (even a minor) makes launch
+// fail until you `npx playwright install chromium` — a ~95 MB download. CI never catches
+// this: the gate runs build + test only, never these scripts.
 
 import { chromium } from 'playwright'
 import { mkdir } from 'node:fs/promises'
