@@ -25,15 +25,15 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
     "@types/pluralize": "^0.0.33",
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0",
-    "@vitejs/plugin-react": "^6.0.4",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
     "axe-core": "^4.12.1",
     "fake-indexeddb": "^6.2.5",
-    "playwright": "^1.61.1",
+    "playwright": "^1.62.1",
     "tailwindcss": "^4.1.0",
     "typescript": "^6.0.3",
-    "vite": "^8.1.5",
+    "vite": "^8.2.0",
     "vitest": "^4.1.10"
   }
 }
