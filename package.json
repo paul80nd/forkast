@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@amiceli/vitest-cucumber": "^7.0.0",
-    "@axe-core/playwright": "^4.12.1",
+    "@axe-core/playwright": "^4.13.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
     "@types/pluralize": "^0.0.33",
@@ -33,7 +33,7 @@
     "playwright": "^1.62.1",
     "tailwindcss": "^4.1.0",
     "typescript": "^6.0.3",
-    "vite": "^8.2.0",
-    "vitest": "^4.1.10"
+    "vite": "^8.2.1",
+    "vitest": "^4.1.11"
   }
 }
