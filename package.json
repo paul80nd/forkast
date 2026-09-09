@@ -12,12 +12,12 @@
     "test:features": "vitest run features"
   },
   "dependencies": {
-    "dexie": "^4.0.11",
+    "dexie": "^4.4.5",
     "dexie-react-hooks": "^4.4.0",
     "pluralize": "^8.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.2"
+    "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
     "@amiceli/vitest-cucumber": "^7.0.0",
