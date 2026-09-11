@@ -20,7 +20,7 @@
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
-    "@amiceli/vitest-cucumber": "^7.0.0",
+    "@amiceli/vitest-cucumber": "^8.0.0",
     "@axe-core/playwright": "^4.13.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
