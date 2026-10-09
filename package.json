@@ -23,17 +23,17 @@
     "@amiceli/vitest-cucumber": "^7.0.0",
     "@axe-core/playwright": "^4.13.0",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^24.13.3",
+    "@types/node": "^24.19.1",
     "@types/pluralize": "^0.0.33",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
-    "@vitejs/plugin-react": "^6.1.0",
-    "axe-core": "^4.12.1",
+    "@vitejs/plugin-react": "^6.1.2",
+    "axe-core": "^4.14.0",
     "fake-indexeddb": "^6.2.5",
-    "playwright": "^1.62.1",
+    "playwright": "^1.63.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2",
+    "vite": "^8.3.3",
     "vitest": "^4.1.11"
   }
 }
