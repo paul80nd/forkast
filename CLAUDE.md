@@ -55,7 +55,7 @@ Generic-input by design: provider knowledge is *config + data*, never code. Enfo
 
 ## Stack & commands
 
-React 19 · Vite · TypeScript · Tailwind v4 · Dexie (IndexedDB) · HashRouter · Vitest 4.
+React 19 · Vite · TypeScript · Tailwind v4 · Dexie (IndexedDB) · HashRouter · Vitest 5.
 
 ```bash
 npm run dev            # http://localhost:5173
@@ -116,7 +116,7 @@ ever sees our schema, never raw provider JSON.
 
 ## Testing
 
-Two tiers, one runner (Vitest 4):
+Two tiers, one runner (Vitest 5):
 
 - **Unit** — `src/**/*.test.ts` beside the code, for tight pure logic (`parseQuantity`,
   `units`, `shopping`, dataset validation). Import from `vitest` explicitly (no globals);
